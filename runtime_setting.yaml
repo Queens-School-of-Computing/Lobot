@@ -9,30 +9,23 @@ from_data: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="l1nna/peppapig:tf2.4-v0.0.8" select="selected">l1nna/peppapig Tensorflow-2.4.1 DS stack v0.0.8</option>
-                <option value="l1nna/peppapig:tf2.4-torch-1.9-v0.0.8" >l1nna/peppapig Tensorflow-2.4.1 & Torch-1.9 DS stack v0.0.8</option>
-                <option value="l1nna/peppapig:tf2.4-v0.0.7">l1nna/peppapig Tensorflow-2.4.1 DS stack v0.0.7</option>
-                <option value="l1nna/peppapig:tf2.3-torch1.6-v0.0.1">l1nna/peppapig Tensorflow-2.3 Pytorch-1.6 DS stack v0.0.1</option>
-                <option value="l1nna/peppapig:tf2.3-torch1.6-v0.0.2">l1nna/peppapig Tensorflow-2.3 Pytorch-1.6 DS stack v0.0.2</option>
-                <option value="l1nna/peppapig:tf2.3-torch1.4-v0.0.5">l1nna/peppapig Tensorflow-2.3 Pytorch-1.4 DS stack v0.0.5</option>
-                <option value="l1nna/peppapig:tf2.4-v0.0.1">l1nna/peppapig Tensorflow-2.4.1 DS stack v0.0.1</option>
+                <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="4" >4 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="6" >6 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="8" >8 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="12">12 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="14">14 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="16">16 cores Xeon Gold 2.3/3.9GHz</option>
-                 <option value="18">18 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="32">32 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="48">48 cores Xeon Gold 2.3/3.9GHz</option>
-                <option value="56">56 cores Xeon Gold 2.3/3.9GHz</option>
+                <option value="2" select="selected">2 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="6" select="selected">6 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10" select="selected">10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16" select="selected">16 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="24" select="selected">24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32" select="selected">32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" select="selected">64 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="96" select="selected">96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -57,9 +50,9 @@ from_data: |
                 <option value="200G">200G RAM</option>
                 <option value="300G">300G RAM</option>
                 <option value="400G">400G RAM</option>
-                <option value="400G">500G RAM</option>
-                <option value="400G">650G RAM</option>
-                <option value="400G">850G RAM</option>
+                <option value="500G">500G RAM</option>
+                <option value="650G">650G RAM</option>
+                <option value="850G">850G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
