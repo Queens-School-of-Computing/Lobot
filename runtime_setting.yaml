@@ -59,7 +59,7 @@ from_data: |
             <div class="form-group">
               <label for="inputPVC">Storage volumn claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
-                <option value="local-hdd-{}" selected="selected">{}</option>
+                <option value="{}" selected="selected">{}</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
