@@ -160,4 +160,14 @@ sudo mount -a
 # then go to the web ui and add disk to node
 ```
 
+### Docker image build:
+```
+cd gpu-jupyter/
+./generate-Dockerfile.sh 
+cd .build
+
+chmod 755 ./*
+docker build -t l1nna/peppapig:tf2.3-torch1.6-v0.0.2 .
+docker push l1nna/peppapig:tf2.3-torch1.6-v0.0.2
+```
 
