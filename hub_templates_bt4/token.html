@@ -1,0 +1,206 @@
+{% extends "page.html" %}
+
+{% block main %}
+
+<style>
+.row{
+  width: 100%
+  }
+</style>
+
+<div class="container" style="display: block !important;">
+  <div class="row d-flex justify-content-center">
+    <form id="request-token-form" class="col-md-6">
+      <div class="text-center">
+        <button type="submit" class="btn btn-lg btn-jupyter">
+          Request new API token
+        </button>
+      </div>
+      <div class="form-group">
+        <label for="token-note">Note</label>
+        <input
+          id="token-note"
+          class="form-control"
+          placeholder="note to identify your new token">
+        <small id="note-note" class="form-text text-muted">
+          This note will help you keep track of what your tokens are for.
+        </small>
+      </div>
+    </form>
+  </div>
+
+  <div class="row d-flex justify-content-center">
+      <div id="token-area" class="col-md-6" style="display: none;">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Your new API Token
+          </div>
+          <div class="panel-body">
+            <p class="lead text-center">
+              <span id="token-result"></span>
+            </p>
+            <p>
+              Copy this token. You won't be able to see it again,
+              but you can always come back here to get a new one.
+            </p>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  {% if api_tokens %}
+  <div class="row d-flex justify-content-center">
+    <h2>API Tokens</h2>
+    <p>
+      These are tokens with full access to the JupyterHub API.
+      Anything you can do with JupyterHub can be done with these tokens.
+      Revoking the API token for a running server will require restarting that server.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <td>Note</td>
+          <td>Last used</td>
+          <td>Created</td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for token in api_tokens %}
+        <tr class="token-row" data-token-id="{{token.api_id}}">
+          {% block token_row scoped %}
+          <td class="note-col col-sm-5">{{token.note}}</td>
+          <td class="time-col col-sm-3">
+            {%- if token.last_activity -%}
+            {{ token.last_activity.isoformat() + 'Z' }}
+            {%- else -%}
+            Never
+            {%- endif -%}
+          </td>
+          <td class="time-col col-sm-3">
+            {%- if token.created -%}
+            {{ token.created.isoformat() + 'Z' }}
+            {%- else -%}
+            N/A
+            {%- endif -%}
+          </td>
+          <td class="col-sm-1 text-center">
+            <button class="revoke-token-btn btn btn-xs btn-danger">revoke</button>
+          </td>
+          {% endblock token_row %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if oauth_clients %}
+  <div class="row">
+    <h2>Authorized Applications</h2>
+    <p>
+      These are applications that use OAuth with JupyterHub
+      to identify users (mostly notebook servers).
+
+      OAuth tokens can generally only be used to identify you,
+      not take actions on your behalf.
+    </p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <td>Application</td>
+          <td>Last used</td>
+          <td>First authorized</td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in oauth_clients %}
+        <tr class="token-row"
+          data-token-id="{{ client['token_id'] }}">
+          {% block client_row scoped %}
+          <td class="note-col col-sm-5">{{ client['description'] }}</td>
+          <td class="time-col col-sm-3">
+            {%- if client['last_activity'] -%}
+            {{ client['last_activity'].isoformat() + 'Z' }}
+            {%- else -%}
+            Never
+            {%- endif -%}
+          </td>
+          <td class="time-col col-sm-3">
+            {%- if client['created'] -%}
+            {{ client['created'].isoformat() + 'Z' }}
+            {%- else -%}
+            N/A
+            {%- endif -%}
+          </td>
+          <td class="col-sm-1 text-center">
+            <button class="revoke-token-btn btn btn-xs btn-danger">revoke</button>
+          {% endblock client_row %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock main %}
+
+{% block script %}
+{{ super() }}
+<script type="text/javascript">
+// Copyright (c) Jupyter Development Team.
+// Distributed under the terms of the Modified BSD License.
+
+$(function() {
+
+  var base_url = window.jhdata.base_url;
+  var user = window.jhdata.user;
+  var api = new JHAPI(base_url);
+
+  $(".time-col").map(function(i, el) {
+    // convert ISO datestamps to nice momentjs ones
+    el = $(el);
+    var m = moment(new Date(el.text().trim()));
+    el.text(m.isValid() ? m.fromNow() : el.text());
+  });
+
+  $("#request-token-form").submit(function() {
+    var note = $("#token-note").val();
+    if (!note.length) {
+      note = "Requested via token page";
+    }
+    api.request_token(
+      user,
+      { note: note },
+      {
+        success: function(reply) {
+          $("#token-result").text(reply.token);
+          $("#token-area").show();
+        },
+      }
+    );
+    return false;
+  });
+
+  function get_token_row(element) {
+    while (!element.hasClass("token-row")) {
+      element = element.parent();
+    }
+    return element;
+  }
+
+  $(".revoke-token-btn").click(function() {
+    var el = $(this);
+    var row = get_token_row(el);
+    el.attr("disabled", true);
+    api.revoke_token(user, row.data("token-id"), {
+      success: function(reply) {
+        row.remove();
+      },
+    });
+  });
+});
+
+
+
+</script>
+{% endblock script %}

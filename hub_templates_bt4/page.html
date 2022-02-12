@@ -1,0 +1,564 @@
+<!--
+=========================================================
+* BLK Design System- v1.0.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/blk-design-system
+* Copyright 2019 Creative Tim (https://www.creative-tim.com)
+* Licensed under MIT
+
+* Coded by Creative Tim
+
+=========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ -->
+
+
+
+{% macro modal(title, btn_label=None, btn_class="btn-primary") %}
+{% set key = title.replace(' ', '-').lower() %}
+{% set btn_label = btn_label or title %}
+<div class="modal fade" id="{{key}}-dialog" tabindex="-1" role="dialog" aria-labelledby="{{key}}-label"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+            class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="{{key}}-label">{{title}}</h4>
+      </div>
+      <div class="modal-body">
+        {{ caller() }}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn {{btn_class}}" data-dismiss="modal" data-dismiss="modal">{{btn_label}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="https://l1nna.com/black-assets/img/apple-icon.png">
+  <link rel="icon" type="image/x-icon" href="https://l1nna.com/images/favicon.ico">
+
+  <title>{% block title %}L1NNA HPC{% endblock %}</title>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--     Fonts and icons     -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,600,700,800" rel="stylesheet" />
+  <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+  <!-- Nucleo Icons -->
+  <link href="https://l1nna.com/black-assets/css/nucleo-icons.css" rel="stylesheet" />
+  <!-- CSS Files -->
+  <link href="https://l1nna.com/black-assets/css/blk-design-system.css?v=1.0.0" rel="stylesheet" />
+  <!-- CSS Just for demo purpose, don't include it in your project -->
+  <link href="https://l1nna.com/black-assets/demo/demo.css" rel="stylesheet" />
+ 
+  <!--   Core JS Files   -->
+  <script src="https://l1nna.com/black-assets/js/core/jquery.min.js" type="text/javascript"></script>
+  <script src="https://l1nna.com/black-assets/js/core/popper.min.js" type="text/javascript"></script>
+  <script src="https://l1nna.com/black-assets/js/core/bootstrap.min.js" type="text/javascript"></script>
+  <script src="https://l1nna.com/black-assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
+  <!--  Plugin for Switches, full documentation here: http://www.jque.re/plugins/version3/bootstrap.switch/ -->
+  <script src="https://l1nna.com/black-assets/js/plugins/bootstrap-switch.js"></script>
+  <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
+  <script src="https://l1nna.com/black-assets/js/plugins/nouislider.min.js" type="text/javascript"></script>
+  <!-- Chart JS -->
+  <script src="https://l1nna.com/black-assets/js/plugins/chartjs.min.js"></script>
+  <!--  Plugin for the DatePicker, full documentation here: https://github.com/uxsolutions/bootstrap-datepicker -->
+  <script src="https://l1nna.com/black-assets/js/plugins/moment.min.js"></script>
+  <script src="https://l1nna.com/black-assets/js/plugins/bootstrap-datetimepicker.js" type="text/javascript"></script>
+  <!-- Black Dashboard DEMO methods, don't include it in your project! -->
+  <script src="https://l1nna.com/black-assets/demo/demo.js"></script>
+  <!-- Control Center for Black UI Kit: parallax effects, scripts for the example pages etc -->
+  <script src="https://l1nna.com/black-assets/js/blk-design-system.min.js?v=1.0.0" type="text/javascript"></script>
+ 
+  <script src="{{static_url("components/moment/moment.js") }}" type="text/javascript" charset="utf-8"></script>
+
+  
+  <style>
+   .container{
+       justify-content: center !important;
+       display: flex !important;
+   }
+   .container h1, .container h2, .container h3, .container h4 {
+       margin-bottom: 0;
+   }
+   .table .btn {
+       margin: 5px;
+   }
+   .btn-xs {
+      font-size: 0.875rem;
+      border-radius: 0.2857rem;
+      padding: 5px 15px;
+   }
+   .btn.hidden {
+      display: none;
+   }
+   option{
+      background-color: #14163a;
+      color: white;
+   }
+  </style>
+  
+  <script type="text/javascript">
+    window.jhdata = {
+      base_url: "{{base_url}}",
+      prefix: "{{prefix}}",
+      {% if user %}
+    user: "{{user.json_escaped_name}}",
+      {% endif %}
+    {% if admin_access %}
+    admin_access: true,
+      {% else %}
+    admin_access: false,
+      {% endif %}
+    {% if not no_spawner_check and user and user.spawner.options_form %}
+    options_form: true,
+      {% else %}
+    options_form: false,
+      {% endif %}
+    }
+  </script>
+ 
+ 
+  <script type="text/javascript">
+  // Copyright (c) Jupyter Development Team.
+  // Distributed under the terms of the Modified BSD License.
+   
+
+  var url_path_join = function() {
+    // join a sequence of url components with '/'
+    var url = "";
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i] === "") {
+        continue;
+      }
+      if (url.length > 0 && url[url.length - 1] != "/") {
+        url = url + "/" + arguments[i];
+      } else {
+        url = url + arguments[i];
+      }
+    }
+    url = url.replace(/\/\/+/, "/");
+    return url;
+  };
+
+  var parse_url = function(url) {
+    // an `a` element with an href allows attr-access to the parsed segments of a URL
+    // a = parse_url("http://localhost:8888/path/name#hash")
+    // a.protocol = "http:"
+    // a.host     = "localhost:8888"
+    // a.hostname = "localhost"
+    // a.port     = 8888
+    // a.pathname = "/path/name"
+    // a.hash     = "#hash"
+    var a = document.createElement("a");
+    a.href = url;
+    return a;
+  };
+
+  var encode_uri_components = function(uri) {
+    // encode just the components of a multi-segment uri,
+    // leaving '/' separators
+    return uri
+      .split("/")
+      .map(encodeURIComponent)
+      .join("/");
+  };
+
+  var url_join_encode = function() {
+    // join a sequence of url components with '/',
+    // encoding each component with encodeURIComponent
+    return encode_uri_components(url_path_join.apply(null, arguments));
+  };
+
+  var escape_html = function(text) {
+    // escape text to HTML
+    return $("<div/>")
+      .text(text)
+      .html();
+  };
+
+  var get_body_data = function(key) {
+    // get a url-encoded item from body.data and decode it
+    // we should never have any encoded URLs anywhere else in code
+    // until we are building an actual request
+    return decodeURIComponent($("body").data(key));
+  };
+
+  // http://stackoverflow.com/questions/2400935/browser-detection-in-javascript
+  var browser = (function() {
+    if (typeof navigator === "undefined") {
+      // navigator undefined in node
+      return "None";
+    }
+    var N = navigator.appName,
+      ua = navigator.userAgent,
+      tem;
+    var M = ua.match(
+      /(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i
+    );
+    if (M && (tem = ua.match(/version\/([\.\d]+)/i)) !== null) M[2] = tem[1];
+    M = M ? [M[1], M[2]] : [N, navigator.appVersion, "-?"];
+    return M;
+  })();
+
+  // http://stackoverflow.com/questions/11219582/how-to-detect-my-browser-version-and-operating-system-using-javascript
+  var platform = (function() {
+    if (typeof navigator === "undefined") {
+      // navigator undefined in node
+      return "None";
+    }
+    var OSName = "None";
+    if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+    return OSName;
+  })();
+
+  var ajax_error_msg = function(jqXHR) {
+    // Return a JSON error message if there is one,
+    // otherwise the basic HTTP status text.
+    if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+      return jqXHR.responseJSON.message;
+    } else {
+      return jqXHR.statusText;
+    }
+  };
+
+  var log_ajax_error = function(jqXHR, status, error) {
+    // log ajax failures with informative messages
+    var msg = "API request failed (" + jqXHR.status + "): ";
+    console.log(jqXHR);
+    msg += ajax_error_msg(jqXHR);
+    console.log(msg);
+    return msg;
+  };
+
+  var ajax_error_dialog = function(jqXHR, status, error) {
+    console.log("ajax dialog", arguments);
+    var msg = log_ajax_error(jqXHR, status, error);
+    var dialog = $("#error-dialog");
+    dialog.find(".ajax-error").text(msg);
+    dialog.modal();
+  };
+
+  var utils = {
+    url_path_join: url_path_join,
+    url_join_encode: url_join_encode,
+    encode_uri_components: encode_uri_components,
+    escape_html: escape_html,
+    get_body_data: get_body_data,
+    parse_url: parse_url,
+    browser: browser,
+    platform: platform,
+    ajax_error_msg: ajax_error_msg,
+    log_ajax_error: log_ajax_error,
+    ajax_error_dialog: ajax_error_dialog,
+  };
+
+  var JHAPI = function(base_url) {
+    this.base_url = base_url;
+  };
+
+  var default_options = {
+    type: "GET",
+    contentType: "application/json",
+    cache: false,
+    dataType: "json",
+    processData: false,
+    success: null,
+    error: utils.ajax_error_dialog,
+  };
+
+  var update = function(d1, d2) {
+    $.map(d2, function(i, key) {
+      d1[key] = d2[key];
+    });
+    return d1;
+  };
+
+  var ajax_defaults = function(options) {
+    var d = {};
+    update(d, default_options);
+    update(d, options);
+    return d;
+  };
+
+  JHAPI.prototype.api_request = function(path, options) {
+    options = options || {};
+    options = ajax_defaults(options || {});
+    var url = utils.url_path_join(
+      this.base_url,
+      "api",
+      utils.encode_uri_components(path)
+    );
+    $.ajax(url, options);
+  };
+
+  JHAPI.prototype.start_server = function(user, options) {
+    options = options || {};
+    options = update(options, { type: "POST", dataType: null });
+    this.api_request(utils.url_path_join("users", user, "server"), options);
+  };
+
+  JHAPI.prototype.start_named_server = function(user, server_name, options) {
+    options = options || {};
+    options = update(options, { type: "POST", dataType: null });
+    this.api_request(
+      utils.url_path_join("users", user, "servers", server_name),
+      options
+    );
+  };
+
+  JHAPI.prototype.stop_server = function(user, options) {
+    options = options || {};
+    options = update(options, { type: "DELETE", dataType: null });
+    this.api_request(utils.url_path_join("users", user, "server"), options);
+  };
+
+  JHAPI.prototype.stop_named_server = function(user, server_name, options) {
+    options = options || {};
+    options = update(options, { type: "DELETE", dataType: null });
+    this.api_request(
+      utils.url_path_join("users", user, "servers", server_name),
+      options
+    );
+  };
+
+  JHAPI.prototype.delete_named_server = function(user, server_name, options) {
+    options = options || {};
+    options.data = JSON.stringify({ remove: true });
+    return this.stop_named_server(user, server_name, options);
+  };
+
+  JHAPI.prototype.list_users = function(options) {
+    this.api_request("users", options);
+  };
+
+  JHAPI.prototype.get_user = function(user, options) {
+    this.api_request(utils.url_path_join("users", user), options);
+  };
+
+  JHAPI.prototype.add_users = function(usernames, userinfo, options) {
+    options = options || {};
+    var data = update(userinfo, { usernames: usernames });
+    options = update(options, {
+      type: "POST",
+      dataType: null,
+      data: JSON.stringify(data),
+    });
+
+    this.api_request("users", options);
+  };
+
+  JHAPI.prototype.edit_user = function(user, userinfo, options) {
+    options = options || {};
+    options = update(options, {
+      type: "PATCH",
+      dataType: null,
+      data: JSON.stringify(userinfo),
+    });
+
+    this.api_request(utils.url_path_join("users", user), options);
+  };
+
+  JHAPI.prototype.admin_access = function(user, options) {
+    options = options || {};
+    options = update(options, {
+      type: "POST",
+      dataType: null,
+    });
+
+    this.api_request(
+      utils.url_path_join("users", user, "admin-access"),
+      options
+    );
+  };
+
+  JHAPI.prototype.delete_user = function(user, options) {
+    options = options || {};
+    options = update(options, { type: "DELETE", dataType: null });
+    this.api_request(utils.url_path_join("users", user), options);
+  };
+
+  JHAPI.prototype.request_token = function(user, props, options) {
+    options = options || {};
+    options = update(options, { type: "POST" });
+    if (props) {
+      options.data = JSON.stringify(props);
+    }
+    this.api_request(utils.url_path_join("users", user, "tokens"), options);
+  };
+
+  JHAPI.prototype.revoke_token = function(user, token_id, options) {
+    options = options || {};
+    options = update(options, { type: "DELETE" });
+    this.api_request(
+      utils.url_path_join("users", user, "tokens", token_id),
+      options
+    );
+  };
+
+  JHAPI.prototype.shutdown_hub = function(data, options) {
+    options = options || {};
+    options = update(options, { type: "POST" });
+    if (data) {
+      options.data = JSON.stringify(data);
+    }
+    this.api_request("shutdown", options);
+  };
+
+  </script>
+
+  {% block meta %}
+  {% endblock %}
+</head>
+
+<body class="index-page">
+
+  <noscript>
+    <div id='noscript'>
+      We require JavaScript.<br>
+      Please enable it to proceed.
+    </div>
+  </noscript>
+
+  {% block nav_bar %}
+  <nav class="navbar navbar-expand-lg fixed-top ">
+    <div class="container">
+      <div class="navbar-translate">
+        <a class="navbar-brand" href="{{logo_url or base_url}}" rel="tooltip"
+          title="Designed and Coded by Creative Tim" data-placement="bottom">
+          <span><img src="https://l1nna.com/images/favicon.ico" style="height: 30px;vertical-align: middle;"> L1NNA•</span>
+          {% if user %}
+          {{user.name}}
+          {% endif %}
+        </a>
+        <button class="navbar-toggler navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+          aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-bar bar1"></span>
+          <span class="navbar-toggler-bar bar2"></span>
+          <span class="navbar-toggler-bar bar3"></span>
+        </button>
+      </div>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navigation">
+        <div class="navbar-collapse-header">
+          <div class="row">
+            <div class="col-6 collapse-brand">
+              <a>
+                L1NNA
+              </a>
+            </div>
+            <div class="col-6 collapse-close text-right">
+              <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navigation"
+                aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="tim-icons icon-simple-remove"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% if user %}
+        <ul class="nav navbar-nav">
+          {% block nav_bar_left_items %}
+         <li class="nav-item"><a class="nav-link" href="{{base_url}}spawn">Spawn</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{base_url}}home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{base_url}}token">Token</a></li>
+          {% if user.admin %}
+          <li class="nav-item"><a class="nav-link" href="{{base_url}}admin">Admin</a></li>
+          {% endif %}
+          {% if services %}
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true"
+              aria-expanded="false">Services<span class="caret"></span></a>
+            <div class="dropdown-menu dropdown-with-icons">
+              {% for service in services %}
+              <a class="dropdown-item" href="{{service.prefix}}"><i
+                  class="tim-icons icon-bullet-list-67"></i>{{service.name}}</a>
+              {% endfor %}
+            </div>
+          </li>
+          {% endif %}
+          {% if user %}
+          <li class="nav-item">
+            <img src="https://github.com/{{user.name}}.png" class="img-fluid rounded-circle shadow" style="height:35px; margin-right:30px">
+            <a class="nav-link btn btn-default" href="{{logout_url}}" style="padding-left:20px;padding-right:20px">
+              <i class="tim-icons icon-button-power"></i> Logout
+            </a>
+          </li>
+          {% endif %}
+          {% endblock %}
+        </ul>
+        {% endif %}
+        
+
+      </div>
+
+      {% block header %}
+      {% endblock %}
+    </div>
+  </nav>
+  {% endblock %}
+
+  <div class="wrapper" style="padding-top:100px">
+    <div class="main">
+      {% block announcement %}
+      {% if announcement %}
+      <div class="container text-center announcement alert alert-warning">
+        {{ announcement | safe }}
+      </div>
+      {% endif %}
+      {% endblock %}
+
+
+      {% block main %}
+      {% endblock %}
+      
+
+      {% call modal('Error', btn_label='OK') %}
+      <div class="ajax-error">
+        The error
+      </div>
+      {% endcall %}
+
+      {% block script %}
+      {% endblock %}
+
+    </div>
+  </div>
+  
+ 
+ 
+ 
+  <script>
+    $(document).ready(function () {
+      blackKit.initDatePicker();
+      blackKit.initSliders();
+    });
+
+    function scrollToDownload() {
+
+      if ($('.section-download').length != 0) {
+        $("html, body").animate({
+          scrollTop: $('.section-download').offset().top
+        }, 1000);
+      }
+    }
+  </script>
+</body>
+
+</html>

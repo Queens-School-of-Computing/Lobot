@@ -1,0 +1,30 @@
+{% extends "page.html" %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row justify-content-center">
+     <div class="col-lg-8 text-center">
+        <h1>Server Options</h1>
+        <h3>[ 🔥 burn baby burn 🔥 ]</h3>
+        <img src="https://thumbs.gfycat.com/ThornyIllegalIndochinesetiger-size_restricted.gif" style="height:250px" class="rounded" alt="...">
+        {% if for_user and user.name != for_user.name -%}
+        <p>Spawning server for {{ for_user.name }}</p>
+        {% endif -%}
+        {% if error_message -%}
+        <p class="spawn-error-msg text-danger">
+        Error: {{error_message}}
+        </p>
+        {% endif %}
+     </div>
+     <div class="col-lg-8 bd-docs " style="margin-top:20px">
+      <form enctype="multipart/form-data" id="spawn_form" action="{{url}}" method="post" role="form">
+      {{spawner_options_form | safe}}
+      <br>
+      <input type="submit" value="Start" class="btn btn-jupyter btn-primary form-control">
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
