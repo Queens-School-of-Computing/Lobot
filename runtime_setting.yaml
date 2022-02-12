@@ -1,28 +1,9 @@
 storage:
-  md:
-   - scartav
-   - lxdragoon
-   - leordsong
-   - reetamtaj
-   - acwooding
-   - hackalog
-   - danielplohmann
-   - jcrussell
-   - hkozushk
-   - GregDemand
-   - ashitadiwan96
-   - bcl32
-   - owenpope
-   - guillaumemain
+  lh-retain-r2:
    - JBanks
    - jbanks
-   - TynenW
-   - tynenw
-   - ShanglinMo
-   - shanglinmo
-   - m-m-adams
-  lg:
-   - chrisjmolloy
+  lh-retain-r3:
+   - leordsong
 
 from_data: | 
   <div class="form-group">
@@ -58,11 +39,10 @@ from_data: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 RTX6000 (24G)</option>
-                <option value="2">2 RTX6000 (24G)</option>
-                <option value="3">3 RTX6000 (24G)</option>
-                <option value="4">4 RTX6000 (24G)</option>
-                <option value="5">5 RTX6000 (24G)</option>
+                <option value="1">1 A40 (48G)</option>
+                <option value="2">2 A40 (48G)</option>
+                <option value="3">3 A40 (48G)</option>
+                <option value="4">4 A40 (48G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -79,6 +59,7 @@ from_data: |
                 <option value="400G">400G RAM</option>
                 <option value="400G">500G RAM</option>
                 <option value="400G">650G RAM</option>
+                <option value="400G">850G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
