@@ -1,9 +1,10 @@
 storage:
   lh-retain-r2:
-   - JBanks
    - jbanks
   lh-retain-r3:
    - leordsong
+  mulab-retain-r1:
+   - haz
 
 from_data: | 
   <div class="form-group">
