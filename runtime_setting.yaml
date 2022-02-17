@@ -6,6 +6,7 @@ storage:
   mulab-retain-r1:
    - haz
    - ellamorgan
+   - jackliuto
   mulab-retain-r2: []
 
 from_data: | 
