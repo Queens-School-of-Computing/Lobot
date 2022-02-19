@@ -14,6 +14,7 @@ from_data: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
+                <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
