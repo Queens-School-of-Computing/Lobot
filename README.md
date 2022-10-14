@@ -184,3 +184,19 @@ docker build -t l1nna/peppapig:tf2.3-torch1.6-v0.0.2 .
 docker push l1nna/peppapig:tf2.3-torch1.6-v0.0.2
 ```
 
+### Adding data nodes:
+
+On a controlplane node (e.g. lobot), run the following command:
+```
+kubeadm token create --print-join-command
+```
+It will print out something similar to:
+```
+kubeadm join 192.168.1.101:6443 --token tokentoken.lalalalaqyd3kavez --discovery-token-ca-cert-hash sha256:complexshaoverhere
+```
+Double check if the IP is accessible for the new node. Then execute that command on the new node. 
+```
+To verify if it is successful, on a controlplane node (e.g. lobot), run the following command:
+```
+kubectl get nodes
+```
