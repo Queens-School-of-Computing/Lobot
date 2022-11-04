@@ -30,6 +30,7 @@ from_data: |
                 <option value="4" >4 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="6" >6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="8" >8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
+                <option value="16" >16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>  
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
