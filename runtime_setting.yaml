@@ -30,12 +30,12 @@ from_data: |
                 <option value="4" select="selected">4 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="6" select="selected">6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="8" select="selected">8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="10" select="selected">10 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
+                <!--<option value="10" select="selected">10 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="16" select="selected">16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="24" select="selected">24 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="32" select="selected">32 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="64" select="selected">64 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="96" select="selected">96 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
+                <option value="96" select="selected">96 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -54,13 +54,13 @@ from_data: |
                 <option value="16G" selected="selected">16G RAM</option>
                 <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
+                <!--<option value="300G">300G RAM</option>
                 <option value="400G">400G RAM</option>
                 <option value="500G">500G RAM</option>
                 <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="850G">850G RAM</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
