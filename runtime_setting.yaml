@@ -13,7 +13,8 @@ storage:
    - bennetmontgomery
    - jrai51
   mulab-retain-r2: []
-  bamlab-retain-r2: []
+  bamlab-retain-r2:
+   - wiegerthefarmer
 
 from_data: | 
   <div class="form-group">
