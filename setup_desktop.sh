@@ -2,8 +2,8 @@
 # curl https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/setup_desktop.sh | bash
 
 
-wget -O /home/jovyan/.condarc https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc
-sudo wget -O /opt/conda/.condarc https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc-opt
+# wget -O /home/jovyan/.condarc https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc
+# sudo wget -O /opt/conda/.condarc https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc-opt
 
 DIR="/home/jovyan/.config"
 
