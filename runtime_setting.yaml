@@ -15,6 +15,7 @@ storage:
   mulab-retain-r2: []
   bamlab-retain-r2:
    - wiegerthefarmer
+   - Haoran-Qi
 
 from_data: | 
   <div class="form-group">
