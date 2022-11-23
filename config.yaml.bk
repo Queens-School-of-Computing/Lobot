@@ -103,7 +103,9 @@ hub:
         spawner.cpu_limit = float(options['cpu_limit'][0])
         spawner.mem_limit = options['mem_limit'][0]
         spawner.storage_class = options['storage_class'][0]
-        spawner.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
+        gpu_requested = int(options["gpu_limit"][0])
+        if gpu_requested != 0:
+          spawner.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
         lab = options['storage_class'][0].split('-')[0]
         spawner.node_selector = {'lab': lab}
 
