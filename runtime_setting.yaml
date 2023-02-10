@@ -1,8 +1,9 @@
 storage:
-  caslab-retain-r2:
-   - jbanks
-  caslab-retain-r3:
-   - leordsong
+
+  caslab-retain-r2: []   
+  
+  caslab-retain-r3: []   
+  
   mulab-retain-r1:
    - haz
    - ellamorgan
@@ -13,7 +14,9 @@ storage:
    - bennetmontgomery
    - jrai51
    - steven-hh-ding
+   
   mulab-retain-r2: []
+  
   bamlab-retain-r2:
    - haoran-qi
    - yukijudaiyubel
