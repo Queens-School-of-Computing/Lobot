@@ -1,9 +1,6 @@
 storage:
-
-  caslab-retain-r2: []   
-  
-  caslab-retain-r3: []   
-  
+  caslab-retain-r2: []
+  caslab-retain-r3: []
   mulab-retain-r1:
    - haz
    - ellamorgan
@@ -13,10 +10,8 @@ storage:
    - jarvisgexiaoxu
    - bennetmontgomery
    - jrai51
-   - steven-hh-ding
-   
-  mulab-retain-r2: []
-  
+   - steven-hh-ding   
+  mulab-retain-r2: []  
   bamlab-retain-r2:
    - haoran-qi
    - yukijudaiyubel
@@ -25,7 +20,6 @@ storage:
    - ianpepin
    - griffinclark10
    - 20aanm
-   - wiegerthefarmer
 
 from_data: | 
   <div class="form-group">
