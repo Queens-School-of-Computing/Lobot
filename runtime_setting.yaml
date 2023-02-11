@@ -10,7 +10,6 @@ storage:
    - jarvisgexiaoxu
    - bennetmontgomery
    - jrai51
-   - steven-hh-ding   
   mulab-retain-r2: []  
   bamlab-retain-r2:
    - haoran-qi
@@ -20,6 +19,7 @@ storage:
    - ianpepin
    - griffinclark10
    - 20aanm
+   - steven-hh-ding 
 
 from_data: | 
   <div class="form-group">
