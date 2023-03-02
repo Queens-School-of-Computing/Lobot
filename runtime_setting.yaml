@@ -22,6 +22,8 @@ storage:
    - steven-hh-ding
    - elyasrashno
    - hypercubed-music
+  riselab-retain-r1:
+   - wiegerthefarmer
 
 from_data: | 
   <div class="form-group">
