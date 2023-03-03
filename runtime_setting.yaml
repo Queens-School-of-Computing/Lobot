@@ -25,7 +25,7 @@ storage:
    - hypercubed-music
   riselab-retain-r1: []
   riselab-retain-r2: []
-  soc-retain-r1:
+  soclab-retain-r1:
    - wiegerthefarmer
 
 from_data: | 
