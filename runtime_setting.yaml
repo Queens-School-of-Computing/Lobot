@@ -268,7 +268,7 @@ from_data_riselab: |
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
-from_data_soc: | 
+from_data_soclab: | 
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
