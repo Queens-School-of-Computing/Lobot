@@ -24,10 +24,10 @@ storage:
    - elyasrashno
    - hypercubed-music
    - jacksoncaii
-  riselab-retain-r1: []
-  riselab-retain-r2: []
-  soclab-retain-r1:
+  riselab-retain-r1:
    - wiegerthefarmer
+  riselab-retain-r2: []
+  soclab-retain-r1: []
 
 from_data: | 
   <div class="form-group">
