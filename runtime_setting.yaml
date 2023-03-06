@@ -13,7 +13,6 @@ storage:
    - victoriaaarmstrong
   mulab-retain-r2: []  
   bamlab-retain-r2:
-   - steven-hh-ding
    - haoran-qi
    - yukijudaiyubel
    - donghaoqiao
@@ -26,6 +25,7 @@ storage:
    - jacksoncaii
   riselab-retain-r1:
    - wiegerthefarmer
+   - steven-hh-ding
   riselab-retain-r2: []
   soclab-retain-r1: []
 
