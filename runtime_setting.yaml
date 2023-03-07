@@ -26,7 +26,6 @@ storage:
   riselab-retain-r1: []   
   riselab-retain-r2: []
   soclab-retain-r1:
-   - wiegerthefarmer
    - steven-hh-ding
 
 from_data: | 
