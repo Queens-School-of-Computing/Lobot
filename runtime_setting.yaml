@@ -27,7 +27,6 @@ storage:
   riselab-retain-r2: []
   soclab-retain-r1:
    - steven-hh-ding
-   - wiegerthefarmer
 
 from_data: | 
   <div class="form-group">
