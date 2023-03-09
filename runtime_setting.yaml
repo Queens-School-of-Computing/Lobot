@@ -38,6 +38,14 @@ storage:
    - steven-hh-ding
    - ryanz8
 
+nodeaccess:
+  mulab: []
+  bamlab: []
+  riselab: []
+  debilab:
+   - wiegerthefarmer
+  soclab: []
+  
 from_data: | 
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
