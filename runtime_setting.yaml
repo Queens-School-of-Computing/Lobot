@@ -23,7 +23,14 @@ storage:
    - elyasrashno
    - hypercubed-music
    - jacksoncaii
-  riselab-retain-r1:   
+  riselab-retain-r1: []
+  riselab-retain-r2: []
+  debilab-retain-r1: []
+  soclab-retain-r1: [] 
+nodeaccess:
+  mulab: []
+  bamlab: []
+  riselab:
    - sophiaty
    - jerin-2driselab
    - jerin-riselab
@@ -31,20 +38,12 @@ storage:
    - s-sheikhaei
    - marcosmacedo
    - sarahhongqin
-  riselab-retain-r2: []
-  debilab-retain-r1: []
-  soclab-retain-r1:
-   - ryanz8
-
-nodeaccess:
-  mulab: []
-  bamlab: []
-  riselab: []
   debilab:
    - wiegerthefarmer
   soclab:
    - steven-hh-ding
-  
+   - ryanz8
+   
 from_data: | 
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
