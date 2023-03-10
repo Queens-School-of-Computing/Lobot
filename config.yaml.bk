@@ -1,5 +1,5 @@
 proxy:
-  secretToken: ""
+  secretToken: "" 
   service:
     type: NodePort
     nodePorts:
@@ -76,7 +76,33 @@ hub:
         username = self.user.name.strip().lower()
         self.log.info(username)
         ss = 'caslab-retain-r1'
-        ds = 'Extensible SSD (1 replica)'
+        ds = 'CASLab Compute Resources'
+        sp_form = data['from_data']
+        if username in data['nodeaccess']['mulab']:
+          ss = 'mulab-socsharedstorage'
+          ds = 'MULab Compute Resources'
+          sp_form = data['from_data_mulab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['bamlab']:
+          ss = 'bamlab-socsharedstorage'
+          ds = 'BAMLab Compute Resources'
+          sp_form = data['from_data_bamlab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['riselab']:
+          ss = 'riselab-socsharedstorage'
+          ds = 'RISE Lab Compute Resources'
+          sp_form = data['from_data_riselab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['soclab']:
+          ss = 'soclab-socsharedstorage'
+          ds = 'SoC Research Compute Resources'
+          sp_form = data['from_data_soclab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['debilab']:
+          ss = 'debilab-socsharedstorage'
+          ds = 'DEBI Compute Resources'
+          sp_form = data['from_data_debilab']   
+          return sp_form.format(ss, ds)
         if username in data['storage']['caslab-retain-r2']:
           ss = 'caslab-retain-r2'
           ds = 'Extensible SSD (2 replicas)'
@@ -86,10 +112,32 @@ hub:
         if username in data['storage']['mulab-retain-r1']:
           ss = 'mulab-retain-r1'
           ds = 'Mulab Extensible SSD (1 replicas)'
+          sp_form = data['from_data_mulab']
         if username in data['storage']['mulab-retain-r2']:
           ss = 'mulab-retain-r2'
           ds = 'Mulab Extensible SSD (2 replicas)'
-        return data['from_data'].format(ss, ds)
+          sp_form = data['from_data_mulab']
+        if username in data['storage']['bamlab-retain-r2']:
+          ss = 'bamlab-retain-r2'
+          ds = 'BAMlab Extensible SSD (2 replicas)'
+          sp_form = data['from_data_bamlab']   
+        if username in data['storage']['riselab-retain-r1']:
+          ss = 'riselab-retain-r1'
+          ds = 'RISElab Extensible SSD (1 replica)'
+          sp_form = data['from_data_riselab']   
+        if username in data['storage']['riselab-retain-r2']:
+          ss = 'riselab-retain-r2'
+          ds = 'RISElab Extensible SSD (2 replicas)'
+          sp_form = data['from_data_riselab']   
+        if username in data['storage']['soclab-retain-r1']:
+          ss = 'soclab-retain-r1'
+          ds = 'SoC Lab Extensible SSD (1 replicas)'
+          sp_form = data['from_data_soclab']   
+        if username in data['storage']['debilab-retain-r1']:
+          ss = 'debilab-retain-r1'
+          ds = 'DEBI Lab Extensible SSD (1 replicas)'
+          sp_form = data['from_data_debilab']   
+        return sp_form.format(ss, ds)
 
       c.KubeSpawner.options_form = dynamic_form
     pre_spawn_hook: |
@@ -102,11 +150,13 @@ hub:
         spawner.image = options['image'][0]
         spawner.cpu_limit = float(options['cpu_limit'][0])
         spawner.mem_limit = options['mem_limit'][0]
-        spawner.storage_class = options['storage_class'][0]
-        gpu_requested = int(options["gpu_limit"][0])
-        if gpu_requested != 0:
-          spawner.extra_resource_limits = {"nvidia.com/gpu": gpu_requested}
         lab = options['storage_class'][0].split('-')[0]
+        sctype = options['storage_class'][0].split('-')[1]
+        spawner.storage_class = options['storage_class'][0]
+        if sctype == 'socsharedstorage':
+          spawner.log.info('  socsharedstorage with ' + str(lab))
+          spawner.storage_class = str('caslab-retain-r1') 
+        spawner.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
         spawner.node_selector = {'lab': lab}
 
       c.KubeSpawner.pre_spawn_hook = my_pre_spawn_hook 
@@ -119,14 +169,17 @@ auth:
       - "haz"
       - "WiegerTheFarmer"
       - "drdoog"
+      - "sjwhittaker"
   github:
-    clientId: ""
-    clientSecret: ""
+    clientId: "7f01de48bf87ee08b967"
+    clientSecret: "c0cc90fd2d50e932c3c328c29d0feb01618733fb"
     callbackUrl: "https://lobot.caslab.queensu.ca/hub/oauth_callback"
     orgWhitelist: 
       - "qumulab"
       - "L1NNA"
       - "Queens-School-of-Computing"
+      - "RISElabQueens"
+      - "TheBaleHouse"
   scopes:
     - "read:user"
     - "read:org"
