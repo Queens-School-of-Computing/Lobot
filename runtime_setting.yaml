@@ -35,7 +35,6 @@ storage:
   debilab-retain-r1: []
   soclab-retain-r1:
    - ryanz8
-   - steven-hh-ding
 
 nodeaccess:
   mulab: []
@@ -43,7 +42,8 @@ nodeaccess:
   riselab: []
   debilab:
    - wiegerthefarmer
-  soclab: []
+  soclab:
+   - steven-hh-ding
   
 from_data: | 
   <div class="form-group">
