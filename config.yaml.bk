@@ -1,5 +1,5 @@
 proxy:
-  secretToken: "" 
+  secretToken: ""
   service:
     type: NodePort
     nodePorts:
@@ -103,40 +103,14 @@ hub:
           ds = 'DEBI Compute Resources'
           sp_form = data['from_data_debilab']   
           return sp_form.format(ss, ds)
-        if username in data['storage']['caslab-retain-r2']:
-          ss = 'caslab-retain-r2'
-          ds = 'Extensible SSD (2 replicas)'
-        if username in data['storage']['caslab-retain-r3']:
-          ss = 'caslab-retain-r3'
-          ds = 'Extensible SSD (3 replicas)'
         if username in data['storage']['mulab-retain-r1']:
           ss = 'mulab-retain-r1'
           ds = 'Mulab Extensible SSD (1 replicas)'
-          sp_form = data['from_data_mulab']
-        if username in data['storage']['mulab-retain-r2']:
-          ss = 'mulab-retain-r2'
-          ds = 'Mulab Extensible SSD (2 replicas)'
           sp_form = data['from_data_mulab']
         if username in data['storage']['bamlab-retain-r2']:
           ss = 'bamlab-retain-r2'
           ds = 'BAMlab Extensible SSD (2 replicas)'
           sp_form = data['from_data_bamlab']   
-        if username in data['storage']['riselab-retain-r1']:
-          ss = 'riselab-retain-r1'
-          ds = 'RISElab Extensible SSD (1 replica)'
-          sp_form = data['from_data_riselab']   
-        if username in data['storage']['riselab-retain-r2']:
-          ss = 'riselab-retain-r2'
-          ds = 'RISElab Extensible SSD (2 replicas)'
-          sp_form = data['from_data_riselab']   
-        if username in data['storage']['soclab-retain-r1']:
-          ss = 'soclab-retain-r1'
-          ds = 'SoC Lab Extensible SSD (1 replicas)'
-          sp_form = data['from_data_soclab']   
-        if username in data['storage']['debilab-retain-r1']:
-          ss = 'debilab-retain-r1'
-          ds = 'DEBI Lab Extensible SSD (1 replicas)'
-          sp_form = data['from_data_debilab']   
         return sp_form.format(ss, ds)
 
       c.KubeSpawner.options_form = dynamic_form
