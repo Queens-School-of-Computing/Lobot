@@ -32,10 +32,8 @@ storage:
    - marcosmacedo
    - sarahhongqin
   riselab-retain-r2: []
-  debilab-retain-r1:
-   - wiegerthefarmer
+  debilab-retain-r1: []
   soclab-retain-r1:
-   - steven-hh-ding
    - ryanz8
 
 nodeaccess:
@@ -44,7 +42,8 @@ nodeaccess:
   riselab: []
   debilab:
    - wiegerthefarmer
-  soclab: []
+  soclab:
+   - steven-hh-ding
   
 from_data: | 
   <div class="form-group">
