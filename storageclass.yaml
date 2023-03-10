@@ -1,9 +1,44 @@
 # kubectl create -f
+# kubectl replace -f
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: lh-retain-r2
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: caslab-retain-r1
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  nodeSelector: "caslab"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: mulab-retain-r1
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  nodeSelector: "mulab"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: bamlab-retain-r2
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 reclaimPolicy: Retain
@@ -14,43 +49,5 @@ parameters:
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
-#  backingImage: "bi-test"
-#  backingImageDataSourceType: "download"
-#  backingImageDataSourceParameters: '{"url": "https://backing-image-example.s3-region.amazonaws.com/test-backing-image"}'
-#  backingImageChecksum: "SHA512 checksum of the backing image"
-#  diskSelector: "ssd,fast"
-#  nodeSelector: "storage,fast"
-#  recurringJobSelector: '[{"name":"snap-group", "isGroup":true},
-#                          {"name":"backup", "isGroup":false}]'
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: lh-retain-r3
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-reclaimPolicy: Retain
-volumeBindingMode: Immediate
-parameters:
-  numberOfReplicas: "3"
-  staleReplicaTimeout: "2880"
-  fromBackup: ""
-  fsType: "ext4"
-  dataLocality: "best-effort"
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-  name: lh-retain-r1
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-reclaimPolicy: Retain
-volumeBindingMode: Immediate
-parameters:
-  numberOfReplicas: "1"
-  staleReplicaTimeout: "2880"
-  fromBackup: ""
-  fsType: "ext4"
+  nodeSelector: "bamlab"
 ---
