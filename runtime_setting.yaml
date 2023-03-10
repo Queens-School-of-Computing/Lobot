@@ -2,34 +2,34 @@ storage:
   caslab-retain-r2: []
   caslab-retain-r3: []
   mulab-retain-r1:
-   - haz
-   - ellamorgan
-   - jackliuto
-   - natnova
-   - beckydvn
-   - jarvisgexiaoxu
    - bennetmontgomery
-   - jrai51
+   - jackliuto
    - victoriaaarmstrong
   mulab-retain-r2: []  
   bamlab-retain-r2:
-   - haoran-qi
-   - yukijudaiyubel
-   - donghaoqiao
-   - austincarthy
-   - ianpepin
-   - griffinclark10
    - 20aanm
+   - austincarthy
    - elyasrashno
    - hypercubed-music
+   - ianpepin
    - jacksoncaii
+   - yukijudaiyubel
   riselab-retain-r1: []
   riselab-retain-r2: []
   debilab-retain-r1: []
   soclab-retain-r1: [] 
 nodeaccess:
-  mulab: []
-  bamlab: []
+  mulab:
+   - haz
+   - ellamorgan
+   - natnova
+   - beckydvn
+   - jarvisgexiaoxu
+   - jrai51
+  bamlab:
+   - haoran-qi
+   - donghaoqiao
+   - griffinclark10
   riselab:
    - sophiaty
    - jerin-2driselab
