@@ -171,8 +171,8 @@ auth:
       - "drdoog"
       - "sjwhittaker"
   github:
-    clientId: "7f01de48bf87ee08b967"
-    clientSecret: "c0cc90fd2d50e932c3c328c29d0feb01618733fb"
+    clientId: ""
+    clientSecret: ""
     callbackUrl: "https://lobot.caslab.queensu.ca/hub/oauth_callback"
     orgWhitelist: 
       - "qumulab"
