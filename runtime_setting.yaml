@@ -51,10 +51,10 @@ from_data: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
+                <option value="2" >2 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="4" >4 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="6" >6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="8" >8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
+                <option value="8" select="selected">8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
                 <option value="16" >16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
                 <option value="20" >20 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
                 <option value="24" >24 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
@@ -83,11 +83,11 @@ from_data: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
@@ -107,23 +107,22 @@ from_data_bamlab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="4" select="selected">4 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="2" >2 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="4" >4 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="8" select="selected">8 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="10" select="selected">10 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="16" select="selected">16 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="24" select="selected">24 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="32" select="selected">32 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="64" select="selected">64 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="96" select="selected">96 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="10" >10 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="16" >16 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="24" >24 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="32" >32 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="64" >64 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="96" >96 cores Intel Xeon Gold 6338 2.00GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 A100 (80G)</option>
-                <option value="2">2 A100 (80G)</option>
+                <option value="1">1 A100 (80G)</option>            
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -131,9 +130,9 @@ from_data_bamlab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
-                <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
+                <option value="16G" >16G RAM</option>
+                <option value="32G" >32G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
                 <option value="300G">300G RAM</option>
@@ -145,11 +144,11 @@ from_data_bamlab: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
@@ -167,16 +166,16 @@ from_data_mulab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" select="selected">6 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10" select="selected">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" select="selected">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24" select="selected">24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" select="selected">32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" select="selected">64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" select="selected">96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -194,9 +193,9 @@ from_data_mulab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
-                <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
+                <option value="16G" ">16G RAM</option>
+                <option value="32G" >32G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
                 <option value="300G">300G RAM</option>
@@ -208,11 +207,11 @@ from_data_mulab: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
@@ -230,16 +229,16 @@ from_data_riselab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" select="selected">6 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10" select="selected">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" select="selected">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24" select="selected">24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" select="selected">32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" select="selected">64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" select="selected">96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -255,9 +254,9 @@ from_data_riselab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
-                <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
+                <option value="16G" >16G RAM</option>
+                <option value="32G" >32G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
                 <option value="300G">300G RAM</option>
@@ -269,11 +268,11 @@ from_data_riselab: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
@@ -291,16 +290,16 @@ from_data_soclab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" select="selected">6 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10" select="selected">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" select="selected">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24" select="selected">24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" select="selected">32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" select="selected">64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" select="selected">96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -316,9 +315,9 @@ from_data_soclab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
-                <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
+                <option value="16G" >16G RAM</option>
+                <option value="32G" >32G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
                 <option value="300G">300G RAM</option>
@@ -330,11 +329,11 @@ from_data_soclab: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
@@ -352,24 +351,23 @@ from_data_debilab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" select="selected">2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" select="selected">6 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10" select="selected">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" select="selected">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24" select="selected">24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" select="selected">32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" select="selected">64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" select="selected">96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64">64 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="96">96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 RTX A5000 (24G)</option>
-                <option value="2">2 RTX A5000 (24G)</option>
+                <option value="1">1 RTX A5000 (24G)</option>                
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -377,25 +375,20 @@ from_data_debilab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
+                <option value="16G" >16G RAM</option>
                 <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
             <div class="form-group">
-              <label for="inputPVC">Storage volumn claim</label>
+              <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The storage volumn will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
