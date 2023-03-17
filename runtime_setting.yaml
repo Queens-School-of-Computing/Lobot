@@ -92,7 +92,7 @@ from_data: |
               <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
-          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
+          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
   
   </div>
@@ -153,7 +153,7 @@ from_data_bamlab: |
               <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
-          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
+          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
 from_data_mulab: | 
@@ -216,7 +216,7 @@ from_data_mulab: |
               <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
-          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
+          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
 from_data_riselab: | 
@@ -277,7 +277,7 @@ from_data_riselab: |
               <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
-          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 12 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
+          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
 from_data_soclab: | 
