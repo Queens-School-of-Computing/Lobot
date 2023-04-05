@@ -40,6 +40,7 @@ nodeaccess:
   soclab:
    - steven-hh-ding
    - ryanz8
+   - emedema
    
 from_data: | 
   <div class="form-group">
