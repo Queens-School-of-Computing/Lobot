@@ -289,6 +289,13 @@ from_data_riselab: |
   </div>
 
 from_data_soclab: | 
+  <script>
+    console.log('!!! testing');
+    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.csv';
+    $.get(url_status, function(data){{
+    console.log(data);
+    }})
+  </script>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
