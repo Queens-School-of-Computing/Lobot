@@ -33,13 +33,13 @@ nodeaccess:
    - marcosmacedo
    - sarahhongqin
   debilab:
-   - wiegerthefarmer
    - barrackm
    - mthe493
   soclab:
    - steven-hh-ding
    - ryanz8
    - emedema
+   - wiegerthefarmer
    
 from_data: | 
   <div class="form-group">
