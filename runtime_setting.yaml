@@ -32,6 +32,7 @@ nodeaccess:
    - s-sheikhaei
    - marcosmacedo
    - sarahhongqin
+   - wiegerthefarmer
   debilab:
    - barrackm
    - mthe493
@@ -39,7 +40,6 @@ nodeaccess:
    - steven-hh-ding
    - ryanz8
    - emedema
-   - wiegerthefarmer
    
 from_data: | 
   <div class="form-group">
