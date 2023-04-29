@@ -296,7 +296,7 @@ from_data_soclab: |
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').val(data[lab].summary);
+      $('#label-summary').text(data[lab].summary);
     }}
     }})
   </script>
