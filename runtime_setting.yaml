@@ -300,6 +300,7 @@ from_data_soclab: |
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
+        entry.addClass('form-text text-muted');
         $('#label-usage').append(entry);
       }})
     }}
