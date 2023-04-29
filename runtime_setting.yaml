@@ -292,8 +292,8 @@ from_data_soclab: |
   <script>
     console.log('!!! testing');
     var lab = 'soclab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.csv';
-    $.get(url_status, function(data){{
+    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    $.getJSON(url_status, function(data){{
     console.log(data);
     }})
   </script>
