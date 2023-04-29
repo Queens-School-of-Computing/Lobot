@@ -295,8 +295,14 @@ from_data_soclab: |
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
+    if(data){{
+      $('#label-summary').val(data[lab]);
+    }}
     }})
   </script>
+  <div class="form-group">
+  <label id="label-summary"></label>
+  </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
