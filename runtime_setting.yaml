@@ -14,6 +14,7 @@ storage:
   
 nodeaccess:
   mulab:
+   - haz
    - ellamorgan
    - natnova
    - beckydvn
