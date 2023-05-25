@@ -555,10 +555,10 @@ from_data_debilab: |
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">             
                 <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-              <!--  <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
+                 <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
+                <!-- <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option> -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
@@ -575,9 +575,9 @@ from_data_debilab: |
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
                 <option value="16G" select="selected">16G RAM</option>
-                <!--<option value="32G">32G RAM</option>
+               <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>
-                <option value="96G">96G RAM</option>
+                <!-- <option value="96G">96G RAM</option>
                 <option value="128G">128G RAM</option>
                 <option value="256G">256G RAM</option>  -->            
               </select>
