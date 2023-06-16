@@ -556,8 +556,8 @@ from_data_debilab: |
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">             
                 <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <!--<option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
+                <!--<option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option> -->
