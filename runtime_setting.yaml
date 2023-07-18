@@ -635,8 +635,6 @@ from_data_debilabgpu: |
                 <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
