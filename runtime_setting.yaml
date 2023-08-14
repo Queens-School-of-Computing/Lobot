@@ -626,6 +626,7 @@ from_data_debilabgpu: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1 (old)</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
               </div>
