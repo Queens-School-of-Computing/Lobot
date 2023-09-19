@@ -99,6 +99,7 @@ nodeaccess:
    - atlno1fan
    - hanaagamal
   debilabgpu:
+   - drdoog
    - debi2023-group1
    - debi2023-group2
    - debi2023-group3
@@ -121,8 +122,6 @@ nodeaccess:
    - emedema
    - kshrin2002
    - shazhendong
-   - drdoog
-   
    
 from_data: | 
   <script>
