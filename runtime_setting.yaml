@@ -41,7 +41,6 @@ nodeaccess:
    - sarahhongqin
    - amithasanshuvo
   debilab:
-   - drdoog
    - abdoallahibrahim
    - adelhany1
    - adhamgamal
@@ -121,6 +120,9 @@ nodeaccess:
    - ryanz8
    - emedema
    - kshrin2002
+   - shazhendong
+   - drdoog
+   
    
 from_data: | 
   <script>
