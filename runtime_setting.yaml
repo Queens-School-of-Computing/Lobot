@@ -1,8 +1,7 @@
 storage:
   mulab-retain-r1:
-   - bennetmontgomery
    - victoriaaarmstrong
-   - brennancruse
+   - brucechidley
   bamlab-retain-r2:
    - 20aanm
    - austincarthy
@@ -15,12 +14,10 @@ storage:
 nodeaccess:
   mulab:
    - haz
-   - ellamorgan
    - natnova
    - beckydvn
-   - brennancruse
-   - Sanaarasteh
    - victoriaaarmstrong
+   - brucechidley
   bamlab:
    - haoran-qi
    - donghaoqiao
