@@ -169,6 +169,7 @@ from_data: |
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="1">1 A40 (48G)</option>
                 <!--<option value="2">2 A40 (48G)</option>-->
+                <option value="4">4 A40 (48G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
