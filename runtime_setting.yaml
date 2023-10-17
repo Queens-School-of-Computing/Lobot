@@ -27,7 +27,6 @@ nodeaccess:
    - somiona
    - nafiz95
    - nbcstevenchen
-   - wiegerthefarmer
    - 23wm13
    - ameskandari
   riselab:
@@ -116,6 +115,7 @@ nodeaccess:
    - debi2023-group16
   debilabspecialgpu:
    - debi2023-group12
+   - wiegerthefarmer
   soclab:
    - steven-hh-ding
    - ryanz8
