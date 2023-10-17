@@ -673,7 +673,7 @@ from_data_debilabgpu: |
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 from_data_debilabspecialgpu: | 
-  <script>
+<script>
     console.log('!!! testing');
     var lab = 'caslab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
@@ -705,14 +705,13 @@ from_data_debilabspecialgpu: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="4" >4 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="6" >6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="8" select="selected">8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
-                <option value="16" >16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
-                <option value="20" >20 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
-                <option value="24" >24 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
-                <option value="32" >32 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
+                <option value="2" >2 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="4" >4 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="8" select="selected">8 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="10" >10 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="16" >16 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="24" >24 cores Intel Xeon Gold 6338 2.00GHz</option>
+                <option value="32" >32 cores Intel Xeon Gold 6338 2.00GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -720,7 +719,7 @@ from_data_debilabspecialgpu: |
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="1">1 A40 (48G)</option>
-                <option value="4">4 A40 (48G)</option>
+                <option value="4">4 A40 (48G)</option>        
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -728,11 +727,10 @@ from_data_debilabspecialgpu: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" selected="selected">16G RAM</option>
-                <option value="32G">32G RAM</option>
-                <option value="64G">64G RAM</option>
-                <option value="128G">128G RAM</option>
-                <option value="256G">256G RAM</option>  
+                <option value="16G" >16G RAM</option>
+                <option value="32G" >32G RAM</option>
+                <option value="64G" select="selected">64G RAM</option>
+                <option value="128G">100G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -745,7 +743,5 @@ from_data_debilabspecialgpu: |
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
-  </div>
-  
   </div>
   
