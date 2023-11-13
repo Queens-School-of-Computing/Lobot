@@ -154,8 +154,6 @@ from_data: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
-                <option value="4" >4 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="6" >6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
                 <option value="8" select="selected">8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
                 <option value="16" >16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
@@ -232,8 +230,6 @@ from_data_bamlab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="4" >4 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="8" select="selected">8 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="10" >10 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="16" >16 cores Intel Xeon Gold 6338 2.00GHz</option>
@@ -313,9 +309,6 @@ from_data_mulab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
@@ -342,8 +335,6 @@ from_data_mulab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" ">16G RAM</option>
-                <option value="32G" >32G RAM</option>
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
@@ -399,9 +390,6 @@ from_data_riselab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
@@ -428,8 +416,6 @@ from_data_riselab: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" >16G RAM</option>
-                <option value="32G" >32G RAM</option>
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="100G">100G RAM</option>
                 <option value="200G">200G RAM</option>
@@ -485,9 +471,6 @@ from_data_soclab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="2" >2 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="4" >4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="6" >6 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
