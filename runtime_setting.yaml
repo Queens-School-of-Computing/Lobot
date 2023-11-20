@@ -11,7 +11,6 @@ storage:
    - ianpepin
    - jacksoncaii
    - yukijudaiyubel
-   - DylanRietze
   
 nodeaccess:
   mulab:
@@ -21,6 +20,7 @@ nodeaccess:
    - victoriaaarmstrong
    - brucechidley
    - manepiliposyan
+   - DylanRietze
   bamlab:
    - haoran-qi
    - donghaoqiao
