@@ -2,8 +2,6 @@ storage:
   mulab-retain-r1:
    - victoriaaarmstrong
    - brucechidley
-   - DylanRietze
-   - Olivia-Chen-Xu
   bamlab-retain-r2:
    - 20aanm
    - austincarthy
@@ -21,8 +19,8 @@ nodeaccess:
    - victoriaaarmstrong
    - brucechidley
    - manepiliposyan
-   - DylanRietze
-   - Olivia-Chen-Xu
+   - dylanrietze
+   - olivia-chen-xu
   bamlab:
    - haoran-qi
    - donghaoqiao
