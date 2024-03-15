@@ -205,6 +205,23 @@ helm repo add longhorn https://charts.longhorn.io
 helm install longhorn/longhorn --name longhorn --namespace longhorn-system --set service.ui.nodePort=30001 --set service.ui.type=NodePort --version v1.2.3
 
 
+#############################
+# making storage available to longhorn is pretty simple
+# new disk:
+sudo lsblk -o NAME,FSTYPE,SIZE,MOUNTPOINT,LABEl
+sudo parted -s --align optimal /dev/sdb -- mklabel gpt  mkpart primary ext4 0% 100%
+sudo mkfs.ext4 /dev/sdb1
+sudo mkdir -p /mnt/sdb/
+# get UUID
+ sudo blkid
+
+sudo vim /etc/fstab
+# add: UUID=81b527a6-94c7-4663-8c58-d9ff1f74bd47 /mnt/sdb ext4 defaults 0 0
+sudo mount -a
+
+
+########################
+# Setup nginx to host hub website
 # edit nginx
 ngix server block for reverse proxy:
 ```
