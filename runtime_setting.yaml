@@ -71,7 +71,7 @@ from_data: |
   <script>
     console.log('!!! testing');
     var lab = 'caslab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -147,7 +147,7 @@ from_data_bamlab: |
   <script>
     console.log('!!! testing');
     var lab = 'bamlab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -226,7 +226,7 @@ from_data_mulab: |
   <script>
     console.log('!!! testing');
     var lab = 'mulab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -307,7 +307,7 @@ from_data_riselab: |
   <script>
     console.log('!!! testing');
     var lab = 'riselab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -388,7 +388,7 @@ from_data_soclab: |
   <script>
     console.log('!!! testing');
     var lab = 'soclab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -469,7 +469,7 @@ from_data_debilab: |
   <script>
     console.log('!!! testing');
     var lab = 'debilab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
@@ -539,7 +539,7 @@ from_data_debilabgpu: |
   <script>
     console.log('!!! testing');
     var lab = 'debilab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
