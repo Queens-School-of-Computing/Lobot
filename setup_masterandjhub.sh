@@ -83,6 +83,11 @@ sudo apt-mark unhold kubelet kubeadm kubectl
 sudo apt-get install -y --allow-unauthenticated  kubelet kubectl kubeadm kubernetes-cni
 sudo apt-mark hold kubelet kubeadm kubectl
 
+# manual *.deb from cache
+# I copied the deb files out of a working node's /var/cache/apt/archives folder and copied them into a new node (same cache folder)
+sudo apt install /var/cache/apt/archives/kubelet_1.23.9-00_amd64.deb /var/cache/apt/archives/kubectl_1.23.9-00_amd64.deb /var/cache/apt/archives/kubeadm_1.23.9-00_amd64.deb --allow-unauthenticated --allow-downgrades
+
+
 
 # fix docker cgroup: https://github.com/kubernetes/kubernetes/issues/43805#issuecomment-907734385
 # https://stackoverflow.com/questions/43794169/docker-change-cgroup-driver-to-systemd
