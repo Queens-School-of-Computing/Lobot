@@ -195,6 +195,8 @@ apt-get install open-iscsi
 helm repo add longhorn https://charts.longhorn.io
 # the version of longhorn we are using is 1.2.3, you have to specifiy the version in the helm install command
 # https://stackoverflow.com/questions/51200917/how-to-install-a-specific-chart-version
+# if you need to delete/uninstall longhorn 
+# helm delete longhorn 
 helm install longhorn/longhorn --name longhorn --namespace longhorn-system --set service.ui.nodePort=30001 --set service.ui.type=NodePort --version v1.2.3
 
 
