@@ -1,1 +1,1 @@
-# depricated, refer to setup_master&jhub.sh
+# depricated, refer to setup_masterandjhub.sh
