@@ -168,7 +168,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/master/setup_desktop.sh | bash
   image: 
     name: l1nna/peppapig
-    tag: tlp-w-tf2.3-torch1.4-v0.0.5
+    tag: ubuntu-22-tf2.12-torch2.0-v1.8
   defaultUrl: "/lab"
   extraEnv:
     GRANT_SUDO: "yes"
