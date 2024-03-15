@@ -111,6 +111,8 @@ sudo systemctl restart kubelet
 # enable pod deployment on master node: [optional, but needed for our setup]
 # for multi-node setup, we cannot use this otherwise the other nodes cannot join
 kubectl taint nodes --all node-role.kubernetes.io/master-
+# when other nodes are joined and can do the work of the master, you can always make the master's unscheduable. But not sure this is what we want.
+kubectl taint nodes lobot-dev node-role.kubernetes.io/master:NoSchedule
 
 # install helm:
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
@@ -121,7 +123,7 @@ helm version
 # the client/serve version may be unsynced. 'upgrade' to remove such possibility
 
 # install nvidia device plugin
-# if the master node doesn't have a gpu, don't need this
+# not sure how to get it that this doesn't crash on the master node if it doesn't have a gpu, but you need this for any worker node
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.6.0/nvidia-device-plugin.yml
 
 
