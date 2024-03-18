@@ -60,6 +60,7 @@ nodeaccess:
    - ansonliu2002
    - ccccc12138
    - derek-kaiho
+   - dalawnchair
   soclab:
    - ryanz8
    - emedema
@@ -569,6 +570,7 @@ from_data_debilabgpu: |
                 <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -587,7 +589,8 @@ from_data_debilabgpu: |
                 <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>
                 <option value="96G">96G RAM</option>
-                <option value="128G">128G RAM</option>                       
+                <option value="128G">128G RAM</option>  
+                <option value="256">256G RAM</option>  
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
