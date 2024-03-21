@@ -638,8 +638,9 @@ from_data_devlab: |
               </div>
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
-              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">             
-                <option value="4" select="selected">4 cores dev cores</option>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
+              <option value="4" select="selected">2 dev cores</option>
+                <option value="4">4 dev cores</option>
                 <!--<option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option> -->
               </select>
