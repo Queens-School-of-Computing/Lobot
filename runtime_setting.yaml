@@ -631,7 +631,7 @@ from_data_devlab: |
               <option value="l1nna/peppapig:l1nna-ubuntu22-tf2.12-torch2.0-v1.8" select="selected">l1nna/computing ubuntu-22 tf2.12 torch2.0 v1.8</option>
               <option value="l1nna/peppapig:upstream-ubuntu-22-tf2.15-torch2.1.2-cuda12.0.1">Computing ubuntu-22 tf2.15 torch2.1.2 cuda12.0.1</option>
               <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
-              <option value="l1nna/peppapig:l1nna-ubuntu22-tf2.12-torch2.0-v1.8">l1nna/peppapig:l1nna-ubuntu22-tf2.12-torch2.0-v1.8</option>
+              <option value="l1nna/gpu-jupyter-zacktest:latest">zacktest</option>
                 <!--<option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1 (old)</option> -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
