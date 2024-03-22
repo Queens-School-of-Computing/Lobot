@@ -159,12 +159,14 @@ auth:
   admin:
     access: true
     users:
+      - "steven-hh-ding"
+      - "haz"
       - "WiegerTheFarmer"
       - "drdoog"
       - "sjwhittaker"
   github:
-    clientId: "GETCLIENTFROMGITHUB"
-    clientSecret: "GETSECRETFROMGITHUB"
+    clientId: "GETCLIENTIDFROMGITHUB"
+    clientSecret: "GETCLIENTSECRETEFROMGITHUB"
     callbackUrl: "https://lobot-dev.cs.queensu.ca/hub/oauth_callback"
     orgWhitelist: 
       - "qumulab"

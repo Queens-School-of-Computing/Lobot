@@ -62,10 +62,8 @@ hub:
       c.Spawner.debug = True
 
       # add some extra timeouts
-      c.Spawner.http_timeout = 150
-      c.Spawner.start_timeout = 150 
-      #c.Spawner.http_timeout = 3600 
-      #c.Spawner.start_timeout = 3600 
+      c.Spawner.http_timeout = 150 
+      c.Spawner.start_timeout = 150
       
       # Enable debug-logging of the single-user server
       c.LocalProcessSpawner.debug = True
@@ -75,7 +73,7 @@ hub:
         import yaml
         import os
 
-        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/master/runtime_setting.yaml').read().decode('utf-8')
+        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/dev/runtime_setting.yaml').read().decode('utf-8')
         data = yaml.safe_load(data)
         self.log.info(str(data))
         username = self.user.name.strip().lower()
@@ -108,15 +106,15 @@ hub:
           ds = 'DEBI Compute Resources'
           sp_form = data['from_data_debilab']   
           return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['debilabgpu']:
-          ss = 'debilab-socsharedstorage'
-          ds = 'DEBI Compute Resources'
-          sp_form = data['from_data_debilabgpu']   
-          return sp_form.format(ss, ds)
         if username in data['nodeaccess']['devlab']:
           ss = 'devlab-socsharedstorage'
           ds = 'DEV Compute Resources'
           sp_form = data['from_data_devlab']
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['debilabgpu']:
+          ss = 'debilab-socsharedstorage'
+          ds = 'DEBI Compute Resources'
+          sp_form = data['from_data_debilabgpu']   
           return sp_form.format(ss, ds)
         if username in data['storage']['mulab-retain-r1']:
           ss = 'mulab-retain-r1'
@@ -128,7 +126,7 @@ hub:
           sp_form = data['from_data_bamlab']   
         return sp_form.format(ss, ds)
 
-      c.KubeSpawner.start_timeout = 3600 
+      c.KubeSpawner.start_timeout = 300 
       #c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
       c.KubeSpawner.options_form = dynamic_form
     pre_spawn_hook: |
@@ -158,12 +156,15 @@ auth:
   admin:
     access: true
     users:
+      - "steven-hh-ding"
+      - "haz"
       - "WiegerTheFarmer"
       - "drdoog"
       - "sjwhittaker"
+      - "zackbabcock"
   github:
-    clientId: "GETCLIENTIDFROMGITHUB"
-    clientSecret: "GETCLIENTSECRETEFROMGITHUB"
+    clientId: "GETCLIENTFROMGITHUB"
+    clientSecret: "GETSECRETFROMGITHUB"
     callbackUrl: "https://lobot-dev.cs.queensu.ca/hub/oauth_callback"
     orgWhitelist: 
       - "qumulab"
@@ -184,8 +185,8 @@ singleuser:
           - >
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/dev/setup_desktop.sh | bash
   image: 
-    name: l1nna/peppapig
-    tag: ubuntu-22-tf2.12-torch2.0-v1.8
+    name: computing/peppapig
+    tag: ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522 
   defaultUrl: "/lab"
   extraEnv:
     GRANT_SUDO: "yes"
