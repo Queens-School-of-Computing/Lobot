@@ -92,4 +92,21 @@ $(function() {
 
 });
 </script>
+<script>
+  console.log('!!! testing');
+  var lab = 'caslab';
+  var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
+  $.getJSON(url_status, function(data){{
+  console.log(data);
+  if(data){{
+    $('#label-summary').text(data[lab].summary);
+    $.each(data[lab].usage, function(index, value){{
+      let entry = $('<small>');
+      entry.text(value);
+      entry.addClass('form-text text-muted');
+      $('#label-usage').append(entry);
+    }})
+  }}
+  }})
+</script>
 {% endblock %}
