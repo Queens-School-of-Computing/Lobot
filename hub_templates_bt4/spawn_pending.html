@@ -10,6 +10,9 @@
       <p>Your server is starting up.</p>
       <p>You will be redirected automatically when it's ready for you.</p>
       {% endblock %}
+      <div class="form-group" id="label-usage">
+        <label id="label-summary"></label>
+        </div>
       <div class="progress">
         <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
           <span class="sr-only"><span id="sr-progress">0%</span> Complete</span>
@@ -33,12 +36,35 @@
 
 {% block script %}
 {{ super() }}
+
+<script>
+  console.log('!!! testing');
+  var lab = 'caslab';
+  var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
+  $.getJSON(url_status, function(data){{
+  console.log(data);
+  if(data){{
+    $('#label-summary').text(data[lab].summary);
+    $.each(data[lab].usage, function(index, value){{
+      let entry = $('<small>');
+      entry.text(value);
+      entry.addClass('form-text text-muted');
+      $('#label-usage').append(entry);
+    }})
+  }}
+  }})
+</script>
+
+
 <script type="text/javascript">
 $(function() {
 
   $("#refresh").click(function () {
     window.location.reload();
   });
+
+
+
 
   // hook up event-stream for progress
   var evtSource = new EventSource("{{ progress_url }}");
@@ -92,21 +118,5 @@ $(function() {
 
 });
 </script>
-<script>
-  console.log('!!! testing');
-  var lab = 'caslab';
-  var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
-  $.getJSON(url_status, function(data){{
-  console.log(data);
-  if(data){{
-    $('#label-summary').text(data[lab].summary);
-    $.each(data[lab].usage, function(index, value){{
-      let entry = $('<small>');
-      entry.text(value);
-      entry.addClass('form-text text-muted');
-      $('#label-usage').append(entry);
-    }})
-  }}
-  }})
-</script>
+
 {% endblock %}
