@@ -33,7 +33,6 @@ nodeaccess:
    - nbcstevenchen
    - 23wm13
    - ameskandari
-   - wiegerthefarmer
   riselab:
    - sophiaty
    - jerin-2driselab
@@ -47,6 +46,7 @@ nodeaccess:
    - 12parker
   debilab:  
    - steven-hh-ding
+   - wiegerthefarmer
   debilabgpu:
    - sarahjunan
    - kashk2000
@@ -489,6 +489,7 @@ from_data_debilab: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8 [20240522]</option>            
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
