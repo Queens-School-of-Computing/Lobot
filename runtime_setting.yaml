@@ -94,6 +94,7 @@ from_data: |
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
@@ -170,6 +171,7 @@ from_data_bamlab: |
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
@@ -249,6 +251,7 @@ from_data_mulab: |
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
@@ -330,6 +333,7 @@ from_data_riselab: |
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
@@ -411,6 +415,7 @@ from_data_soclab: |
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
               </div>
@@ -489,8 +494,7 @@ from_data_debilab: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8 [20240522]</option>            
-                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>                            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
               </div>
@@ -560,8 +564,7 @@ from_data_debilabgpu: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
-                <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1 (old)</option>
+              <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
               </div>
@@ -591,7 +594,7 @@ from_data_debilabgpu: |
                 <option value="64G">64G RAM</option>
                 <option value="96G">96G RAM</option>
                 <option value="128G">128G RAM</option>  
-                <option value="256">256G RAM</option>  
+                <option value="256G">256G RAM</option>  
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
