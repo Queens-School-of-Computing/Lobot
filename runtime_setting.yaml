@@ -41,6 +41,7 @@ nodeaccess:
    - 12parker
    - ljj430
    - wiegerthefarmer
+   - amithasanshuvo
   debilab:  
    - steven-hh-ding
   debilabgpu:
@@ -57,7 +58,6 @@ nodeaccess:
    - ccccc12138
    - derek-kaiho
    - dalawnchair
-   - amithasanshuvo
   soclab:
    - ryanz8
    - emedema
