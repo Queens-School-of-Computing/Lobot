@@ -2,6 +2,7 @@ storage:
   mulab-retain-r1:
    - victoriaaarmstrong
    - brucechidley
+   - matt-suncy
   bamlab-retain-r2:
    - 20aanm
    - elyasrashno
@@ -20,6 +21,7 @@ nodeaccess:
    - dylanrietze
    - olivia-chen-xu
    - vergrig
+   - matt-suncy
   bamlab:
    - haoran-qi
    - jacksoncaii
