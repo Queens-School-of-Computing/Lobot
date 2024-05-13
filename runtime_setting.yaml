@@ -44,22 +44,18 @@ nodeaccess:
    - ljj430
    - amithasanshuvo
    - sadasiannerd
-   - wiegerthefarmer
   debilab:  
    - steven-hh-ding
   debilabgpu:
-   - sarahjunan
-   - kashk2000
-   - syedrizvi258
-   - gurpreetsingh97
-   - boyczuk
-   - twubz
-   - vcoombes
-   - 19acl2
-   - isaiahkliger
-   - ansonliu2002
-   - ccccc12138
-   - derek-kaiho
+   - wiegerthefarmer
+   - debi2024-group1
+   - debi2024-group2
+   - debi2024-group3
+   - debi2024-group4
+   - debi2024-group5
+   - debi2024-group6
+   - debi2024-group7
+   - debi2024-group8
    - dalawnchair
   soclab:
    - ryanz8
@@ -574,8 +570,7 @@ from_data_debilabgpu: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">             
-                <option value="4" select="selected">4 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="8">8 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
@@ -584,7 +579,7 @@ from_data_debilabgpu: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 RTX A5000 (24G)</option>
+                <option value="1">1x RTX A5000 (24G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
