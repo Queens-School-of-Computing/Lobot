@@ -663,8 +663,8 @@ from_data_winemocollab: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1x RTX6000-ada (48G)</option>
-                <option value="2">2x RTX6000-ada (48G)</option>
+                <option value="1">1x RTX6000-ADA (48G)</option>
+                <option value="2">2x RTX6000-ADA (48G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -675,13 +675,11 @@ from_data_winemocollab: |
                 <option value="16G" >16G RAM</option>
                 <option value="32G" >32G RAM</option>
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
                 <option value="300G">300G RAM</option>
                 <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="512G">512G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
