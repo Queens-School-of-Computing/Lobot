@@ -69,7 +69,7 @@ nodeaccess:
    - emedema
    - kshrin2002
    - shazhendong
-  yuanzhulab:
+  winemocollab:
    - wiegerthefarmer
    
 from_data: | 
@@ -619,10 +619,10 @@ from_data_debilabgpu: |
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
-from_data_yuanzhulab: | 
+from_data_winemocollab: | 
   <script>
     console.log('!!! testing');
-    var lab = 'yuanzhulab';
+    var lab = 'winemocollab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
