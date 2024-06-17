@@ -443,7 +443,9 @@ from_data_soclab: |
                 <option value="1">1x NVIDIA A16 (16G)</option>
                 <option value="2">2x NVIDIA A16 (16G)</option>
                 <option value="3">3x NVIDIA A16 (16G)</option>
-                <option value="4">4x NVIDIA A16 (16G)</option>                
+                <option value="4">4x NVIDIA A16 (16G)</option>
+                <option value="16">16x NVIDIA A16 (16G)</option> 
+                <option value="24">24x NVIDIA A16 (16G)</option> 
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
