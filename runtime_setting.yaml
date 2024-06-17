@@ -433,6 +433,8 @@ from_data_soclab: |
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                            
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -444,6 +446,7 @@ from_data_soclab: |
                 <option value="2">2x NVIDIA A16 (16G)</option>
                 <option value="3">3x NVIDIA A16 (16G)</option>
                 <option value="4">4x NVIDIA A16 (16G)</option>
+                <option value="8">8x NVIDIA A16 (16G)</option>                
                 <option value="16">16x NVIDIA A16 (16G)</option> 
                 <option value="24">24x NVIDIA A16 (16G)</option> 
               </select>
@@ -455,7 +458,9 @@ from_data_soclab: |
                 <option value="16G" select="selected">16G RAM</option>
                 <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>
-                <option value="128G">128G RAM</option>                
+                <option value="128G">128G RAM</option>  
+                <option value="256G">256G RAM</option>  
+                <option value="512G">512G RAM</option>  
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
