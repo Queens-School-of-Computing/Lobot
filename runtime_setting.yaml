@@ -419,12 +419,12 @@ from_data_soclab: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
                 <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
-                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
-                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
+                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>               
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
+              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
               </div>
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
@@ -433,36 +433,27 @@ from_data_soclab: |
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 RTX6000 ADA (48G)</option>
-                <option value="2">2 RTX6000 ADA (48G)</option>
-                <option value="3">3 RTX6000 ADA (48G)</option>
-                <option value="4">4 RTX6000 ADA (48G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
+                <option value="1">1x NVIDIA A16 (16G)</option>
+                <option value="2">2x NVIDIA A16 (16G)</option>
+                <option value="3">3x NVIDIA A16 (16G)</option>
+                <option value="4">4x NVIDIA A16 (16G)</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="16G" >16G RAM</option>
-                <option value="32G" >32G RAM</option>
-                <option value="64G" select="selected">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="16G" select="selected">16G RAM</option>
+                <option value="32G">32G RAM</option>
+                <option value="64G">64G RAM</option>
+                <option value="128G">128G RAM</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
