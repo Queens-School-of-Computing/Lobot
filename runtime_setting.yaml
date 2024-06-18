@@ -50,6 +50,11 @@ nodeaccess:
   debilab:  
    - steven-hh-ding
   debilabgpu:
+   - dalawnchair
+   - aminfakhereldine
+  soclab:
+   - wiegerthefarmer   
+   - spazaldinho
    - debi2024-group1
    - debi2024-group2
    - debi2024-group3
@@ -62,11 +67,6 @@ nodeaccess:
    - debi2024-group10
    - debi2024-group11
    - debi2024-group12
-   - dalawnchair
-   - aminfakhereldine
-  soclab:
-   - wiegerthefarmer   
-   - spazaldinho
   miblab:
    - ryanz8
    - emedema
@@ -433,9 +433,9 @@ from_data_soclab: |
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
+                <!--<option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                            
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>      -->                      
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -445,11 +445,11 @@ from_data_soclab: |
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
                 <option value="1">1x NVIDIA A16 (16G)</option>
                 <option value="2">2x NVIDIA A16 (16G)</option>
-                <option value="3">3x NVIDIA A16 (16G)</option>
+                <!--<option value="3">3x NVIDIA A16 (16G)</option>
                 <option value="4">4x NVIDIA A16 (16G)</option>
                 <option value="8">8x NVIDIA A16 (16G)</option>                
                 <option value="16">16x NVIDIA A16 (16G)</option> 
-                <option value="24">24x NVIDIA A16 (16G)</option> 
+                <option value="24">24x NVIDIA A16 (16G)</option> -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
@@ -459,9 +459,9 @@ from_data_soclab: |
                 <option value="16G" select="selected">16G RAM</option>
                 <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>
-                <option value="128G">128G RAM</option>  
+                <!--<option value="128G">128G RAM</option>  
                 <option value="256G">256G RAM</option>  
-                <option value="512G">512G RAM</option>  
+                <option value="512G">512G RAM</option>  -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -592,8 +592,9 @@ from_data_debilabgpu: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1x RTX A5000 (24G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
+                <option value="1">1x RTX A5000 (24G)</option>
+                <option value="2">2x RTX A5000 (24G)</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
