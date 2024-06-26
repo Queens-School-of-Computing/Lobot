@@ -54,7 +54,6 @@ nodeaccess:
    - aminfakhereldine
    - eklobodu
   soclab:
-   - wiegerthefarmer   
    - spazaldinho
    - debi2024-group1
    - debi2024-group2
@@ -78,6 +77,7 @@ nodeaccess:
    - zhihaod
    - chenxu8774
    - mincocoder
+   - wiegerthefarmer
    
 from_data: | 
   <script>
