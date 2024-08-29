@@ -64,7 +64,6 @@ nodeaccess:
   soclab:
    - debi2024-group1
    - debi2024-group2
-   - debi2024-group3
    - debi2024-group4
    - debi2024-group5
    - debi2024-group6
@@ -84,6 +83,7 @@ nodeaccess:
    - zhihaod
    - chenxu8774
    - mincocoder
+   - debi2024-group3
    
 from_data: | 
   <script>
