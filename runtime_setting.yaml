@@ -626,7 +626,7 @@ from_data_devlab: |
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
-              <select name="allowed_images" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
+              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20240926.1" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20240927]</option>            
               <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522">*QSC* u22.04 tf2.12 torch2.0 cuda11.8 [20240522]</option>            
               <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
