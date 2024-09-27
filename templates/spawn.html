@@ -6,7 +6,7 @@
   <div class="container">
     {% block heading %}
       <div class="row text-center">
-        <h1>Server Options(testing)</h1>
+        <h1>Server Options(removed feedback)</h1>
       </div>
     {% endblock heading %}
     <div class="row justify-content-center">
@@ -21,27 +21,8 @@
               method="post"
               role="form">
           {{ spawner_options_form | safe }}
-          <br>
-          <div class="feedback-container">
-            <button type="submit" class="btn btn-jupyter form-control">Start</button>
-            <div class="feedback-widget hidden">
-              <i class="fa fa-spinner"></i>
-            </div>
-          </div>
         </form>
       </div>
     </div>
   </div>
 {% endblock main %}
-{% block script %}
-  {{ super() }}
-  <script>
-    // setup onSubmit feedback
-    $('form').submit((e) => {
-      var form = $(e.target);
-      form.find('.feedback-container>input').attr('disabled', true);
-      form.find('.feedback-container>*').toggleClass('hidden');
-      form.find('.feedback-widget>*').toggleClass('fa-pulse');
-    });
-  </script>
-{% endblock script %}
