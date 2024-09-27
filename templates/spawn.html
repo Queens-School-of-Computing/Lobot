@@ -17,7 +17,7 @@
         {% if error_message -%}<p class="spawn-error-msg alert alert-danger">Error: {{ error_message }}</p>{% endif %}
         <form enctype="multipart/form-data"
               id="spawn_form"
-              action="{{ url | safe }}"
+              action="{{ url }}"
               method="post"
               role="form">
           {{ spawner_options_form | safe }}
