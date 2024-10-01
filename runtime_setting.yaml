@@ -637,10 +637,11 @@ from_data_devlab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-              <option value="2" select="selected">2 dev cores</option>
-              <option value="4">4 dev cores</option>                
-              <option value="8">8 dev cores</option>                
-              <option value="16">16 dev cores</option>                
+              <option value="2.0" select="selected">2 dev cores</option>
+              <option value="4.0">4 dev cores</option>                
+              <option value="8.0">8 dev cores</option>                
+              <option value="16.0">16 dev cores</option>                
+              <option value="none">***Experimental*** No Limit</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -660,7 +661,8 @@ from_data_devlab: |
                 <option value="8G">8G RAM</option>              
                 <option value="32G">32G RAM</option>              
                 <option value="64G">64G RAM</option>              
-                <option value="96G">96G RAM</option>              
+                <option value="96G">96G RAM</option>
+                <option value="non">**Experimental** No Limit</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
