@@ -655,10 +655,8 @@ from_data_devlab: |
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="2G" select="selected">2G</option>
-                <option value="4G">4G</option>
-                <option value="8G">8G</option>              
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">  
+                <option value="8G" select="selected">8G</option>              
                 <option value="32G">32G</option>              
                 <option value="64G">64G</option>              
                 <option value="96G">96G</option>
