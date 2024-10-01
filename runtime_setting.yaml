@@ -640,7 +640,8 @@ from_data_devlab: |
               <option value="2.0" select="selected">2</option>
               <option value="4.0">4</option>                
               <option value="8.0">8</option>                
-              <option value="16.0">16</option>                         
+              <option value="16.0">16</option>   
+              <option value="forceerrortoseealerts">force error</option>   
               </select>
               <small id="cpuLimitHelp" class="form-text text-muted">The guaranteed number of CPU cores. System can go higher if needed. Pick mimimum.</small>
             </div>
