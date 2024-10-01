@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Terminal=false
+Name=VSCode
+Icon=utilities-terminal
+Exec=/usr/share/code/code
+Categories=Application;
