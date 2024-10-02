@@ -67,6 +67,7 @@ nodeaccess:
   devlab:
    - wiegerthefarmer
    - zackbabcock
+   - drdoog
    
 from_data: | 
   <script>
