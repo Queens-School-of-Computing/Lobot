@@ -628,7 +628,7 @@ from_data_devlab: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
-              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241001-1" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241001.1]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241003" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241003]</option>            
               <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522">*QSC* u22.04 tf2.12 torch2.0 cuda11.8 [20240522]</option>            
               <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
               <option value="l1nna/gpu-jupyter-zacktest:og">zacktest</option>
@@ -657,8 +657,7 @@ from_data_devlab: |
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">  
-                <option value="2G">2G</option>   
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
                 <option value="8G" select="selected">8G</option>              
                 <option value="32G">32G</option>              
                 <option value="64G">64G</option>              
