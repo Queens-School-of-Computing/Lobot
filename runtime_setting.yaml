@@ -752,9 +752,8 @@ from_data_winemocollab: |
           <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 24 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 from_data_devlab: | 
-  <script>
-    console.log('!!! testing');
-    var lab = 'caslab';
+  <script>    
+    var lab = 'devlab';
     var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
