@@ -130,7 +130,7 @@ from_data: |
                 <option value="24" >24 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
                 <option value="32" >32 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -205,7 +205,7 @@ from_data_bamlab: |
                 <option value="24" >24 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="32" >32 cores Intel Xeon Gold 6338 2.00GHz</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -282,7 +282,7 @@ from_data_mulab: |
                 <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -361,7 +361,7 @@ from_data_riselab: |
                 <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -437,7 +437,7 @@ from_data_soclab: |
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>              
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -508,7 +508,7 @@ from_data_debilab: |
                 <option value="24">24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -578,7 +578,7 @@ from_data_debilabgpu: |
                 <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -652,7 +652,7 @@ from_data_miblab: |
                 <option value="32" >32 cores Intel Xeon Platinum 8558 2.2GHz</option>
                 <option value="64" >64 cores Intel Xeon Platinum 8558 2.2GHz</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -725,7 +725,7 @@ from_data_winemocollab: |
                 <option value="32" >32 cores Intel Xeon Gold 6530 2.10GHz</option>
                 <option value="64" >64 cores Intel Xeon Gold 6530 2.10GHz</option>                
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
+              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
