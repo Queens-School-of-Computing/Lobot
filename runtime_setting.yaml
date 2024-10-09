@@ -758,7 +758,7 @@ from_data_devlab: |
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
