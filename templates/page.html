@@ -42,6 +42,7 @@
       <link rel="stylesheet"
             href="{{ static_url('css/style.min.css') }}"
             type="text/css" />
+      <link rel="stylesheet" href="/assets/css/qsc.css" type="text/css" />
     {% endblock stylesheet %}
     {% block favicon %}
       <link rel="icon" href="{{ static_url('favicon.ico') }}" type="image/x-icon">
@@ -110,10 +111,7 @@
           {% block logo %}
             <span id="jupyterhub-logo" class="navbar-brand">
               <a href="{{ logo_url or base_url }}">
-                <img src='{{ base_url }}logo'
-                     alt='JupyterHub logo'
-                     class='jpy-logo'
-                     title='Home' />
+                <span class="sr-only">Queen's School of Computing</span>
               </a>
             </span>
           {% endblock logo %}
@@ -201,6 +199,10 @@
           {% endblock header %}
         </div>
       </nav>
+      <div class="qu-bars row">
+        <div class="qu-yellow col"></div>
+        <div class="qu-red col"></div>
+      </div>
     {% endblock nav_bar %}
     {% block announcement %}
       {% if announcement %}
