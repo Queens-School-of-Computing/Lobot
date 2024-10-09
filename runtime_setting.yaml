@@ -89,14 +89,14 @@ nodeaccess:
    - qirujin
    
 from_data: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'caslab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -108,6 +108,7 @@ from_data: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -164,14 +165,14 @@ from_data: |
   </div>
   
 from_data_bamlab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'bamlab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -183,6 +184,7 @@ from_data_bamlab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -244,8 +246,7 @@ from_data_bamlab: |
   </div>
 
 from_data_mulab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'mulab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
@@ -328,14 +329,14 @@ from_data_mulab: |
   </div>
 
 from_data_riselab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'riselab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -347,6 +348,7 @@ from_data_riselab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -410,14 +412,14 @@ from_data_riselab: |
   </div>
 
 from_data_soclab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'soclab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -429,6 +431,7 @@ from_data_soclab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -488,14 +491,14 @@ from_data_soclab: |
   </div>
 
 from_data_debilab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'debilab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -507,6 +510,7 @@ from_data_debilab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -556,14 +560,14 @@ from_data_debilab: |
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 from_data_debilabgpu: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'debilab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -575,6 +579,7 @@ from_data_debilabgpu: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -629,14 +634,14 @@ from_data_debilabgpu: |
   </div>
   
 from_data_miblab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'miblab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -648,6 +653,7 @@ from_data_miblab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
@@ -706,14 +712,14 @@ from_data_miblab: |
           <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 from_data_winemocollab: | 
-  <script>
-    console.log('!!! testing');
+  <script>    
     var lab = 'winemocollab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
     console.log(data);
     if(data){{
-      $('#label-summary').text(data[lab].summary);
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
@@ -725,6 +731,7 @@ from_data_winemocollab: |
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
+  <label id="label-summary-details"></label>
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
