@@ -265,11 +265,7 @@ from_data_mulab: |
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label>
   <label id="label-summary-details"></label>
-  </div>
-  <hr/>
-  <div class="form-group">
-    <label>Notice: If you select more resources than are available, your workload will be pending till another user releases resources.</label>
-  </div>
+  </div>    
   <div class="form-group">              
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
@@ -278,7 +274,7 @@ from_data_mulab: |
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please pin us on slack.</small>
+              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, email help@cs.queensu.ca</small>
               </div>
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
@@ -328,7 +324,7 @@ from_data_mulab: |
               <small id="cpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="check_agreement">
-          <label class="form-check-label" for="exampleCheck1">Noted that your server will be culled after 24 hours of inactivities, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
+          <label class="form-check-label" for="exampleCheck1">Note: Your server will be culled after 24 hours of inactivity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default). </label>
   </div>
 
 from_data_riselab: | 
