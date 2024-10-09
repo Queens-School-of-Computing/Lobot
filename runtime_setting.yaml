@@ -204,8 +204,6 @@ from_data_bamlab: |
                 <option value="16" >16 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="24" >24 cores Intel Xeon Gold 6338 2.00GHz</option>
                 <option value="32" >32 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="64" >64 cores Intel Xeon Gold 6338 2.00GHz</option>
-                <option value="96" >96 cores Intel Xeon Gold 6338 2.00GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -224,13 +222,10 @@ from_data_bamlab: |
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">                
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
+                <option value="384G">384G RAM</option>
+                <option value="512G">512G RAM</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -285,8 +280,7 @@ from_data_mulab: |
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -307,13 +301,10 @@ from_data_mulab: |
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
+                <option value="384G">384G RAM</option>
+                <option value="512G">512G RAM</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -368,8 +359,7 @@ from_data_riselab: |
                 <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96" >96 cores ADM Epyc 2.6/3.3GHz</option>
+                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -390,13 +380,10 @@ from_data_riselab: |
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="100G">100G RAM</option>
-                <option value="200G">200G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
-                <option value="500G">500G RAM</option>
-                <option value="650G">650G RAM</option>
-                <option value="850G">850G RAM</option>
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
+                <option value="384G">384G RAM</option>
+                <option value="512G">512G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -448,10 +435,7 @@ from_data_soclab: |
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
                 <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>
-                <!--<option value="24" >24 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32" >32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64" >64 cores ADM Epyc 2.6/3.3GHz</option>      -->                      
+                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>              
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -461,11 +445,8 @@ from_data_soclab: |
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
                 <option value="1">1x NVIDIA A16 (16G)</option>
                 <option value="2">2x NVIDIA A16 (16G)</option>
-                <!--<option value="3">3x NVIDIA A16 (16G)</option>
+                <option value="3">3x NVIDIA A16 (16G)</option>
                 <option value="4">4x NVIDIA A16 (16G)</option>
-                <option value="8">8x NVIDIA A16 (16G)</option>                
-                <option value="16">16x NVIDIA A16 (16G)</option> 
-                <option value="24">24x NVIDIA A16 (16G)</option> -->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
@@ -473,9 +454,7 @@ from_data_soclab: |
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">                
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="128G">128G RAM</option>  
-                <!-- <option value="256G">256G RAM</option>  
-                <option value="512G">512G RAM</option>  -->
+                <option value="128G">128G RAM</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -598,8 +577,6 @@ from_data_debilabgpu: |
                 <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
                 <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="64">64 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="96">96 cores ADM Epyc 2.6/3.3GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -674,7 +651,6 @@ from_data_miblab: |
                 <option value="24" >24 cores Intel Xeon Platinum 8558 2.2GHz</option>
                 <option value="32" >32 cores Intel Xeon Platinum 8558 2.2GHz</option>
                 <option value="64" >64 cores Intel Xeon Platinum 8558 2.2GHz</option>
-                <option value="96" >96 cores Intel Xeon Platinum 8558 2.2GHz</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -695,8 +671,7 @@ from_data_miblab: |
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="128G">128G RAM</option>
                 <option value="256G">256G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
+                <option value="384G">384G RAM</option>                
                 <option value="512G">512G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
@@ -748,8 +723,7 @@ from_data_winemocollab: |
                 <option value="16" >16 cores Intel Xeon Gold 6530 2.10GHz</option>
                 <option value="24" >24 cores Intel Xeon Gold 6530 2.10GHz</option>
                 <option value="32" >32 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="64" >64 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="96" >96 cores Intel Xeon Gold 6530 2.10GHz</option>
+                <option value="64" >64 cores Intel Xeon Gold 6530 2.10GHz</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
             </div>
@@ -770,8 +744,7 @@ from_data_winemocollab: |
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="128G">128G RAM</option>
                 <option value="256G">256G RAM</option>
-                <option value="300G">300G RAM</option>
-                <option value="400G">400G RAM</option>
+                <option value="384G">384G RAM</option>                
                 <option value="512G">512G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
