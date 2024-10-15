@@ -824,4 +824,5 @@ from_data_devlab: |
               </div>          
           <div class="form-check">            
           <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 24 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
+          <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
   </div>
