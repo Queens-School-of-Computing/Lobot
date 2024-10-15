@@ -1,3 +1,13 @@
+# This file can update the JupyterHub Helm chart's default configuration values.
+#
+# For reference see the configuration reference and default values, but make
+# sure to refer to the Helm chart version of interest to you!
+#
+# Introduction to YAML:     https://www.youtube.com/watch?v=cdLNKUoMc6c
+# Chart config reference:   https://zero-to-jupyterhub.readthedocs.io/en/stable/resources/reference.html
+# Chart default values:     https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/HEAD/jupyterhub/values.yaml
+# Available chart versions: https://hub.jupyter.org/helm-chart/
+#
 proxy:
   secretToken: ""
   service:
@@ -5,9 +15,84 @@ proxy:
     nodePorts:
       http: 30080
       https: 30443
+
+# cull timeout determines how long a user has to be inactive before the pod is killed
+# this might be new and better in determining if its actually idle! https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-management.html#culling-user-pods
+#cull:
+#  timeout: 86400
 cull:
-  timeout: 86400
+  enabled: false
+
+singleuser:
+  #profileList:
+  #  - display_name: "GPU Server"
+  #    description: "Spawns a notebook server with access to a GPU"
+  #    kubespawner_override:
+  #      extra_resource_limits:
+  #        nvidia.com/gpu: "1"
+  lifecycleHooks:
+    postStart:
+      exec:
+        command:
+          - "sh"
+          - "-c"
+          - >
+            curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
+  image:
+    name: queensschoolofcomputingdocker/gpu-jupyter-latest
+    tag: 12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007
+  extraEnv:
+    #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
+    #GRANT_SUDO: "yes"
+    #NOTEBOOK_ARGS: "--allow-root -e"
+    NOTEBOOK_ARGS: "--allow-root"
+  allowPrivilegeEscalation: true
+  uid: 0
+  #uid: 1000 
+  cmd: start-singleuser.py
+  storage:
+    capacity: 100Gi
+    dynamic:
+      storageClass: caslab-retain-r1
+    extraVolumes:
+      - name: shm-volume
+        emptyDir:
+          medium: Memory
+      - name: nfs-scratchdata
+        hostPath:
+          path: /mnt/scratchdata # Will be Readonly and blank unless nfs mounted from the host 
+    extraVolumeMounts:
+      - name: shm-volume
+        mountPath: /dev/shm
+      - name: nfs-scratchdata
+        mountPath: /home/jovyan/scratchdata #The mountpoint inside the container
+
+
 hub:
+  config:
+    GitHubOAuthenticator:
+      auto_login: true
+      client_id: Ov23liSXaRsUjTZ3pFFx
+      client_secret: fe3fe993bb397384223be5f917b4cad399ac95a3
+      oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
+      allowed_organizations:
+        - qumulab
+        - L1NNA
+        - Queens-School-of-Computing
+        - RISElabQueens
+        - TheBaleHouse
+      admin_users:
+        - steven-hh-ding
+        - haz
+        - WiegerTheFarmer
+        - drdoog
+        - sjwhittaker
+      scope:
+        - read:org
+        - read:user
+    JupyterHub:
+      authenticator_class: github
+
   #Clone custom JupyterHub templates into a volume
   initContainers:
     - name: git-clone-templates
@@ -15,13 +100,15 @@ hub:
       args:
         - clone
         - --single-branch
-        - --branch=master
+        - --branch=newcluster
         - --depth=1
         - --
         - https://github.com/Queens-School-of-Computing/Lobot.git
         - /etc/jupyterhub/custom
       securityContext:
-        runAsUser: 0
+        #runAsUser: 0
+        allowPrivilegeEscalation: true 
+        runAsUser: 1000 
       volumeMounts:
         - name: custom-templates
           mountPath: /etc/jupyterhub/custom
@@ -31,46 +118,38 @@ hub:
   extraVolumeMounts:
     - name: custom-templates
       mountPath: /etc/jupyterhub/custom
-
   extraConfig:
     templates: |
-      c.JupyterHub.default_url = 'landing'
-      c.JupyterHub.template_paths = ['/etc/jupyterhub/custom/hub_templates_bt4/']
-    landing: |
-      from jupyterhub.handlers.base import BaseHandler
-
-      class LandingHandler(BaseHandler):
-        def get(self): 
-          content = self.render_template(
-              'login.html',
-              authenticator_login_url="https://lobot.caslab.queensu.ca/hub/oauth_login?next=" 
-          )
-          self.finish(content)
-            
-
-      c.JupyterHub.extra_handlers = [
-        (
-            r'/landing',
-            LandingHandler
-        ),
-      ]
-      
+      c.JupyterHub.template_paths = ['/etc/jupyterhub/custom/templates/']
     debug: |
       # Set the log level by value or name.
       c.JupyterHub.log_level = 'DEBUG'
 
       # Enable debug-logging of the single-user server
-      c.Spawner.debug = True
+      c.Spawner.debug = True 
 
+      # add some extra timeouts
+      c.Spawner.http_timeout = 150 
+      c.Spawner.start_timeout = 150
+      
       # Enable debug-logging of the single-user server
       c.LocalProcessSpawner.debug = True
-    options_form: |
+    
+    custom_options_form: |
+      def options_from_form(formdata):
+        options = {}
+        options['image'] = formdata['image']  
+        options['cpu_limit'] = formdata['cpu_limit']  
+        options['mem_limit'] = formdata['mem_limit']  
+        options['gpu_limit'] = formdata['gpu_limit']  
+        options['storage_class'] = formdata['storage_class']  
+        return options  
       async def dynamic_form(self):
         import urllib.request
         import yaml
         import os
 
-        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/master/runtime_setting.yaml').read().decode('utf-8')
+        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/runtime_setting.yaml').read().decode('utf-8')
         data = yaml.safe_load(data)
         self.log.info(str(data))
         username = self.user.name.strip().lower()
@@ -103,6 +182,16 @@ hub:
           ds = 'DEBI Compute Resources'
           sp_form = data['from_data_debilab']   
           return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['devlab']:
+          ss = 'devlab-socsharedstorage'
+          ds = 'DEV Compute Resources'
+          sp_form = data['from_data_devlab']
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['debilabgpu']:
+          ss = 'debilab-socsharedstorage'
+          ds = 'DEBI Compute Resources'
+          sp_form = data['from_data_debilabgpu']   
+          return sp_form.format(ss, ds)
         if username in data['storage']['mulab-retain-r1']:
           ss = 'mulab-retain-r1'
           ds = 'Mulab Extensible SSD (1 replicas)'
@@ -112,76 +201,37 @@ hub:
           ds = 'BAMlab Extensible SSD (2 replicas)'
           sp_form = data['from_data_bamlab']   
         return sp_form.format(ss, ds)
-
-      c.KubeSpawner.options_form = dynamic_form
+      #c.KubeSpawner.start_timeout = 300 
+      c.Spawner.start_timeout = 300 
+      c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
+      c.Spawner.options_form = dynamic_form
+      c.Spawner.options_from_form = options_from_form 
     pre_spawn_hook: |
-
-      async def my_pre_spawn_hook(spawner):
-        auth_state = await spawner.user.get_auth_state()
-        spawner.log.info('  haha ' + str(auth_state))
-        spawner.log.info('  haha ' + str(spawner.user_options))
-        options = spawner.user_options
-        spawner.image = options['image'][0]
-        spawner.cpu_limit = float(options['cpu_limit'][0])
-        spawner.mem_limit = options['mem_limit'][0]
+      async def my_pre_spawn_hook(spwnr):
+        spwnr.log.info('username:' + spwnr.user.name.strip().lower())
+        spwnr.log.info('  spwnr.user_options: ' + str(spwnr.user_options))
+        options = spwnr.user_options
+        spwnr.image = options['image'][0]
+        #spwnr.cpu_limit = float(options['cpu_limit'][0])
+        #spwnr.cpu_limit = options['cpu_limit'][0]
+        # Never set CPU Limit, only request, and memoryrequest=memorylimit https://home.robusta.dev/blog/kubernetes-memory-limit  
+        spwnr.cpu_limit = None 
+        spwnr.cpu_guarantee = float(options['cpu_limit'][0])
+        spwnr.mem_limit = options['mem_limit'][0]
+        spwnr.mem_guarantee = options['mem_limit'][0]
         lab = options['storage_class'][0].split('-')[0]
         sctype = options['storage_class'][0].split('-')[1]
-        spawner.storage_class = options['storage_class'][0]
+        spwnr.storage_class = options['storage_class'][0]
         if sctype == 'socsharedstorage':
-          spawner.log.info('  socsharedstorage with ' + str(lab))
-          spawner.storage_class = str('caslab-retain-r1') 
-        spawner.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
-        spawner.node_selector = {'lab': lab}
-
-      c.KubeSpawner.pre_spawn_hook = my_pre_spawn_hook 
-auth:
-  type: github
-  admin:
-    access: true
-    users:
-      - "steven-hh-ding"
-      - "haz"
-      - "WiegerTheFarmer"
-      - "drdoog"
-      - "sjwhittaker"
-  github:
-    clientId: ""
-    clientSecret: ""
-    callbackUrl: "https://lobot.caslab.queensu.ca/hub/oauth_callback"
-    orgWhitelist: 
-      - "qumulab"
-      - "L1NNA"
-      - "Queens-School-of-Computing"
-      - "RISElabQueens"
-      - "TheBaleHouse"
-  scopes:
-    - "read:user"
-    - "read:org"
-singleuser:
-  lifecycleHooks:
-    postStart:
-      exec:
-        command: 
-          - "sh"
-          - "-c"
-          - >
-            curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/master/setup_desktop.sh | bash
-  image: 
-    name: l1nna/peppapig
-    tag: ubuntu-22-tf2.12-torch2.0-v1.8
-  defaultUrl: "/lab"
-  extraEnv:
-    GRANT_SUDO: "yes"
-    NOTEBOOK_ARGS: "--allow-root"
-  uid: 0
-  cmd: start-singleuser.sh
-  storage:
-    dynamic:
-      storageClass: caslab-retain-r1
-    extraVolumes:
-      - name: shm-volume
-        emptyDir:
-          medium: Memory
-    extraVolumeMounts:
-      - name: shm-volume
-        mountPath: /dev/shm
+          spwnr.log.info('  socsharedstorage with ' + str(lab))
+          spwnr.storage_class = str('caslab-retain-r1') 
+        spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
+        if int(options["gpu_limit"][0]) == 0:
+          spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
+        if int(options["gpu_limit"][0]) == -1:
+          spwnr.extra_resource_limits = {"nvidia.com/gpu": 0}
+        spwnr.node_selector = {'lab': lab}
+        spwnr.log.info('  spawner: ' + str(spwnr))
+      c.Spawner.pre_spawn_hook = my_pre_spawn_hook 
+      c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
+      c.KubeSpawner.pod_security_context.update({'fsGroupChangePolicy': 'OnRootMismatch'})
