@@ -761,6 +761,7 @@ from_data_devlab: |
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
       $.each(data[lab].usage, function(index, value){{
+        console.log(value);
         let entry = $('<small>');
         entry.text(value);
         entry.addClass('form-text text-muted');
