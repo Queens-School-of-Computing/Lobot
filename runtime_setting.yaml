@@ -41,7 +41,7 @@ nodeaccess:
    - mingjun1843   
    - fiona112
   debilab:  
-   - steven-hh-ding
+   - zackbabcock
   debilabgpu:
    - dalawnchair
    - aminfakhereldine
@@ -77,7 +77,7 @@ nodeaccess:
    - qirujin
   devlab:
    - wiegerthefarmer
-   - zackbabcock
+   - steven-hh-ding
    - drdoog
    
 from_data: | 
