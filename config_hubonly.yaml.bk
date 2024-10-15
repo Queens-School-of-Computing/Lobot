@@ -1,1 +1,181 @@
+proxy:
+  secretToken: ""
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
 
+cull:
+  timeout: 86400
+
+hub:
+  #Clone custom JupyterHub templates into a volume
+  initContainers:
+    - name: git-clone-templates
+      image: alpine/git
+      args:
+        - clone
+        - --single-branch
+        - --branch=newcluster
+        - --depth=1
+        - --
+        - https://github.com/Queens-School-of-Computing/Lobot.git
+        - /etc/jupyterhub/custom
+      securityContext:
+        runAsUser: 0
+      volumeMounts:
+        - name: custom-templates
+          mountPath: /etc/jupyterhub/custom
+  extraVolumes:
+    - name: custom-templates
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: custom-templates
+      mountPath: /etc/jupyterhub/custom
+  extraConfig:
+    templates: |
+      c.JupyterHub.default_url = 'landing'
+      c.JupyterHub.template_paths = ['/etc/jupyterhub/custom/hub_templates_bt4/']
+    landing: |
+      from jupyterhub.handlers.base import BaseHandler
+
+      class LandingHandler(BaseHandler):
+        def get(self): 
+          content = self.render_template(
+              'login.html',
+              authenticator_login_url="https://lobot.cs.queensu.ca/hub/oauth_login?next=" 
+          )
+          self.finish(content)
+            
+
+      c.JupyterHub.extra_handlers = [
+        (
+            r'/landing',
+            LandingHandler
+        ),
+      ]
+      
+    debug: |
+      # Set the log level by value or name.
+      c.JupyterHub.log_level = 'DEBUG'
+
+      # Enable debug-logging of the single-user server
+      c.Spawner.debug = True
+
+      # add some extra timeouts
+      c.Spawner.http_timeout = 150
+      c.Spawner.start_timeout = 150 
+      #c.Spawner.http_timeout = 3600 
+      #c.Spawner.start_timeout = 3600 
+      
+      # Enable debug-logging of the single-user server
+      c.LocalProcessSpawner.debug = True
+    options_form: |
+      async def dynamic_form(self):
+        import urllib.request
+        import yaml
+        import os
+
+        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/runtime_setting.yaml').read().decode('utf-8')
+        data = yaml.safe_load(data)
+        self.log.info(str(data))
+        username = self.user.name.strip().lower()
+        self.log.info(username)
+        ss = 'caslab-retain-r1'
+        ds = 'CASLab Compute Resources'
+        sp_form = data['from_data']
+        if username in data['nodeaccess']['mulab']:
+          ss = 'mulab-socsharedstorage'
+          ds = 'MULab Compute Resources'
+          sp_form = data['from_data_mulab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['bamlab']:
+          ss = 'bamlab-socsharedstorage'
+          ds = 'BAMLab Compute Resources'
+          sp_form = data['from_data_bamlab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['riselab']:
+          ss = 'riselab-socsharedstorage'
+          ds = 'RISE Lab Compute Resources'
+          sp_form = data['from_data_riselab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['soclab']:
+          ss = 'soclab-socsharedstorage'
+          ds = 'SoC Research Compute Resources'
+          sp_form = data['from_data_soclab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['debilab']:
+          ss = 'debilab-socsharedstorage'
+          ds = 'DEBI Compute Resources'
+          sp_form = data['from_data_debilab']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['debilabgpu']:
+          ss = 'debilab-socsharedstorage'
+          ds = 'DEBI Compute Resources'
+          sp_form = data['from_data_debilabgpu']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['devlab']:
+          ss = 'devlab-socsharedstorage'
+          ds = 'DEV Compute Resources'
+          sp_form = data['from_data_devlab']
+          return sp_form.format(ss, ds)
+        if username in data['storage']['mulab-retain-r1']:
+          ss = 'mulab-retain-r1'
+          ds = 'Mulab Extensible SSD (1 replicas)'
+          sp_form = data['from_data_mulab']
+        if username in data['storage']['bamlab-retain-r2']:
+          ss = 'bamlab-retain-r2'
+          ds = 'BAMlab Extensible SSD (2 replicas)'
+          sp_form = data['from_data_bamlab']   
+        return sp_form.format(ss, ds)
+
+      #c.KubeSpawner.start_timeout = 3600 
+      c.KubeSpawner.start_timeout = 150 
+      #c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
+      c.KubeSpawner.options_form = dynamic_form
+    pre_spawn_hook: |
+
+      async def my_pre_spawn_hook(spawner):
+        auth_state = await spawner.user.get_auth_state()
+        spawner.log.info('  haha ' + str(auth_state))
+        spawner.log.info('  haha ' + str(spawner.user_options))
+        options = spawner.user_options
+        spawner.image = options['image'][0]
+        spawner.cpu_limit = float(options['cpu_limit'][0])
+        spawner.mem_limit = options['mem_limit'][0]
+        lab = options['storage_class'][0].split('-')[0]
+        sctype = options['storage_class'][0].split('-')[1]
+        spawner.storage_class = options['storage_class'][0]
+        if sctype == 'socsharedstorage':
+          spawner.log.info('  socsharedstorage with ' + str(lab))
+          spawner.storage_class = str('caslab-retain-r1') 
+        spawner.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
+        spawner.node_selector = {'lab': lab}
+
+      c.KubeSpawner.pre_spawn_hook = my_pre_spawn_hook 
+      #c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
+      #c.KubeSpawner.pod_security_context.update({'fsGroupChangePolicy': 'OnRootMismatch'})
+
+  config:
+    GitHubOAuthenticator:
+      client_id: xxx
+      client_secret: xxx
+      oauth_callback_url: https://lobot.cs.queensu.ca/hub/oauth_callback
+      allowed_organizations:
+        - qumulab
+        - L1NNA 
+        - Queens-School-of-Computing
+        - RISElabQueens
+        - TheBaleHouse
+      admin_users:
+        - steven-hh-ding
+        - haz
+        - WiegerTheFarmer
+        - drdoog
+        - sjwhittaker
+      scope:
+        - read:org
+        - read:user
+    JupyterHub:
+      authenticator_class: github  
