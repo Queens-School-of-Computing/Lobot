@@ -72,8 +72,8 @@ hub:
   config:
     GitHubOAuthenticator:
       auto_login: true
-      client_id: Ov23liSXaRsUjTZ3pFFx
-      client_secret: fe3fe993bb397384223be5f917b4cad399ac95a3
+      client_id: xxx
+      client_secret: xxx
       oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
       allowed_organizations:
         - qumulab
