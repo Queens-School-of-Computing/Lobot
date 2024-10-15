@@ -784,7 +784,7 @@ from_data_devlab: |
               <option value="l1nna/gpu-jupyter-zacktest:og">zacktest</option>
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
-              </div>
+  </div>
   <div class="form-group">
               <label for="inputCPU">Guaranteed Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
@@ -815,12 +815,13 @@ from_data_devlab: |
               </select>
               <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
               </select>
               <small id="gpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              </div>          
           <div class="form-check">            
           <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 24 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
   </div>
