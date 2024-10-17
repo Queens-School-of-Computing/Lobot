@@ -75,8 +75,9 @@ nodeaccess:
    - mincocoder
    - debi2024-group3
    - qirujin
-  devlab:
+  gandslab:
    - wiegerthefarmer
+  devlab:   
    - steven-hh-ding
    - drdoog
    
@@ -748,6 +749,76 @@ from_data_winemocollab: |
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
           <div class="form-group" style="display:none;">
+              <label for="inputPVC">Storage volume claim</label>
+              <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
+                <option value="{}" selected="selected">{}</option>
+              </select>
+              <small id="gpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
+              </div>          
+          <div class="form-check">            
+          <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 24 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
+          <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
+  </div>
+from_data_gandslab: | 
+  <script>    
+    var lab = 'gandslab';
+    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+    $.getJSON(url_status, function(data){{    
+    if(data){{
+      $('#label-summary').text(data[lab].summary_title);
+      $('#label-summary-details').text(data[lab].summary_details);
+      $.each(data[lab].usage, function(index, value){{        
+        let entry = $('<small>');
+        entry.text(value);
+        entry.addClass('form-text text-muted');
+        $('#label-usage').append(entry);
+        $('#label-usage').append($('<br>'));        
+      }})
+    }}
+    }})
+  </script>
+  <div class="form-group" id="label-usage">
+  <label id="label-summary"></label><br>
+  <label id="label-summary-details"></label><br>
+  </div>
+  <div class="form-group">
+              <label for="inputIMG">Base docker image to be deployed</label>
+              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241007]</option>                                        
+              </select>
+              <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
+  </div>
+  <div class="form-group">
+              <label for="inputCPU">Guaranteed Number of CPU Cores [Intel Xeon Gold 6438Y+ 2.0GHz]</label>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
+              <option value="4.0" select="selected">4</option>                
+              <option value="8.0">8</option>                
+              <option value="16.0">16</option> 
+              <option value="32.0">32</option> 
+              </select>
+              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
+            </div>
+            <div class="form-group">
+              <label for="inputGPU">Number of GPU accelerators</label>
+              <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
+                <option value="1">1x H100 NVL (96G)</option>
+                <option value="2">2x H100 NVL (96G)</option>
+                <option value="0" selected="selected">I don't need a GPU for now.</option>
+                <option value="-1">*Experimental* Share All GPUs with other sessions</option>
+              </select>
+              <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
+            </div>
+            <div class="form-group">
+              <label for="inputRAM">RAM to be allocated</label>
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
+                <option value="8G" select="selected">8G</option>              
+                <option value="32G">32G</option>              
+                <option value="64G">64G</option>              
+                <option value="96G">96G</option>
+              </select>
+              <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
+            </div>
+            <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
