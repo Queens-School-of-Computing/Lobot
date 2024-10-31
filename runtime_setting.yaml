@@ -114,7 +114,7 @@ from_data: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
+                <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
