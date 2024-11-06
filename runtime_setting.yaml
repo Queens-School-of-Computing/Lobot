@@ -636,7 +636,7 @@ from_data_devlab: |
   <div class="form-group">
               <label for="inputCPU">Number of CPU Cores</label>
               <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-              <option value="4" select="selected">2 dev cores</option>
+              <option value="2" select="selected">2 dev cores</option>
               <option value="4">4 dev cores</option>                
               </select>
               <small id="cpuHelp" class="form-text text-muted">The upper limit of CPU cores.</small>
