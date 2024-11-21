@@ -79,6 +79,9 @@ nodeaccess:
    - debi2024-group11
    - debi2024-group12
    - esraaashraf12012
+   - caustin1118
+   - rena-hajjar
+   - adenjwong
   miblab:
    - ryanz8
    - emedema
@@ -138,8 +141,8 @@ from_data: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1 A40 (48G)</option>
-                <option value="2">2 A40 (48G)</option>
+                <option value="1">1x A40 (48G)</option>
+                <!--<option value="2">2 A40 (48G)</option>-->
                 <!--<option value="4">4 A40 (48G)</option>-->
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
