@@ -789,7 +789,7 @@ from_data_gandslab: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241007]</option>                                        
-              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241128-2">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1  [20241128]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1  [20241129]</option>            
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
