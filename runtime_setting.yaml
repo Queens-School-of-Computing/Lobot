@@ -142,7 +142,7 @@ from_data: |
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="1">1x A40 (48G)</option>
-                <!--<option value="2">2 A40 (48G)</option>-->
+                <option value="2">2x A40 (48G) WARNING: ONLY PICK TWO IF AUTHORIZED.</option>
                 <!--<option value="4">4 A40 (48G)</option>-->
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
