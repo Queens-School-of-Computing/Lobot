@@ -1,9 +1,6 @@
 storage:
   mulab-retain-r1:
-   - victoriaaarmstrong
-   - brucechidley
    - matt-suncy
-   - meaganmann
    - raksha-rehal
   bamlab-retain-r2:
    - 20aanm
@@ -15,13 +12,8 @@ storage:
 nodeaccess:
   mulab:
    - haz
-   - natnova
-   - beckydvn
    - victoriaaarmstrong
-   - brucechidley
    - manepiliposyan
-   - dylanrietze
-   - olivia-chen-xu
    - vergrig
    - matt-suncy
    - meaganmann
@@ -32,7 +24,6 @@ nodeaccess:
    - drishti2996
    - somiona
    - nafiz95
-   - nbcstevenchen
    - 23wm13
    - ameskandari
    - tahosinamoniranonna
@@ -48,7 +39,6 @@ nodeaccess:
    - hhz2014
    - 12parker
    - ljj430
-   - amithasanshuvo
    - kaziamithasan
    - sadasiannerd
    - mingjun1843
@@ -59,37 +49,18 @@ nodeaccess:
    - steven-hh-ding
   debilabgpu:
    - dalawnchair
-   - aminfakhereldine
    - eklobodu
-   - hamghalam
    - spazaldinho
    - ari-davis
-   - jam-sha
    - sianarizwan
-   - debi2024-group1
    - 1aomagic
    - ericaliang09ukk
-   - devshafi
-   - jbierbrier
    - ts-sl
-   - anonymouskitty
    - wiegerthefarmer
    - cisc351gitgroup1
    - bmatmti
   soclab:
-   - debi2024-group2
-   - debi2024-group4
-   - debi2024-group5
-   - debi2024-group6
-   - debi2024-group7
-   - debi2024-group8
-   - debi2024-group9
-   - debi2024-group10
-   - debi2024-group11
-   - debi2024-group12
    - esraaashraf12012
-   - caustin1118
-   - rena-hajjar
    - adenjwong
   miblab:
    - ryanz8
@@ -100,8 +71,6 @@ nodeaccess:
    - ychenmun
    - zhihaod
    - chenxu8774
-   - mincocoder
-   - debi2024-group3
    - qirujin
    
 from_data: | 
