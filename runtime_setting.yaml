@@ -683,8 +683,7 @@ from_data_miblab: |
                 <option value="512G">512G RAM</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
-            </div>
-          <div class="form-group" style="display:none;">
+            </div> <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
