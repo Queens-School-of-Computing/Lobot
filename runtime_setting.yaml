@@ -42,17 +42,9 @@ nodeaccess:
    - sianarizwan
    - debi2024-group1
    - 1aomagic
-  soclab:
-   - debi2024-group2
-   - debi2024-group4
-   - debi2024-group5
-   - debi2024-group6
-   - debi2024-group7
-   - debi2024-group8
-   - debi2024-group9
-   - debi2024-group10
-   - debi2024-group11
-   - debi2024-group12
+  caslaba16:
+   - esraaashraf12012
+   - adenjwong
   miblab:
    - ryanz8
    - relativelyfine
@@ -285,7 +277,6 @@ from_data_mulab: |
                 <option value="4">4x A40 (48G)</option>
                 <option value="5">5x A40 (48G)</option>
                 <option value="6">6x A40 (48G)</option>
-                <option value="7">7x A40 (48G)</option>
                 <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
@@ -393,15 +384,15 @@ from_data_riselab: |
           <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
   </div>
 
-from_data_soclab: | 
+from_data_caslaba16: | 
   <script>    
-    var lab = 'soclab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
-    $.getJSON(url_status, function(data){{
+    var lab = 'caslaba16';
+    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+    $.getJSON(url_status, function(data){{    
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
-      $.each(data[lab].usage, function(index, value){{
+      $.each(data[lab].usage, function(index, value){{        
         let entry = $('<small>');
         entry.text(value);
         entry.addClass('form-text text-muted');
@@ -417,43 +408,40 @@ from_data_soclab: |
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
-              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
-                <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
-                <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
-                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>               
+              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
-              </div>
+              <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
+  </div>
   <div class="form-group">
-              <label for="inputCPU">Number of CPU Cores</label>
-              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10" >10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16" >16 cores ADM Epyc 2.6/3.3GHz</option>              
+              <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL AMD EPYC 7H12]</label>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
+                <option value="10.0" select="selected">10 cores</option>
+                <option value="16.0" >16 cores</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
+              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
-                <option value="1">1x NVIDIA A16 (16G)</option>
-                <option value="2">2x NVIDIA A16 (16G)</option>
-                <option value="3">3x NVIDIA A16 (16G)</option>
-                <option value="4">4x NVIDIA A16 (16G)</option>
+                <option value="1">1x A16 (16G)</option>
+                <option value="2">2x A16 (16G)</option>
+                <option value="3">3x A16 (16G)</option>
+                <option value="4">4x A16 (16G)</option>
+                <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">                
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
                 <option value="64G" select="selected">64G RAM</option>
-                <option value="128G">128G RAM</option>                
+                <option value="128G">128G RAM</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
+              <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
-          <div class="form-group" style="display:none;">
+            <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
