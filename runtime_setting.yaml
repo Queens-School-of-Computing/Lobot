@@ -285,6 +285,7 @@ from_data_mulab: |
                 <option value="4">4x A40 (48G)</option>
                 <option value="5">5x A40 (48G)</option>
                 <option value="6">6x A40 (48G)</option>
+                <option value="7">7x A40 (48G)</option>
                 <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
