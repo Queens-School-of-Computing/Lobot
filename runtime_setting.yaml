@@ -279,7 +279,7 @@ from_data_mulab: |
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
-		<option value="1">1x A40 (48G)</option>
+                <option value="1">1x A40 (48G)</option>
                 <option value="2">2x A40 (48G)</option>
                 <option value="3">3x A40 (48G)</option>
                 <option value="4">4x A40 (48G)</option>
