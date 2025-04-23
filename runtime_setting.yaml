@@ -1,6 +1,7 @@
 nodeaccess:
   mulab:
    - haz
+   - drdoog
   bamlab:
    - haoran-qi
    - jacksoncaii
@@ -72,7 +73,6 @@ nodeaccess:
    - mohammedads1998
   devlab:   
    - steven-hh-ding
-   - drdoog
    
 from_data: | 
   <script>    
