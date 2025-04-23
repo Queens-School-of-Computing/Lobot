@@ -74,7 +74,7 @@ nodeaccess:
   devlab:   
    - steven-hh-ding
    
-from_data_a40: | 
+from_data_lobot_a40: | 
   <script>    
     var lab = 'caslab';
     var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
