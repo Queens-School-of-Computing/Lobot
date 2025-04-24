@@ -435,7 +435,8 @@ from_data_lobot_a16: |
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
-                <option value="64G" select="selected">64G RAM</option>
+                <option value="16G" select="selected">16G RAM</option>
+                <option value="64G">64G RAM</option>
                 <option value="128G">128G RAM</option>
               </select>
               <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
