@@ -41,7 +41,7 @@ nodeaccess:
    - sianarizwan
    - debi2024-group1
    - 1aomagic
-  soclab:
+  lobot_a16:
    - esraaashraf12012
    - adenjwong
    - wiegerthefarmer
@@ -383,9 +383,9 @@ from_data_riselab: |
           <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
   </div>
 
-from_data_soclab: | 
+from_data_lobot_a16: | 
   <script>    
-    var lab = 'soclab';
+    var lab = 'lobot_a16';
     var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{    
     if(data){{
