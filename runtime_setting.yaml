@@ -1,7 +1,6 @@
 nodeaccess:
   mulab:
    - haz
-   - drdoog
   bamlab:
    - haoran-qi
    - jacksoncaii
@@ -45,6 +44,7 @@ nodeaccess:
    - esraaashraf12012
    - adenjwong
    - wiegerthefarmer
+   - drdoog
   miblab:
    - ryanz8
    - relativelyfine
