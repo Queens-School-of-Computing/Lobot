@@ -26,21 +26,21 @@ nodeaccess:
    - sadasiannerd  
    - jiangonal
    - maxhao56
-   - wiegerthefarmer
   lobot_a5000: 
    - zackbabcock
    - dalawnchair
-   - aminfakhereldine
-   - hamghalam
    - spazaldinho
    - ari-davis
-   - jam-sha
    - sianarizwan
-   - debi2024-group1
    - 1aomagic
+   - ericaliang09ukk
+   - ts-sl
+   - cisc351gitgroup1
+   - bmatmti
+   - jbierbrier
+   - wiegerthefarmer
   lobot_a16:
    - esraaashraf12012
-   - ericaliang09ukk
    - adenjwong
    - drdoog
   miblab:
@@ -454,7 +454,7 @@ from_data_lobot_a16: |
 from_data_lobot_a5000: | 
   <script>    
     var lab = 'lobot_a5000';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{    
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
@@ -475,44 +475,42 @@ from_data_lobot_a5000: |
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
-              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-              <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
-              <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
-              <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
-              <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
+              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need.</small>
-              </div>
+              <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
+  </div>
   <div class="form-group">
-              <label for="inputCPU">Number of CPU Cores</label>
-              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">             
-                <option value="8" select="selected">8 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="10">10 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="16">16 cores ADM Epyc 2.6/3.3GHz</option>
-                <option value="32">32 cores ADM Epyc 2.6/3.3GHz</option>
+              <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL AMD EPYC 7H12]</label>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
+                <option value="8.0" select="selected">8 cores</option>
+                <option value="10.0">10 cores</option>
+                <option value="16.0">16 cores</option>
+                <option value="32.0">32 cores</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
+              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
-                <option value="1">1x RTX A5000 (24G)</option>
-                <option value="2">2x RTX A5000 (24G)</option>
+                <option value="1">1x A5000 (24G)</option>
+                <option value="2">2x A5000 (24G)</option>
+                <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">               
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="96G">96G RAM</option>
-                <option value="128G">128G RAM</option>  
-                <option value="256G">256G RAM</option>  
+                <option value="128G">128G RAM</option>
+                <option value="256G">256G RAM</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
+              <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
-          <div class="form-group" style="display:none;">
+            <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
@@ -523,6 +521,7 @@ from_data_lobot_a5000: |
           <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 72 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
           <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
   </div>
+  
 from_data_miblab: | 
   <script>    
     var lab = 'miblab';
