@@ -1,6 +1,7 @@
 nodeaccess:
   mulab:
    - haz
+   - wiegerthefarmer
   bamlab:
    - haoran-qi
    - jacksoncaii
@@ -71,7 +72,6 @@ nodeaccess:
    - zyfeleven
    - mohammedads1998
    - devshafi
-   - wiegerthefarmer
   devlab:   
    - steven-hh-ding
    
