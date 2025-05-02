@@ -16,7 +16,6 @@ nodeaccess:
    - ianpepin   
    - tahosinamoniranonna
    - 21at45
-   - wiegerthefarmer
   riselab:
    - sophiaty
    - jerin-riselab
@@ -29,6 +28,7 @@ nodeaccess:
    - sadasiannerd  
    - jiangonal
    - maxhao56
+   - wiegerthefarmer
   lobot_a5000: 
    - zackbabcock
    - dalawnchair
@@ -100,10 +100,11 @@ from_data_lobot_a40: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
+                <!--<option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
                 <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
                 <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
-                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" >*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>  -->
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -251,6 +252,7 @@ from_data_mulab: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -328,6 +330,7 @@ from_data_riselab: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -407,6 +410,7 @@ from_data_lobot_a16: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -549,6 +553,7 @@ from_data_miblab: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -624,6 +629,7 @@ from_data_winemocollab: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                  <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
+                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
               </div>
@@ -699,6 +705,7 @@ from_data_gandslab: |
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
              <!-- <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007" select="selected">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241007]</option> -->                                       
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -769,6 +776,7 @@ from_data_edemsmithbusiness: |
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -840,7 +848,8 @@ from_data_devlab: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
-              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC MATLAB* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
+               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129">*QSC MATLAB* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
               <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007">*QSC* u22.04 tf2.15.1 torch2.2.2 cuda12.6.1 [20241007]</option>            
               <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522">*QSC* u22.04 tf2.12 torch2.0 cuda11.8 [20240522]</option>            
               <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
