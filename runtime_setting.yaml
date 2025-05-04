@@ -1,21 +1,4 @@
 nodeaccess:
-  lobot_a16:
-   - esraaashraf12012
-   - adenjwong
-   - drdoog
-  lobot_a5000: 
-   - dalawnchair
-   - spazaldinho
-   - ari-davis
-   - sianarizwan
-   - 1aomagic
-   - ericaliang09ukk
-   - ts-sl
-   - cisc351gitgroup1
-   - bmatmti
-   - jbierbrier
-   lobot_a40:
-   - zackbabcock
   mulab:
    - haz
   bamlab:
@@ -33,6 +16,7 @@ nodeaccess:
    - ianpepin   
    - tahosinamoniranonna
    - 21at45
+   - wiegerthefarmer
   riselab:
    - sophiaty
    - jerin-riselab
@@ -45,6 +29,22 @@ nodeaccess:
    - sadasiannerd  
    - jiangonal
    - maxhao56
+  lobot_a5000: 
+   - zackbabcock
+   - dalawnchair
+   - spazaldinho
+   - ari-davis
+   - sianarizwan
+   - 1aomagic
+   - ericaliang09ukk
+   - ts-sl
+   - cisc351gitgroup1
+   - bmatmti
+   - jbierbrier
+  lobot_a16:
+   - esraaashraf12012
+   - adenjwong
+   - drdoog
   miblab:
    - ryanz8
    - relativelyfine
@@ -54,8 +54,8 @@ nodeaccess:
    - zhihaod
    - chenxu8774
    - mincocoder
+   - debi2024-group3
    - qirujin
-   - wiegerthefarmer
   edemsmithbusiness:
    - eklobodu
   gandslab:   
@@ -77,13 +77,13 @@ nodeaccess:
    
 from_data_lobot_a40: | 
   <script>    
-    var lab = 'lobot_a40';
-    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+    var lab = 'caslab';
+    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{    
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
-      $.each(data[lab].usage, function(index, value){{        
+      $.each(data[lab].usage, function(index, value){{
         let entry = $('<small>');
         entry.text(value);
         entry.addClass('form-text text-muted');
@@ -100,26 +100,31 @@ from_data_lobot_a40: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                                                  
+                <!--<option value="l1nna/peppapig:tlp-w-tf2.3-torch1.4-v0.0.5" select="selected">l1nna/peppapig TF-2.4/PT-1.4 DS stack v0.0.5</option>
+                <option value="l1nna/peppapig:tlp-w-tf2.6-torch-1.1.0-v1">l1nna/peppapig TF-2.6/PT-1.10 DS stack v1</option>
+                <option value="l1nna/peppapig:ubuntu-22-tf2.12-torch2.0-v1.8">l1nna/peppapig ubuntu-22 tf2.12 torch2.0 v1.8</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" >*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>  -->
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
   <div class="form-group">
-    <label for="inputCPU">Number of CPU Cores [Dual Intel Xeon Gold 6338]</label>
+    <label for="inputCPU">Number of CPU Cores</label>
     <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-      <option value="8.0" select="selected">8 cores</option>                
-      <option value="16.0" >16 cores</option> 
-      <option value="20.0" >20 cores</option> 
-      <option value="24.0" >24 cores</option> 
-      <option value="32.0" >32 cores</option> 
+      <option value="6" >6 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>
+      <option value="8" select="selected">8 cores Intel Xeon Gold 6338  2.0/3.2GHz</option>                
+      <option value="16" >16 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
+      <option value="20" >20 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
+      <option value="24" >24 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
+      <option value="32" >32 cores Intel Xeon Gold 6338  2.0/3.2GHz</option> 
     </select>
     <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
   </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <option value="1">1x A40 (48G)</option>
-                <option value="2">2x A40 (48G) WARNING: ONLY PICK TWO IF AUTHORIZED.</option>
+                <option value="1">1 A40 (48G)</option>
+                <option value="2">2 A40 (48G)</option>
                 <!--<option value="4">4 A40 (48G)</option>-->
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
               </select>
