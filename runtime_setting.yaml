@@ -605,7 +605,7 @@ from_data_miblab: |
 from_data_winemocollab: | 
   <script>    
     var lab = 'winemocollab';
-    var url_status = 'https://lobot.caslab.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{    
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
@@ -626,47 +626,45 @@ from_data_winemocollab: |
   </div>
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
-              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                 <option value="queensschoolofcomputingdocker/gpu-jupyter:ubuntu2204-tf2.12-torch2.0-cuda11.8-20240522" select="selected">*QSC* u22.04 tf2.12 torch2.0 cuda11.8</option>            
-                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
+              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                                                  
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
-              </div>
+              <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
+  </div>
   <div class="form-group">
-              <label for="inputCPU">Number of CPU Cores</label>
-              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                <option value="8" select="selected">8 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="10" >10 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="16" >16 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="24" >24 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="32" >32 cores Intel Xeon Gold 6530 2.10GHz</option>
-                <option value="64" >64 cores Intel Xeon Gold 6530 2.10GHz</option>                
+              <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL Intel Xeon Gold 6530]</label>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
+                <option value="8.0" select="selected">8 cores</option>
+                <option value="10.0">10 cores</option>
+                <option value="16.0">16 cores</option>
+                <option value="24.0">24 cores</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
+              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
+                <option value="0" selected="selected">I don't need a GPU for now.</option>
                 <option value="1">1x RTX6000-ADA (48G)</option>
                 <option value="2">2x RTX6000-ADA (48G)</option>
                 <option value="3">3x RTX6000-ADA (48G)</option>
                 <option value="4">4x RTX6000-ADA (48G)</option>
-                <option value="0" selected="selected">I don't need a GPU for now.</option>
+                <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">              
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
                 <option value="64G" select="selected">64G RAM</option>
                 <option value="128G">128G RAM</option>
                 <option value="256G">256G RAM</option>
                 <option value="384G">384G RAM</option>                
                 <option value="512G">512G RAM</option>
               </select>
-              <small id="cpuHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
+              <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
-          <div class="form-group" style="display:none;">
+            <div class="form-group" style="display:none;">
               <label for="inputPVC">Storage volume claim</label>
               <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
                 <option value="{}" selected="selected">{}</option>
