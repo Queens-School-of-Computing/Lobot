@@ -3,6 +3,7 @@ nodeaccess:
    - esraaashraf12012
    - adenjwong
    - drdoog
+   - zackbabcock
   lobot_a5000: 
    - dalawnchair
    - spazaldinho
@@ -14,9 +15,7 @@ nodeaccess:
    - cisc351gitgroup1
    - bmatmti
    - jbierbrier
-   - ibrahimkettaneh
   lobot_a40:
-   - zackbabcock
    - alongabriel
    - creategroup1
    - creategroup2
@@ -34,8 +33,6 @@ nodeaccess:
    - qscautodrivegroup2
    - ruslanamruddin
    - spazaldinho
-   - tasnim7ahmed
-   - z-mohamedelrashidy
   mulab:
    - haz
   bamlab:
