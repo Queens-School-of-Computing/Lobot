@@ -17,7 +17,6 @@ nodeaccess:
    - cisc351gitgroup1
    - bmatmti
    - jbierbrier
-   - zyunyu
    - falaca
   lobot_a40:
    - alongabriel
@@ -35,6 +34,7 @@ nodeaccess:
    - qscautodrivegroup2
    - ruslanamruddin
    - spazaldinho
+   - zyunyu
    - wiegerthefarmer
   mulab:
    - haz
@@ -53,6 +53,7 @@ nodeaccess:
    - ianpepin   
    - tahosinamoniranonna
    - 21at45
+   - schorm
   riselab:
    - sophiaty
    - jerin-riselab
