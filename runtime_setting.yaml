@@ -735,8 +735,8 @@ from_data_gandslab: |
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                 <option value="1">1x H100 NVL (96G)</option>
                 <option value="2">2x H100 NVL (96G)</option>
-                <option value="0" selected="selected">I don't need a GPU for now.</option>
-                <option value="-1">*Experimental* Share All GPUs with other sessions</option>
+                <option value="0">I don't need a GPU for now.</option>
+                <option value="-1" selected="selected">*Experimental* Share All GPUs with other sessions</option>
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
