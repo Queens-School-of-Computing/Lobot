@@ -787,8 +787,8 @@ from_data_edemsmithbusiness: |
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">    
-              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" select="selected">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>            
-              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
+              <!--<option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129" >*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>-->            
+              <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2" select="selected">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>                          
               </select>
               <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
   </div>
@@ -805,8 +805,10 @@ from_data_edemsmithbusiness: |
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                <!--<option value="1">1x H100 NVL (96G)</option>
-                <option value="2">2x H100 NVL (96G)</option> -->
+                <option value="1">1x A16 (16G)</option>
+                <option value="2">2x A16 (16G)</option>
+                <option value="3">3x A16 (16G)</option>
+                <option value="4">4x A16 (16G)</option>
                 <option value="0" selected="selected">I don't need a GPU for now.</option>
                 <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
