@@ -759,6 +759,8 @@ from_data_gandslab: |
                 <option value="32G">32G</option>              
                 <option value="64G">64G</option>              
                 <option value="96G">96G</option>
+                <option value="128G">128G</option>
+                <option value="192G">192G</option>
               </select>
               <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
