@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+* {
+	font-family: 'Open Sans';
+}
+
+body {
+	overflow-x: hidden;
+	background: #fafafa;
+}
+
+[data-bs-theme="dark"] body {
+        background: #212121;
+}
+
+::selection {
+	background: #002452;
+	color: white;
+}
+
+[data-bs-theme="dark"] ::selection {
+	background: #fabd0f;
+	color: black;
+}
+
+[data-bs-theme="dark"] a {
+	color: #fabd0f;
+}
+
+[data-bs-theme="dark"] a.btn {
+        color: white;
+}
+
+#qsc-logo a {
+	width: 312px;
+	display: block;
+	height: 70px;
+	background-image: url('/assets/images/QSC-logo-lockup.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+nav {
+	background-color: #002452 !important;
+	padding: 10px 30px !important;
+	color: white;
+}
+
+.navbar-nav .nav-link {
+	color: white !important;
+}
+
+.navbar-nav .nav-link:hover {
+	background: white !important;
+	color: black !important;
+}
+
+.nav-item {
+	line-height: 40px;
+	margin-right: 10px;
+}
+
+#dark-theme-toggle {
+	color: white;
+	transform: rotate(0deg);
+}
+
+[data-bs-theme="dark"] #dark-theme-toggle {
+	transform: rotate(180deg);
+}
+
+#logout {
+	color: white;
+	border-color: white;
+}
+
+#logout:hover {
+	color: black;
+	background-color: #fabd0f;
+	border-color: #fabd0f;
+}
+
+.qu-bars {
+        margin-bottom: 50px;
+}
+
+.qu-bars div {
+	height: 5px;
+}
+
+.qu-bars .qu-red {
+	background: #b90e31;
+}
+
+.qu-bars .qu-yellow {
+	background: #fabd0f;
+}
+
+.table {
+	--bs-table-bg: none;
+}
+
+thead tr th {
+	background-color: #002452 !important;
+	color: white !important;
+	border: none !important;
+	text-transform: uppercase;
+}
+
+[data-bs-theme="dark"] thead tr th {
+  	background-color: #161616 !important;
+}
+
+.sort-icon {
+	top: -0.1em !important;
+}
+
+.card-group {
+	padding: 10px;
+}
+
+.card-group .card {
+	padding: 10px !important;
+}
+
+.form-group {
+	margin: 25px 0;
+}
+
+.form-control:focus, .form-select:focus {
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px #fabd0f;
+  border-color: #fabd0f;
+  outline-color: #fabd0f;
+}
+
+#react-admin-hook table tbody tr:first-child {
+	*/display: none;*/
+}
+
+#react-admin-hook tr {
+	font-size: 16px;
+ 	line-height: 40px;
+}
+
+#react-admin-hook .card {
+	overflow: scroll;
+}
+
+#react-admin-hook .card table {
+	margin: 0 !important;
+}
+
+#react-admin-hook .card table tr {
+        font-size: 14px;
+	line-height: 24px;
+	vertical-align: middle;
+}
+
+tr.user-row td:first-child button {
+	background: none !important;
+	border: none;
+	color: black;
+}
+
+tr.user-row td:first-child button:active { 
+	color:black;
+} 
+
+tr.user-row td.actions {
+	text-align: right;
+}
+
+td[data-testid="user-row-name"] .btn-secondary {
+	transform: rotate(180deg);
+}
+
+[data-bs-theme="dark"] tr.user-row td:first-child button {
+	color: white;
+}
+
+.btn-primary, .btn-success {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #002452;
+  --bs-btn-border-color: #415a79;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #fabd0f;
+  --bs-btn-hover-border-color: #fabd0f;
+  --bs-btn-focus-shadow-rgb: 76, 143, 193;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #fabd0f;
+  --bs-btn-active-border-color: #fabd0f;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #2c7bb6;
+  --bs-btn-disabled-border-color: #2c7bb6;
+}
+
+.btn-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #b90e31;
+  --bs-btn-border-color: #ca6f82;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #fabd0f;
+  --bs-btn-hover-border-color: #fabd0f;
+  --bs-btn-focus-shadow-rgb: 221, 60, 62;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #ac1416;
+  --bs-btn-active-border-color: #a11315;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #d7191c;
+  --bs-btn-disabled-border-color: #d7191c;
+}
+
+.btn-jupyter {
+  --bs-btn-color: black;
+  --bs-btn-bg: #fabd0f;
+  --bs-btn-border-color: #fabd0f;
+  --bs-btn-hover-color: white;
+  --bs-btn-hover-bg: #002452;
+  --bs-btn-hover-border-color: #002452;
+  --bs-btn-focus-shadow-rgb: 76, 143, 193;
+  --bs-btn-active-color: white;
+  --bs-btn-active-bg: #002452;
+  --bs-btn-active-border-color: #002452;
+}
+
+.btn-xs {
+	padding: 5px 10px;	
+}
+
+.form-check-input:checked {
+	background-color: #002452;
+	border-color: #002452;
+}
+
+.form-check-input:focus, .form-check-input:active {
+ 	border-color: #fabd0f;
+	outline: 0;
+	box-shadow: 0 0 0 .25rem #fabd0f50;
+}
+
+[data-bs-theme="dark"] .form-check-input:checked {
+	background-color: #fabd0f;
+	border-color: #fabd0f;
+}
+
+[data-bs-theme="dark"] .form-check-input:checked[type="checkbox"] {
+  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+
+.pagination-footer label {
+	margin: 10px 50px;
+}
+
+.version_footer {
+	display: none;
+}
