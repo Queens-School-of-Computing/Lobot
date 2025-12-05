@@ -72,9 +72,25 @@ class RepeatTimer(Timer):
                     cpus_free = floor(cpus_free)
                     gpus_total = floor(gpus_total)
                     gpus_free = floor(gpus_free)
-                    current_dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-                    summary = f'{lab} available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    summary_title = f'{lab} available resources as of {current_dt}'
+                    current_dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    if lab == "gandslab":
+                    	summary = f'GOAL&SWIMS Labs available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                    	summary_title = f'GOAL&SWIMS Labs available resources as of {current_dt}'
+                    elif lab == "lobot_a5000":
+                    	summary = f'Lobot [A5000] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                    	summary_title = f'Lobot [A5000] available resources as of {current_dt}'
+                    elif lab == "lobot_a16":
+                    	summary = f'Lobot [A16] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                    	summary_title = f'Lobot [A16] available resources as of {current_dt}'
+                    elif lab == "lobot_a40":
+                        summary = f'Lobot [A40] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'Lobot [A40] available resources as of {current_dt}'
+                    elif lab == "edemsmithbusiness":
+                    	summary = f'Smith School of Business (Edem) available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                    	summary_title = f'Smith School of Business (Edem) available resources as of {current_dt}'
+                    else: 
+                    	summary = f'{lab} available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                    	summary_title = f'{lab} available resources as of {current_dt}'
                     summary_details = f'CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total}'
                     #summary = summary.capitalize()
                     pod_usage = []
@@ -99,7 +115,7 @@ class RepeatTimer(Timer):
                         pod_gpu = floor(pod_gpu)
                         pod = pod.replace('jupyter-', '')
                         pod = pod.replace('-2d', '-')
-                        
+                        #pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>') 
                         pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem} mem, {pod_gpu} gpu')
                     pod_usage.append(f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.')
                     data[lab] = {
