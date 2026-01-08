@@ -18,10 +18,10 @@ proxy:
 
 # cull timeout determines how long a user has to be inactive before the pod is killed
 # this might be new and better in determining if its actually idle! https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-management.html#culling-user-pods
-#cull:
-#  timeout: 86400
 cull:
-  enabled: false
+  timeout: 259200 
+#cull:
+#  enabled: false
 
 singleuser:
   #profileList:
@@ -40,7 +40,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
-    tag: 12.6.1cudnn-2.15.1tf-qsc-u24.04-20241007
+    tag: 12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2
   extraEnv:
     #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
     #GRANT_SUDO: "yes"
@@ -51,7 +51,7 @@ singleuser:
   #uid: 1000 
   cmd: start-singleuser.py
   storage:
-    capacity: 100Gi
+    capacity: 50Gi
     dynamic:
       storageClass: caslab-retain-r1
     extraVolumes:
@@ -87,6 +87,7 @@ hub:
         - WiegerTheFarmer
         - drdoog
         - sjwhittaker
+        - jm-janzen 
       scope:
         - read:org
         - read:user
@@ -130,7 +131,9 @@ hub:
 
       # add some extra timeouts
       c.Spawner.http_timeout = 150 
-      c.Spawner.start_timeout = 150
+      c.Spawner.start_timeout = 150 
+      #c.Spawner.http_timeout = 3600 
+      #c.Spawner.start_timeout = 3600 
       
       # Enable debug-logging of the single-user server
       c.LocalProcessSpawner.debug = True
@@ -154,9 +157,9 @@ hub:
         self.log.info(str(data))
         username = self.user.name.strip().lower()
         self.log.info(username)
-        ss = 'caslab-retain-r1'
-        ds = 'CASLab Compute Resources'
-        sp_form = data['from_data']
+        ss = 'lobot_a16-socsharedstorage'
+        ds = 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)'
+        sp_form = data['from_data_lobot_a16']
         if username in data['nodeaccess']['mulab']:
           ss = 'mulab-socsharedstorage'
           ds = 'MULab Compute Resources'
@@ -172,37 +175,54 @@ hub:
           ds = 'RISE Lab Compute Resources'
           sp_form = data['from_data_riselab']   
           return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['soclab']:
-          ss = 'soclab-socsharedstorage'
-          ds = 'SoC Research Compute Resources'
-          sp_form = data['from_data_soclab']   
+        if username in data['nodeaccess']['lobot_a16']:
+          ss = 'lobot_a16-socsharedstorage'
+          ds = 'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'
+          sp_form = data['from_data_lobot_a16']   
           return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['debilab']:
-          ss = 'debilab-socsharedstorage'
-          ds = 'DEBI Compute Resources'
-          sp_form = data['from_data_debilab']   
+        if username in data['nodeaccess']['lobot_problackwell']:
+          ss = 'lobot_problackwell-socsharedstorage'
+          ds = 'Lobot Compute Resources (NVIDIA Problackwell GPU 96GB)'
+          sp_form = data['from_data_lobot_problackwell']   
           return sp_form.format(ss, ds)
         if username in data['nodeaccess']['devlab']:
           ss = 'devlab-socsharedstorage'
           ds = 'DEV Compute Resources'
           sp_form = data['from_data_devlab']
           return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['debilabgpu']:
-          ss = 'debilab-socsharedstorage'
-          ds = 'DEBI Compute Resources'
-          sp_form = data['from_data_debilabgpu']   
+        if username in data['nodeaccess']['edemsmithbusiness']:
+          ss = 'edemsmithbusiness-socsharedstorage'
+          ds = 'Smith School of Business Compute Resources'
+          sp_form = data['from_data_edemsmithbusiness']
           return sp_form.format(ss, ds)
-        if username in data['storage']['mulab-retain-r1']:
-          ss = 'mulab-retain-r1'
-          ds = 'Mulab Extensible SSD (1 replicas)'
-          sp_form = data['from_data_mulab']
-        if username in data['storage']['bamlab-retain-r2']:
-          ss = 'bamlab-retain-r2'
-          ds = 'BAMlab Extensible SSD (2 replicas)'
-          sp_form = data['from_data_bamlab']   
+        if username in data['nodeaccess']['miblab']:
+          ss = 'miblab-socsharedstorage'
+          ds = 'MIB Lab Compute Resources'
+          sp_form = data['from_data_miblab']
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['winemocollab']:
+          ss = 'winemocollab-socsharedstorage'
+          ds = 'WineMocol Lab Compute Resources'
+          sp_form = data['from_data_winemocollab']
+          return sp_form.format(ss, ds) 
+        if username in data['nodeaccess']['gandslab']:
+          ss = 'gandslab-socsharedstorage'
+          ds = 'GAIN & SWIMS Labs Compute Resources'
+          sp_form = data['from_data_gandslab']
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['lobot_a40']:
+          ss = 'lobot_a40-socsharedstorage'
+          ds = 'Lobot Compute Resources (NVIDIA A40 GPU 48G)'
+          sp_form = data['from_data_lobot_a40']
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['lobot_a5000']:
+          ss = 'lobot_a5000-socsharedstorage'
+          ds = 'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'
+          sp_form = data['from_data_lobot_a5000']   
+          return sp_form.format(ss, ds)
         return sp_form.format(ss, ds)
-      #c.KubeSpawner.start_timeout = 300 
-      c.Spawner.start_timeout = 300 
+      #c.Spawner.start_timeout = 420 
+      #c.Spawner.start_timeout = 3600 
       c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
       c.Spawner.options_form = dynamic_form
       c.Spawner.options_from_form = options_from_form 
@@ -225,6 +245,27 @@ hub:
         if sctype == 'socsharedstorage':
           spwnr.log.info('  socsharedstorage with ' + str(lab))
           spwnr.storage_class = str('caslab-retain-r1') 
+        if lab == 'bamlab':
+          spwnr.volumes.extend([
+                 {
+                         "name": "pv-bamlabshareddata",
+                         "persistentVolumeClaim": {"claimName": "pvc-bamlabshareddata"}
+                 },
+                 {
+                         "name": "pvc-6cefcf15-7c4f-4034-9e93-712fff961490",
+                         "persistentVolumeClaim": {"claimName": "claim-21at45"}
+                 }
+          ])
+          spwnr.volume_mounts.extend([
+                 {
+                         "mountPath": "/home/jovyan/bamlabshareddata",
+                         "name": "pv-bamlabshareddata"
+                 },
+                 {
+                         "mountPath": "/home/jovyan/bamlab_archive_alanteng",
+                         "name": "pvc-6cefcf15-7c4f-4034-9e93-712fff961490"
+                 }
+          ]) 
         spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
         if int(options["gpu_limit"][0]) == 0:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
