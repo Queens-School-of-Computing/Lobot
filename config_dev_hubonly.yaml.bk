@@ -5,8 +5,10 @@ proxy:
     nodePorts:
       http: 30080
       https: 30443
+
 cull:
   timeout: 86400
+
 hub:
   #Clone custom JupyterHub templates into a volume
   initContainers:
@@ -15,13 +17,14 @@ hub:
       args:
         - clone
         - --single-branch
-        - --branch=dev
+        - --branch=newcluster-dev
         - --depth=1
         - --
         - https://github.com/Queens-School-of-Computing/Lobot.git
         - /etc/jupyterhub/custom
       securityContext:
-        runAsUser: 0
+        allowPrivilegeEscalation: true
+        runAsUser: 1000
       volumeMounts:
         - name: custom-templates
           mountPath: /etc/jupyterhub/custom
@@ -75,7 +78,7 @@ hub:
         import yaml
         import os
 
-        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/dev/runtime_setting.yaml').read().decode('utf-8')
+        data = urllib.request.urlopen('https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev/runtime_setting.yaml').read().decode('utf-8')
         data = yaml.safe_load(data)
         self.log.info(str(data))
         username = self.user.name.strip().lower()
@@ -154,26 +157,27 @@ hub:
       c.KubeSpawner.pre_spawn_hook = my_pre_spawn_hook 
       #c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
       #c.KubeSpawner.pod_security_context.update({'fsGroupChangePolicy': 'OnRootMismatch'})
-auth:
-  type: github
-  admin:
-    access: true
-    users:
-      - "steven-hh-ding"
-      - "haz"
-      - "WiegerTheFarmer"
-      - "drdoog"
-      - "sjwhittaker"
-  github:
-    clientId: "GETCLIENTIDFROMGITHUB"
-    clientSecret: "GETCLIENTSECRETEFROMGITHUB"
-    callbackUrl: "https://lobot-dev.cs.queensu.ca/hub/oauth_callback"
-    orgWhitelist: 
-      - "qumulab"
-      - "L1NNA"
-      - "Queens-School-of-Computing"
-      - "RISElabQueens"
-      - "TheBaleHouse"
-  scopes:
-    - "read:user"
-    - "read:org"
+
+  config:
+    GitHubOAuthenticator:
+      client_id: 341cf6a37bc6c44b9d3f
+      client_secret: 61ec2c21236037115c396338838f98107cbfec07
+      oauth_callback_url: https://lobot-dev.cs.queensu.ca/hub/oauth_callback
+      allowed_organizations:
+        - qumulab
+        - L1NNA 
+        - Queens-School-of-Computing
+        - RISElabQueens
+        - TheBaleHouse
+      admin_users:
+        - steven-hh-ding
+        - haz
+        - WiegerTheFarmer
+        - drdoog
+        - sjwhittaker
+        - jm-janzen 
+      scope:
+        - read:org
+        - read:user
+    JupyterHub:
+      authenticator_class: github  
