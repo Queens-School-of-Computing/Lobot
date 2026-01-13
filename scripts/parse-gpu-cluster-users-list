@@ -74,7 +74,7 @@ def get_lab_pages(resources):
     # FIXME TOMORROW-JM: get this from payload (webhook)
     for res in resources:
         with open(f"./assets/html/{res}.html") as f:
-            pages[f"from_data_{res}"] = f.name#.read()
+            pages[f"from_data_{res}"] = f.read()
     return pages
 
 def parse_memberships(req):
