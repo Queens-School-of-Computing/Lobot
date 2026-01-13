@@ -46,6 +46,51 @@ def extract_resources_names(payload):
 
     return list(names)
 
+# FIXME Can delete this function when we no longer
+# care about resource order
+def apply_custom_resource_page_sort(resources):
+    """
+    Custom order for 'from_data_{RESOURCE}' pages.
+    Match the output order of the existing file,
+    to increase confidence in generated output
+    """
+    custom_order = {
+            'lobot_a40': 0,
+            'lobot_problackwell': 1,
+            'bamlab': 2,
+            'mulab': 3,
+            'riselab': 4,
+            'lobot_a16': 5,
+            'lobot_a5000': 6,
+            'miblab': 7,
+            'winemocollab': 8,
+            'gandslab': 9,
+            'edemsmithbusiness': 10,
+            'devlab': 11,
+            }
+
+    return sorted(resources, key=lambda val: custom_order[val])
+
+# FIXME Can delete this function when we no longer
+# care about resource order
+def apply_custom_resource_page_sort(resources):
+    custom_order = {
+            'lobot_a16': 0,
+            'lobot_a5000':  1,
+            'lobot_a40': 2,
+            'lobot_problackwell':  3,
+            'mulab': 4,
+            'bamlab': 5,
+            'riselab': 6,
+            'miblab': 7,
+            'winemocollab': 8,
+            'edemsmithbusiness': 9,
+            'gandslab':    10,
+            'devlab':   11,
+            }
+
+    return sorted(resources, key=lambda val: custom_order[val])
+
 def extract_resources(payload, resource_names):
     """
     Sorts members by resources. Given input of the form
@@ -76,7 +121,7 @@ def extract_resources(payload, resource_names):
 # FIXME Eventually get actual resources and build page HTML programmatically
 def get_resource_pages(resource_names):
     pages = {}
-    for name in resource_names:
+    for name in apply_custom_resource_page_sort(resource_names):
         with open(f"./assets/html/{name}.html") as f:
             pages[f"from_data_{name}"] = f.read()
     return pages
