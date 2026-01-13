@@ -7,6 +7,7 @@ import yaml
 from pathlib import Path
 
 denied_resources = [ 'admin' ]
+always_included_resources = [ 'lobot_problackwell', 'devlab' ]
 
 def main():
     # XXX Example implementation. Expecting payload like
@@ -29,7 +30,6 @@ def main():
 
     print(pages)
 
-# TODO Actually parse out of payload
 def extract_resources(payload):
     resources = set()
 
@@ -38,6 +38,9 @@ def extract_resources(payload):
         if resource in denied_resources:
             continue
 
+        resources.add(resource)
+
+    for resource in always_included_resources:
         resources.add(resource)
 
     return list(resources)
