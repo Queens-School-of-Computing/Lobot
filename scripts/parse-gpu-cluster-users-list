@@ -19,6 +19,7 @@ def main():
 
     resource_names = extract_resources_names(payload)
     resources = extract_resources(payload, resource_names)
+    resources = sort_resources(resources)
     pages = get_resource_pages(resource_names)
 
     config = { 'nodeaccess': resources, **pages }
@@ -29,11 +30,8 @@ def main():
         f.write(get_generated_disclaimer())
         yaml.dump(config, f, indent=2, sort_keys=False)
 
-    print(pages)
-
 def extract_resources_names(payload):
     names = set()
-
     for item in payload:
         name = item['Membership']
         if name in denied_resources:
@@ -44,11 +42,11 @@ def extract_resources_names(payload):
     for name in always_included_resources:
         names.add(name)
 
-    return list(names)
+    return sorted(list(names))
 
 def extract_resources(payload, resource_names):
     """
-    Sorts members by resources. Given input of the form
+    Sorts members by resources. Given input payload of the form
     [
         {"GitHubUsername":"samus","Membership":"nintendo"},
         {"GitHubUsername":"mario","Membership":"nintendo"},
@@ -73,6 +71,17 @@ def extract_resources(payload, resource_names):
 
     return resources
 
+def sort_resources(resources):
+    """
+    Alphabetically sort a dict of lists. Sorting both the dict keys,
+    and the list values themselves.
+    """
+    for res, members in resources.items():
+        resources[res] = sorted(members)
+        print(res, members)
+
+    return dict(sorted(resources.items()))
+
 # FIXME Eventually get actual resources and build page HTML programmatically
 def get_resource_pages(resource_names):
     pages = {}
@@ -80,9 +89,6 @@ def get_resource_pages(resource_names):
         with open(f"./assets/html/{name}.html") as f:
             pages[f"from_data_{name}"] = f.read()
     return pages
-
-def parse_memberships(req):
-    pass
 
 def get_generated_disclaimer():
     return ("###\n"
