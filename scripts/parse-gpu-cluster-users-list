@@ -7,23 +7,7 @@ import yaml
 from pathlib import Path
 
 
-# NOTE  Will only select resources for nodes tagged with labs here
-# FIXME Just get tags from webhook? Yes.
-# TODO  Add allow_list, deny_list, and always_include_list
-TAGS = [
-        'bamlab',
-        'edemsmithbusiness',
-        'gandslab',
-        'lobot_a16',
-        'lobot_a40',
-        'lobot_a5000',
-        'miblab',
-        'mulab',
-        'riselab',
-        'winemocollab',
-        ]
-def resource_allowed(res):
-    pass # TODO current "TAGS"
+# TODO  Add deny_list, and always_include_list
 def resource_denied(res):
     pass # TODO admin
 
@@ -33,9 +17,9 @@ def main():
     # from live webhook
     payload = json.loads(Path('./example-payload.json').read_text())
 
-    tags = extract_tags(payload)
-    labs = extract_labs(payload)
-    pages = get_lab_pages()
+    resources = extract_resources(payload)
+    labs = extract_labs(payload, resources)
+    pages = get_lab_pages(resources)
 
     config = { 'nodeaccess': labs, **pages }
 
@@ -49,7 +33,7 @@ def main():
     print(pages)
 
 # TODO Actually parse out of payload
-def extract_tags(payload):
+def extract_resources(payload):
     return [
             'bamlab',
             'edemsmithbusiness',
@@ -63,7 +47,7 @@ def extract_tags(payload):
             'winemocollab',
             ]
 
-def extract_labs(payload):
+def extract_labs(payload, resources):
     """
     Sorts members by lab. Given input of the form
     [{"GitHubUsername":"foo","Membership":bar}]
@@ -75,7 +59,7 @@ def extract_labs(payload):
         lab = member['Membership']
         # FIXME Don't extend global lab, just use it for reference
         # FIXME Filter out 'Enabled' == False!
-        no_lab_membership=(not lab or not lab in TAGS)
+        no_lab_membership=(not lab or not lab in resources)
         if no_lab_membership:
             continue
         if not lab in labs:
@@ -86,13 +70,12 @@ def extract_labs(payload):
     return labs
 
 # FIXME Eventually get actual resources and build page HTML programmatically
-def get_lab_pages():
+def get_lab_pages(resources):
     pages = {}
     # FIXME TOMORROW-JM: get this from payload (webhook)
-    # TODO Refactor tags to resources
-    for tag in TAGS:
-        with open(f"./assets/html/{tag}.html") as f:
-            pages[f"from_data_{tag}"] = f.name#.read()
+    for res in resources:
+        with open(f"./assets/html/{res}.html") as f:
+            pages[f"from_data_{res}"] = f.name#.read()
     return pages
 
 def parse_memberships(req):
