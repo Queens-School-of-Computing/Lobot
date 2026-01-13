@@ -6,11 +6,6 @@ import yaml
 
 from pathlib import Path
 
-
-# TODO  Add deny_list, and always_include_list
-def resource_denied(res):
-    pass # TODO admin
-
 def main():
     # XXX Example implementation. Expecting payload like
     # [{"GitHubUsername":"foo","Membership":bar}, ...]
@@ -34,18 +29,13 @@ def main():
 
 # TODO Actually parse out of payload
 def extract_resources(payload):
-    return [
-            'bamlab',
-            'edemsmithbusiness',
-            'gandslab',
-            'lobot_a16',
-            'lobot_a40',
-            'lobot_a5000',
-            'miblab',
-            'mulab',
-            'riselab',
-            'winemocollab',
-            ]
+    resources = set()
+
+    for item in payload:
+        resource = item['Membership']
+        resources.add(resource)
+
+    return list(resources)
 
 def extract_labs(payload, resources):
     """
