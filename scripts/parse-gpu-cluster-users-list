@@ -6,6 +6,8 @@ import yaml
 
 from pathlib import Path
 
+denied_resources = [ 'admin' ]
+
 def main():
     # XXX Example implementation. Expecting payload like
     # [{"GitHubUsername":"foo","Membership":bar}, ...]
@@ -33,6 +35,9 @@ def extract_resources(payload):
 
     for item in payload:
         resource = item['Membership']
+        if resource in denied_resources:
+            continue
+
         resources.add(resource)
 
     return list(resources)
