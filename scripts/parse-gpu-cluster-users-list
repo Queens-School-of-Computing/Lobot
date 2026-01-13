@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+import json
+import sys
+import yaml
+
+from pathlib import Path
+
+
+# NOTE  Will only select resources for nodes tagged with labs here
+# FIXME Just get tags from webhook? Yes.
+# TODO  Add allow_list, deny_list, and always_include_list
+TAGS = [
+        'bamlab',
+        'edemsmithbusiness',
+        'gandslab',
+        'lobot_a16',
+        'lobot_a40',
+        'lobot_a5000',
+        'miblab',
+        'mulab',
+        'riselab',
+        'winemocollab',
+        ]
+def resource_allowed(res):
+    pass # TODO current "TAGS"
+def resource_denied(res):
+    pass # TODO admin
+
+def main():
+    # XXX Example implementation. Expecting payload like
+    # [{"GitHubUsername":"foo","Membership":bar}, ...]
+    # from live webhook
+    payload = json.loads(Path('./example-payload.json').read_text())
+
+    tags = extract_tags(payload)
+    labs = extract_labs(payload)
+    pages = get_lab_pages()
+
+    config = { 'nodeaccess': labs, **pages }
+
+    yaml.add_representer(str, str_presenter)
+
+    #yaml.dump(config, sys.stdout) # XXX For debugging only
+
+    with open('o', 'w') as f:
+        yaml.dump(config, f, indent=2, sort_keys=False)
+
+    print(pages)
+
+# TODO Actually parse out of payload
+def extract_tags(payload):
+    return [
+            'bamlab',
+            'edemsmithbusiness',
+            'gandslab',
+            'lobot_a16',
+            'lobot_a40',
+            'lobot_a5000',
+            'miblab',
+            'mulab',
+            'riselab',
+            'winemocollab',
+            ]
+
+def extract_labs(payload):
+    """
+    Sorts members by lab. Given input of the form
+    [{"GitHubUsername":"foo","Membership":bar}]
+    outs a dict of the following form
+    {"bar":["foo"]}
+    """
+    labs = {}
+    for member in payload:
+        lab = member['Membership']
+        # FIXME Don't extend global lab, just use it for reference
+        # FIXME Filter out 'Enabled' == False!
+        no_lab_membership=(not lab or not lab in TAGS)
+        if no_lab_membership:
+            continue
+        if not lab in labs:
+            labs[lab] = []
+
+        labs[lab].append(member['GitHubUsername'].lower())
+
+    return labs
+
+# FIXME Eventually get actual resources and build page HTML programmatically
+def get_lab_pages():
+    pages = {}
+    # FIXME TOMORROW-JM: get this from payload (webhook)
+    # TODO Refactor tags to resources
+    for tag in TAGS:
+        with open(f"./assets/html/{tag}.html") as f:
+            pages[f"from_data_{tag}"] = f.name#.read()
+    return pages
+
+def parse_memberships(req):
+    pass
+
+# Custom multiline implementation to preserve nice HTML strings
+# https://github.com/yaml/pyyaml/issues/240#issuecomment-1096224358
+def str_presenter(dumper, data):
+    if data.count('\n') > 0:
+        data = "\n".join([line.rstrip() for line in data.splitlines()])
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+if __name__ == "__main__":
+    main()
+    print('---')
