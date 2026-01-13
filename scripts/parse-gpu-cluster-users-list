@@ -17,11 +17,11 @@ def main():
     # from live webhook
     payload = json.loads(Path('./example-payload.json').read_text())
 
-    resources = extract_resources(payload)
-    labs = extract_labs(payload, resources)
-    pages = get_lab_pages(resources)
+    resource_names = extract_resources_names(payload)
+    resources = extract_resources(payload, resource_names)
+    pages = get_resource_pages(resource_names)
 
-    config = { 'nodeaccess': labs, **pages }
+    config = { 'nodeaccess': resources, **pages }
 
     yaml.add_representer(str, str_presenter)
 
@@ -31,50 +31,47 @@ def main():
 
     print(pages)
 
-def extract_resources(payload):
-    resources = set()
+def extract_resources_names(payload):
+    names = set()
 
     for item in payload:
-        resource = item['Membership']
-        if resource in denied_resources:
+        name = item['Membership']
+        if name in denied_resources:
             continue
 
-        resources.add(resource)
+        names.add(name)
 
-    for resource in always_included_resources:
-        resources.add(resource)
+    for name in always_included_resources:
+        names.add(name)
 
-    return list(resources)
+    return list(names)
 
-def extract_labs(payload, resources):
+def extract_resources(payload, resource_names):
     """
-    Sorts members by lab. Given input of the form
+    Sorts members by resources. Given input of the form
     [{"GitHubUsername":"foo","Membership":bar}]
     outs a dict of the following form
     {"bar":["foo"]}
     """
-    labs = {}
+    resources = {}
     for member in payload:
-        lab = member['Membership']
-        # FIXME Don't extend global lab, just use it for reference
-        # FIXME Filter out 'Enabled' == False!
-        no_lab_membership=(not lab or not lab in resources)
-        if no_lab_membership:
+        res = member['Membership']
+        no_res_membership=(not res or not res in resource_names)
+        if no_res_membership:
             continue
-        if not lab in labs:
-            labs[lab] = []
+        if not res in resources:
+            resources[res] = []
 
-        labs[lab].append(member['GitHubUsername'].lower())
+        resources[res].append(member['GitHubUsername'].lower())
 
-    return labs
+    return resources
 
 # FIXME Eventually get actual resources and build page HTML programmatically
-def get_lab_pages(resources):
+def get_resource_pages(resource_names):
     pages = {}
-    # FIXME TOMORROW-JM: get this from payload (webhook)
-    for res in resources:
-        with open(f"./assets/html/{res}.html") as f:
-            pages[f"from_data_{res}"] = f.read()
+    for name in resource_names:
+        with open(f"./assets/html/{name}.html") as f:
+            pages[f"from_data_{name}"] = f.read()
     return pages
 
 def parse_memberships(req):
