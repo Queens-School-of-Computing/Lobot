@@ -49,9 +49,16 @@ def extract_resources_names(payload):
 def extract_resources(payload, resource_names):
     """
     Sorts members by resources. Given input of the form
-    [{"GitHubUsername":"foo","Membership":bar}]
-    outs a dict of the following form
-    {"bar":["foo"]}
+    [
+        {"GitHubUsername":"samus","Membership":"nintendo"},
+        {"GitHubUsername":"mario","Membership":"nintendo"},
+        {"GitHubUsername":"sonic","Membership":"sega"},
+    ]
+    outputs a dict of the following form
+    {
+        "nintendo":["samus","mario"],
+        "sega":["sonic"],
+    }
     """
     resources = {}
     for member in payload:
