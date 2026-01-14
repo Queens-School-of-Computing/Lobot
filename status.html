@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QSC Lobot Resource Status Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: white;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --user-allocation-bg: #f8f9fa;
+            --notice-bg: #fff3cd;
+            --notice-border: #ffc107;
+            --notice-text: #856404;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-muted: #9ca3af;
+            --border-color: #404040;
+            --user-allocation-bg: #383838;
+            --notice-bg: #3d3d1a;
+            --notice-border: #ffc107;
+            --notice-text: #ffd54f;
+        }
+
+        body {
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .status-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .resource-bar {
+            margin-bottom: 15px;
+        }
+
+        .resource-label {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress {
+            height: 24px;
+            border-radius: 4px;
+            background-color: var(--border-color);
+        }
+
+        .user-allocation {
+            background: var(--user-allocation-bg);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .notice {
+            background: var(--notice-bg);
+            border-left: 4px solid var(--notice-border);
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--notice-text);
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .lab-selector {
+            margin-bottom: 20px;
+        }
+
+        .form-select, .form-label {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+
+        .form-select:focus {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: #007bff;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .lab-overview-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .lab-overview-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .lab-overview-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .quick-stat {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-available {
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <div class="header-row">
+            <h1>QSC Resource Status Dashboard</h1>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="bi bi-moon-fill"></i> Dark Mode
+            </button>
+        </div>
+        
+        <div class="lab-selector">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="labSelect" class="form-label">Select Lab:</label>
+                    <select class="form-select" id="labSelect">
+                        <option value="">-- All Labs Overview --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="overview-container" style="display: none;"></div>
+        <div id="detail-container" style="display: none;"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // Initialize selected lab
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedLab = localStorage.getItem('selectedLab') || '';
+        var selectedLab = urlParams.get('lab') || savedLab;
+        var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+        var allData = {};
+
+        // Theme toggle functionality
+        $('#themeToggle').on('click', function() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeButton(isDark);
+        });
+
+        function updateThemeButton(isDark) {
+            const button = $('#themeToggle');
+            if (isDark) {
+                button.html('<i class="bi bi-sun-fill"></i> Light Mode');
+            } else {
+                button.html('<i class="bi bi-moon-fill"></i> Dark Mode');
+            }
+        }
+
+        // Initialize theme button
+        updateThemeButton(savedTheme === 'dark');
+
+        function getColorClass(percentage) {
+            if (percentage >= 75) return 'bg-danger';
+            if (percentage >= 50) return 'bg-warning';
+            return 'bg-success';
+        }
+
+        function parseResource(details, resource) {
+            const match = details.match(new RegExp(resource + ': (\\d+) of (\\d+)'));
+            if (match) {
+                return { available: parseInt(match[1]), total: parseInt(match[2]) };
+            }
+            return { available: 0, total: 0 };
+        }
+
+        function renderProgressBar(available, total, label) {
+            const percentage = total > 0 ? ((total - available) / total * 100) : 0;
+            const colorClass = getColorClass(percentage);
+            return `
+                <div class="resource-bar">
+                    <div class="resource-label">
+                        <span>${label}</span>
+                        <span>${available} / ${total}</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar ${colorClass}" role="progressbar" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLabDetail(labName, labData) {
+            const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+            const memData = parseResource(labData.summary_details, 'MEMORY GB');
+            const gpuData = parseResource(labData.summary_details, 'GPU');
+
+            const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+            const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+            const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+            // Extract just the lab name (before "available resources")
+            const displayTitle = labData.summary_title.split(' available resources')[0];
+
+            let html = `
+                <div class="lab-card">
+                    <h3>${displayTitle}</h3>
+                    <div style="margin: 20px 0;">
+                        <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                            <span>CPU:</span>
+                            <span class="stat-available">${cpuData.available}/${cpuData.total} Cores (${cpuPercentage}% used)</span>
+                        </div>
+                        <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                            <span>Memory:</span>
+                            <span class="stat-available">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                        </div>
+                        <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                            <span>GPU:</span>
+                            <span class="stat-available">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                        </div>
+                    </div>
+                    
+                    <h5 style="margin-top: 20px; margin-bottom: 15px;">User Allocations</h5>
+            `;
+
+            $.each(labData.usage, function(index, value) {
+                if (!value.includes('NOTICE')) {
+                    // Extract username and make it a link (allow hyphens and other characters)
+                    const match = value.match(/^([a-zA-Z0-9_-]+)\s*==/);
+                    let displayValue = value;
+                    if (match) {
+                        const username = match[1];
+                        displayValue = value.replace(username, `<a href="https://github.com/${username}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: none;">${username}</a>`);
+                    }
+                    html += `<div class="user-allocation">${displayValue}</div>`;
+                }
+            });
+
+            const noticeItem = labData.usage.find(item => item.includes('NOTICE'));
+            if (noticeItem) {
+                html += `<div class="notice">${noticeItem}</div>`;
+            }
+
+            html += `<div class="last-updated">Last updated: ${labData.time}</div>`;
+            html += `</div>`;
+
+            return html;
+        }
+
+        function renderLabOverview(labName, labData) {
+            const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+            const memData = parseResource(labData.summary_details, 'MEMORY GB');
+            const gpuData = parseResource(labData.summary_details, 'GPU');
+
+            const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+            const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+            const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+            // Extract just the lab name (before "available resources")
+            const displayTitle = labData.summary_title.split(' available resources')[0];
+
+            return `
+                <div class="lab-overview-card" onclick="selectLab('${labName}')">
+                    <div class="lab-overview-title">${displayTitle}</div>
+                    <div class="quick-stat">
+                        <span>CPU:</span>
+                        <span class="stat-available">${cpuData.available}/${cpuData.total} (${cpuPercentage}% used)</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span>Memory:</span>
+                        <span class="stat-available">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span>GPU:</span>
+                        <span class="stat-available">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectLab(labName) {
+            selectedLab = labName;
+            localStorage.setItem('selectedLab', selectedLab);
+            $('#labSelect').val(labName).change();
+        }
+
+        function updateDisplay(data) {
+            allData = data;
+            
+            // Populate dropdown if not already done
+            if ($('#labSelect option').length === 1) {
+                Object.keys(data).sort().forEach(lab => {
+                    // Extract just the lab name (before "available resources")
+                    const displayName = data[lab].summary_title.split(' available resources')[0];
+                    $('#labSelect').append(`<option value="${lab}">${displayName}</option>`);
+                });
+                // Set the selected lab after populating
+                $('#labSelect').val(selectedLab);
+            }
+
+            if (selectedLab === '' || selectedLab === null) {
+                // Show overview
+                $('#overview-container').show();
+                $('#detail-container').hide();
+                
+                let overviewHtml = '<div class="overview-grid">';
+                Object.keys(data).sort().forEach(labName => {
+                    overviewHtml += renderLabOverview(labName, data[labName]);
+                });
+                overviewHtml += '</div>';
+                
+                $('#overview-container').html(overviewHtml);
+            } else {
+                // Show detail for selected lab
+                if (data[selectedLab]) {
+                    $('#detail-container').html(renderLabDetail(selectedLab, data[selectedLab]));
+                    $('#detail-container').show();
+                    $('#overview-container').hide();
+                }
+            }
+        }
+
+        function fetchLabStatus() {
+            $.getJSON(url_status, function(data) {
+                if (data) {
+                    updateDisplay(data);
+                }
+            });
+        }
+
+        $('#labSelect').on('change', function() {
+            selectedLab = $(this).val();
+            localStorage.setItem('selectedLab', selectedLab);
+            updateDisplay(allData);
+        });
+
+        // Initial fetch
+        fetchLabStatus();
+
+        // Refresh every 5 seconds
+        setInterval(fetchLabStatus, 5000);
+    </script>
+</body>
+</html>
