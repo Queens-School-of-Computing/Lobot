@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QSC Resource Status - Embed</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-muted: #9ca3af;
+            --border-color: #404040;
+            --user-allocation-bg: #383838;
+            --notice-bg: #3d3d1a;
+            --notice-border: #ffc107;
+            --notice-text: #ffd54f;
+            --link-color: #4a9eff;
+        }
+
+        body.light-mode {
+            --bg-color: #f8f9fa;
+            --card-bg: white;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --user-allocation-bg: #f8f9fa;
+            --notice-bg: #fff3cd;
+            --notice-border: #ffc107;
+            --notice-text: #856404;
+            --link-color: #007bff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .lab-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lab-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .stat {
+            font-size: 11px;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            margin-left: 6px;
+            color: var(--text-color);
+        }
+
+        .user-allocation {
+            background: var(--user-allocation-bg);
+            padding: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #007bff;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .user-allocation a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .user-allocation a:hover {
+            text-decoration: underline;
+        }
+
+        .notice {
+            background: var(--notice-bg);
+            border-left: 3px solid var(--notice-border);
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: var(--notice-text);
+        }
+
+        .last-updated {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .detail-stats {
+            margin: 15px 0;
+        }
+
+        .detail-stat {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .allocations-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="loading">Loading resource status...</div>
+    </div>
+
+    <script>
+        const url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+        
+        // Get parameters from query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedLab = urlParams.get('lab') || '';
+        const theme = urlParams.get('theme') || 'dark';
+
+        // Apply theme
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        function parseResource(details, resource) {
+            const match = details.match(new RegExp(resource + ': (\\d+) of (\\d+)'));
+            if (match) {
+                return { available: parseInt(match[1]), total: parseInt(match[2]) };
+            }
+            return { available: 0, total: 0 };
+        }
+
+        function renderLabCard(labName, labData) {
+            const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+            const memData = parseResource(labData.summary_details, 'MEMORY GB');
+            const gpuData = parseResource(labData.summary_details, 'GPU');
+
+            const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+            const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+            const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+            const displayTitle = labData.summary_title.split(' available resources')[0];
+
+            return `
+                <div class="lab-card">
+                    <div class="lab-title">${displayTitle}</div>
+                    <div class="stat">
+                        CPU:<span class="stat-value">${cpuData.available}/${cpuData.total} (${cpuPercentage}% used)</span>
+                    </div>
+                    <div class="stat">
+                        Memory:<span class="stat-value">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                    </div>
+                    <div class="stat">
+                        GPU:<span class="stat-value">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLabDetail(labName, labData) {
+            const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+            const memData = parseResource(labData.summary_details, 'MEMORY GB');
+            const gpuData = parseResource(labData.summary_details, 'GPU');
+
+            const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+            const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+            const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+            const displayTitle = labData.summary_title.split(' available resources')[0];
+
+            let html = `
+                <div class="lab-card">
+                    <div class="detail-title">${displayTitle}</div>
+                    <div class="detail-stats">
+                        <div class="detail-stat">
+                            CPU:<span class="stat-value">${cpuData.available}/${cpuData.total} Cores (${cpuPercentage}% used)</span>
+                        </div>
+                        <div class="detail-stat">
+                            Memory:<span class="stat-value">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                        </div>
+                        <div class="detail-stat">
+                            GPU:<span class="stat-value">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="allocations-title">User Allocations</div>
+            `;
+
+            labData.usage.forEach(value => {
+                if (!value.includes('NOTICE')) {
+                    // Extract username and make it a link (allow hyphens and other characters)
+                    const match = value.match(/^([a-zA-Z0-9_-]+)\s*==/);
+                    let displayValue = value;
+                    if (match) {
+                        const username = match[1];
+                        displayValue = value.replace(username, `<a href="https://github.com/${username}" target="_blank" rel="noopener noreferrer">${username}</a>`);
+                    }
+                    html += `<div class="user-allocation">${displayValue}</div>`;
+                }
+            });
+
+            const noticeItem = labData.usage.find(item => item.includes('NOTICE'));
+            if (noticeItem) {
+                html += `<div class="notice">${noticeItem}</div>`;
+            }
+
+            html += `<div class="last-updated">Last updated: ${labData.time}</div>`;
+            html += `</div>`;
+
+            return html;
+        }
+
+        function fetchStatus() {
+            fetch(url_status)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    let html;
+                    
+                    if (selectedLab && data[selectedLab]) {
+                        // Show detail view for selected lab
+                        html = renderLabDetail(selectedLab, data[selectedLab]);
+                    } else {
+                        // Show overview of all labs
+                        html = '<div class="overview-grid">';
+                        Object.keys(data).sort().forEach(labName => {
+                            html += renderLabCard(labName, data[labName]);
+                        });
+                        html += '</div>';
+                    }
+                    
+                    document.getElementById('container').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('container').innerHTML = 
+                        '<div class="error">Failed to load resource status</div>';
+                    console.error('Error:', error);
+                });
+        }
+
+        // Initial fetch
+        fetchStatus();
+
+        // Refresh every 10 seconds
+        setInterval(fetchStatus, 10000);
+    </script>
+</body>
+</html>
