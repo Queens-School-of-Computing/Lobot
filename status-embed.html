@@ -6,29 +6,17 @@
     <title>QSC Resource Status - Embed</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --card-bg: #2d2d2d;
-            --text-color: #e0e0e0;
-            --text-muted: #9ca3af;
-            --border-color: #404040;
-            --user-allocation-bg: #383838;
-            --notice-bg: #3d3d1a;
+            color-scheme: light dark;
+            --bg-color: light-dark(#f8f9fa, #1a1a1a);
+            --card-bg: light-dark(white, #2d2d2d);
+            --text-color: light-dark(#212529, #e0e0e0);
+            --text-muted: light-dark(#6c757d, #9ca3af);
+            --border-color: light-dark(#dee2e6, #404040);
+            --user-allocation-bg: light-dark(#f8f9fa, #383838);
+            --notice-bg: light-dark(#fff3cd, #3d3d1a);
             --notice-border: #ffc107;
-            --notice-text: #ffd54f;
-            --link-color: #4a9eff;
-        }
-
-        body.light-mode {
-            --bg-color: #f8f9fa;
-            --card-bg: white;
-            --text-color: #212529;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
-            --user-allocation-bg: #f8f9fa;
-            --notice-bg: #fff3cd;
-            --notice-border: #ffc107;
-            --notice-text: #856404;
-            --link-color: #007bff;
+            --notice-text: light-dark(#856404, #ffd54f);
+            --link-color: light-dark(#007bff, #4a9eff);
         }
 
         * {
@@ -160,12 +148,6 @@
         // Get parameters from query string
         const urlParams = new URLSearchParams(window.location.search);
         const selectedLab = urlParams.get('lab') || '';
-        const theme = urlParams.get('theme') || 'dark';
-
-        // Apply theme
-        if (theme === 'light') {
-            document.body.classList.add('light-mode');
-        }
 
         function parseResource(details, resource) {
             const match = details.match(new RegExp(resource + ': (\\d+) of (\\d+)'));
