@@ -6,13 +6,14 @@ import yaml
 
 from pathlib import Path
 
+input_file = './members-payload.json'
 output_file = 'runtime_setting.yaml'
 
 denied_resources = [ 'admin' ]
 always_included_resources = [ 'lobot_problackwell', 'devlab' ]
 
 def main():
-    payload = read_payload()
+    payload = read_payload(input_file)
 
     resource_names = extract_resources_names(payload)
     resources = extract_resources(payload, resource_names)
@@ -27,7 +28,7 @@ def main():
         f.write(get_generated_disclaimer())
         yaml.dump(config, f, indent=2, sort_keys=False)
 
-def read_payload(path = './members-payload.json'):
+def read_payload(path):
     """
     Expecting file of given name with JSON payload like
     [{"GitHubUsername":"isaac","Membership":"ishimura"}, ...]
