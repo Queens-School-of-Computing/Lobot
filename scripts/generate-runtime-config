@@ -12,10 +12,7 @@ denied_resources = [ 'admin' ]
 always_included_resources = [ 'lobot_problackwell', 'devlab' ]
 
 def main():
-    # XXX Example implementation. Expecting payload like
-    # [{"GitHubUsername":"foo","Membership":bar}, ...]
-    # from live webhook
-    payload = json.loads(Path('./example-payload.json').read_text())
+    payload = read_payload()
 
     resource_names = extract_resources_names(payload)
     resources = extract_resources(payload, resource_names)
@@ -29,6 +26,19 @@ def main():
     with open(output_file, 'w') as f:
         f.write(get_generated_disclaimer())
         yaml.dump(config, f, indent=2, sort_keys=False)
+
+def read_payload(path = './members-payload.json'):
+    """
+    Expecting file of given name with JSON payload like
+    [{"GitHubUsername":"isaac","Membership":"ishimura"}, ...]
+    """
+    try:
+        return json.loads(Path(path).read_text())
+    except FileNotFoundError as e:
+        print(f"No payload file found at '{path}' -- quitting")
+
+        sys.exit(1)
+
 
 def extract_resources_names(payload):
     names = set()
