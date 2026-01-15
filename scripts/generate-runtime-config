@@ -10,8 +10,10 @@ from pathlib import Path
 input_file = os.getenv('INPUT_FILE', './members-payload.json')
 output_file = os.getenv('OUTPUT_FILE', './runtime_setting.yaml')
 
-denied_resources = [ 'admin' ]
-always_included_resources = [ 'lobot_problackwell', 'devlab' ]
+# Resources which should never appear, or always appear, in the output_file,
+# regardless of whether they are in the input_file
+denied_resources = json.loads(os.getenv('DENIED_RESOURCES', '["admin"]'))
+always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES','["lobot_problackwell","devlab"]'))
 
 def main():
     payload = read_payload(input_file)
@@ -73,9 +75,10 @@ def extract_resources(payload, resource_names):
     resources = {}
     for member in payload:
         res = member['Membership']
-        no_res_membership=(not res or not res in resource_names)
-        if no_res_membership:
+        resource_not_allowed=(not res in resource_names)
+        if resource_not_allowed:
             continue
+
         if not res in resources:
             resources[res] = []
 
