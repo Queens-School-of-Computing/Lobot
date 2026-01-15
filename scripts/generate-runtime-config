@@ -83,6 +83,8 @@ def extract_resources(payload, resource_names):
         if not res in resources:
             resources[res] = []
 
+        # Since GitHub usernames are case-insensitive,
+        # we always downcase them
         resources[res].append(member['GitHubUsername'].lower())
 
     return resources
@@ -94,7 +96,6 @@ def sort_resources(resources):
     """
     for res, members in resources.items():
         resources[res] = sorted(members)
-        print(res, members)
 
     return dict(sorted(resources.items()))
 
