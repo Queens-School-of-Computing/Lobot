@@ -35,6 +35,7 @@ def read_payload(path):
     """
     Expecting file of given name with JSON payload like
     [{"GitHubUsername":"isaac","Membership":"ishimura"}, ...]
+    Parses and returns file as a list of dicts.
     """
     try:
         return json.loads(Path(path).read_text())
@@ -123,5 +124,7 @@ def str_presenter(dumper, data):
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 if __name__ == "__main__":
+    print("NOTE This program is meant to be run non-interactively "
+          "from the workflow at '.github/workflows/update-runtime_setting.yml'"
+          "\n" + '-' * 80)
     main()
-    print('---')
