@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
+import os
 import json
 import sys
 import yaml
 
 from pathlib import Path
 
-input_file = './members-payload.json'
-output_file = 'runtime_setting.yaml'
+input_file = os.getenv('INPUT_FILE', './members-payload.json')
+output_file = os.getenv('OUTPUT_FILE', './runtime_setting.yaml')
 
 denied_resources = [ 'admin' ]
 always_included_resources = [ 'lobot_problackwell', 'devlab' ]
