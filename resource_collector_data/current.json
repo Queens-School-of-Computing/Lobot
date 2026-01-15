@@ -1,0 +1,122 @@
+{
+    "gandslab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "GOAL&SWIMS Labs available resources CPU Cores: 68 of 128, MEMORY GB: 27 of 251, GPU: 2 of 2 [2026-01-15 09:23:39]",
+        "summary_title": "GOAL&SWIMS Labs available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 68 of 128, MEMORY GB: 27 of 251, GPU: 2 of 2",
+        "usage": [
+            "mohammedads1998 == 8 cores, 96 mem, 0 gpu",
+            "z-mohamedelrashidy == 4 cores, 64 mem, 0 gpu",
+            "elsawyhesham == 32 cores, 64 mem, 0 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "miblab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "miblab available resources CPU Cores: 104 of 192, MEMORY GB: 495 of 1007, GPU: 2 of 6 [2026-01-15 09:23:39]",
+        "summary_title": "miblab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 104 of 192, MEMORY GB: 495 of 1007, GPU: 2 of 6",
+        "usage": [
+            "ryanz8 == 64 cores, 512 mem, 4 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "winemocollab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "winemocollab available resources CPU Cores: 48 of 128, MEMORY GB: 111 of 1007, GPU: 2 of 4 [2026-01-15 09:23:39]",
+        "summary_title": "winemocollab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 48 of 128, MEMORY GB: 111 of 1007, GPU: 2 of 4",
+        "usage": [
+            "ericxuwang == 24 cores, 256 mem, 1 gpu",
+            "qirujin == 16 cores, 256 mem, 0 gpu",
+            "zhihaod == 24 cores, 384 mem, 1 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "caslab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "caslab available resources CPU Cores: 19 of 24, MEMORY GB: 125 of 126, GPU: 0 of 0 [2026-01-15 09:23:39]",
+        "summary_title": "caslab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 19 of 24, MEMORY GB: 125 of 126, GPU: 0 of 0",
+        "usage": [
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "mulab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "mulab available resources CPU Cores: 225 of 256, MEMORY GB: 1008 of 1008, GPU: 8 of 8 [2026-01-15 09:23:39]",
+        "summary_title": "mulab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 225 of 256, MEMORY GB: 1008 of 1008, GPU: 8 of 8",
+        "usage": [
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "riselab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "riselab available resources CPU Cores: 183 of 256, MEMORY GB: 688 of 1008, GPU: 5 of 7 [2026-01-15 09:23:39]",
+        "summary_title": "riselab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 183 of 256, MEMORY GB: 688 of 1008, GPU: 5 of 7",
+        "usage": [
+            "hhz2014 == 8 cores, 64 mem, 0 gpu",
+            "s-sheikhaei == 8 cores, 64 mem, 0 gpu",
+            "maxhao56 == 10 cores, 64 mem, 2 gpu",
+            "jiangonal == 8 cores, 64 mem, 0 gpu",
+            "ljj430 == 8 cores, 64 mem, 0 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "lobot_a40": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "Lobot [A40] available resources CPU Cores: 191 of 256, MEMORY GB: 1694 of 2014, GPU: 5 of 8 [2026-01-15 09:23:39]",
+        "summary_title": "Lobot [A40] available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 191 of 256, MEMORY GB: 1694 of 2014, GPU: 5 of 8",
+        "usage": [
+            "ruslanamruddin == 10 cores, 128 mem, 1 gpu",
+            "busvp52 == 16 cores, 128 mem, 1 gpu",
+            "qscautodrivegroup2 == 8 cores, 64 mem, 1 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "bamlab": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "bamlab available resources CPU Cores: 209 of 256, MEMORY GB: 1886 of 2014, GPU: 2 of 4 [2026-01-15 09:23:39]",
+        "summary_title": "bamlab available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 209 of 256, MEMORY GB: 1886 of 2014, GPU: 2 of 4",
+        "usage": [
+            "x-20aanm---d712ab43 == 8 cores, 64 mem, 1 gpu",
+            "schorm == 8 cores, 64 mem, 1 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "lobot_a5000": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "Lobot [A5000] available resources CPU Cores: 153 of 256, MEMORY GB: 368 of 1008, GPU: 4 of 8 [2026-01-15 09:23:39]",
+        "summary_title": "Lobot [A5000] available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 153 of 256, MEMORY GB: 368 of 1008, GPU: 4 of 8",
+        "usage": [
+            "dilakshansrikanthan == 32 cores, 256 mem, 1 gpu",
+            "dalbenziog == 32 cores, 128 mem, 1 gpu",
+            "ibrahimkettaneh == 8 cores, 256 mem, 2 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "lobot_a16": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "Lobot [A16] available resources CPU Cores: 112 of 128, MEMORY GB: 503 of 503, GPU: 16 of 16 [2026-01-15 09:23:39]",
+        "summary_title": "Lobot [A16] available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 112 of 128, MEMORY GB: 503 of 503, GPU: 16 of 16",
+        "usage": [
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    },
+    "edemsmithbusiness": {
+        "time": "2026-01-15 09:23:39",
+        "summary": "Smith School of Business (Edem) available resources CPU Cores: 52 of 96, MEMORY GB: 936 of 1448, GPU: 12 of 12 [2026-01-15 09:23:39]",
+        "summary_title": "Smith School of Business (Edem) available resources as of 2026-01-15 09:23:39",
+        "summary_details": "CPU Cores: 52 of 96, MEMORY GB: 936 of 1448, GPU: 12 of 12",
+        "usage": [
+            "eklobodu == 32 cores, 512 mem, 0 gpu",
+            "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
+        ]
+    }
+}
