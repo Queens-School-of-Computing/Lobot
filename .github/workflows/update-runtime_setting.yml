@@ -8,8 +8,15 @@ jobs:
   echo:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo Payload
-        env:
-          PAYLOAD: ${{ github.event.client_payload.data }}
+      - name: Write out payload
         run: |
-          echo "Payload: ${PAYLOAD}"
+          echo "${{ toJson(github.event.client_payload.data) }}" > members-payload.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Update runtime_setting.yaml
+        run: |
+          ./scripts/generate-runtime-config members-payload.json
