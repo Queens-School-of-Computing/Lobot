@@ -35,4 +35,4 @@ jobs:
           labels: infra,bot
 
           # Probably replace this with "team-reviewers" property at org level
-          reviewers: jm-janzen
+          team-reviewers: reviewers
