@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Write out payload
         run: |
-          echo "${{ toJson(github.event.client_payload.data) }}" > members-payload.json
+          echo '${{ github.event.client_payload.data }}' > members-payload.json
 
       - name: Set up Python
         uses: actions/setup-python@v5
