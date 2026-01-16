@@ -8,6 +8,9 @@ jobs:
   echo:
     runs-on: ubuntu-latest
     steps:
+      - name: Git checkout
+        uses: actions/checkout@v5
+
       - name: Write out payload
         run: |
           echo '${{ github.event.client_payload.data }}' > members-payload.json
@@ -18,5 +21,4 @@ jobs:
           python-version: 3.12
 
       - name: Update runtime_setting.yaml
-        run: |
-          ./scripts/generate-runtime-config members-payload.json
+        run: ./scripts/generate-runtime-config
