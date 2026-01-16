@@ -29,8 +29,8 @@ jobs:
           token: ${{ secrets.PR_BOT_TOKEN }}
           title: 'chore: automated runtime_setting.yaml update'
           commit-message: 'chore: automated runtime_setting.yaml update'
-          committer: <github-actions[bot]@users.noreply.github.com>
-          author: <github-actions[bot]@users.noreply.github.com>
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           add-paths: ./runtime_setting.yaml
           labels: infra,bot
 
