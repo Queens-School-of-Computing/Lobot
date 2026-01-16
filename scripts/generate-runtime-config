@@ -38,7 +38,9 @@ def read_payload(path):
     Parses and returns file as a list of dicts.
     """
     try:
-        return json.loads(Path(path).read_text())
+        content = Path(path).read_text()
+        print(content)
+        return json.loads(content)
     except FileNotFoundError as e:
         print(f"No payload file found at '{path}' -- quitting")
 
