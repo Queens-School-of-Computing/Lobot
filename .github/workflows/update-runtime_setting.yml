@@ -12,11 +12,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Write out payload
-        run: |
-
-          echo 'A: ${{ github.event.client_payload.data }}'
-          echo 'B: ${{ toJson(github.event.client_payload.data) }}'
-          echo '${{ toJson(github.event.client_payload.data) }}' > members-payload.json
+        run: echo '${{ toJson(github.event.client_payload.data) }}' > members-payload.json
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,16 +23,13 @@ jobs:
       - name: Update runtime_setting.yaml
         run: ./scripts/generate-runtime-config
 
-      - name: Cat output_file
-        run: cat ./runtime_setting.yaml
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PR_BOT_TOKEN }}
           title: 'chore: automated runtime_setting.yaml update'
           commit-message: 'chore: automated runtime_setting.yaml update'
-          add-paths: ./runtime-setting.yaml
+          add-paths: ./runtime_setting.yaml
           labels: infra,bot
 
           # Probably replace this with "team-reviewers" property at org level
