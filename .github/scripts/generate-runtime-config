@@ -12,8 +12,8 @@ output_file = os.getenv('OUTPUT_FILE', './runtime_setting.yaml')
 
 # Resources which should never appear, or always appear, in the output_file,
 # regardless of whether they are in the input_file
-denied_resources = json.loads(os.getenv('DENIED_RESOURCES', '["admin"]'))
-always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES','["lobot_problackwell","devlab"]'))
+denied_resources = json.loads(os.getenv('DENIED_RESOURCES', '[]'))
+always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES','[]'))
 
 def main():
     payload = read_payload(input_file)
