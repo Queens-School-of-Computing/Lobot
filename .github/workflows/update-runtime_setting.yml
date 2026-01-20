@@ -21,7 +21,7 @@ jobs:
       - run: pip install -r ./scripts/requirements.txt
 
       - name: Update runtime_setting.yaml
-        run: ./scripts/generate-runtime-config
+        run: ./.github/scripts/generate-runtime-config
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
@@ -33,6 +33,4 @@ jobs:
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           add-paths: ./runtime_setting.yaml
           labels: infra,bot
-
-          # Probably replace this with "team-reviewers" property at org level
           team-reviewers: reviewers
