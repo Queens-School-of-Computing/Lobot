@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      - run: pip install -r ./scripts/requirements.txt
+      - run: pip install -r ./.github/scripts/requirements.txt
 
       - name: Update runtime_setting.yaml
         run: ./.github/scripts/generate-runtime-config
