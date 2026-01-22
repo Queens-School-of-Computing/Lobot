@@ -46,7 +46,6 @@ nodeaccess:
   - adenjwong
   - esraaashraf12012
   - gholami7
-  - wiegerthefarmer
   - zackbabcock
   lobot_a40:
   - alongabriel
@@ -93,7 +92,8 @@ nodeaccess:
   - vnguyen16
   - zackaw-jpg
   lobot_problackwell:
-  - jm-janzen_bad
+  - jm-janzen
+  - wiegerthefarmer
   miblab:
   - fyyyaug
   - jianyuyin
