@@ -33,6 +33,7 @@ jobs:
             [GPU Cluster Users](https://queensuca.sharepoint.com/teams/\
             GROUP-QSCSystemsStaff/Lists/Users/Groups.aspx). Please visually \
             cross-reference that the change here matches the corresponding items there."
+          branch: update-runtime-setting
           add-paths: ./runtime_setting.yaml
           labels: infra,bot
           team-reviewers: reviewers
