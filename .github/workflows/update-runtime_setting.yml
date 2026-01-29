@@ -22,6 +22,9 @@ jobs:
 
       - name: Update runtime_setting.yaml
         run: ./.github/scripts/generate-runtime-config
+        env:
+          INPUT_FILE: ./members-payload.json
+          OUTPUT_FILE: ./runtime_setting.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
