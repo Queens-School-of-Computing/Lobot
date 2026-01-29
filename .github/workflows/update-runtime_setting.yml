@@ -28,7 +28,13 @@ jobs:
         with:
           token: ${{ secrets.PR_BOT_TOKEN }}
           title: 'chore: automated runtime_setting.yaml update'
-          commit-message: 'chore: automated runtime_setting.yaml update'
+          commit-message: >
+            chore: automated runtime_setting.yaml update
+            \n\n
+            This pull request was triggered by a change in
+            [GPU Cluster Users](https://queensuca.sharepoint.com/teams/
+            GROUP-QSCSystemsStaff/Lists/Users/Groups.aspx). Please visually
+            cross-reference the change here with the match items there.
           add-paths: ./runtime_setting.yaml
           labels: infra,bot
           team-reviewers: reviewers
