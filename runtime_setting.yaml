@@ -377,7 +377,8 @@ from_data_gandslab: |2
     <div class="form-group">
                 <label for="inputIMG">Base docker image to be deployed</label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20251218" select="selected">*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20251218]</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260204" select="selected">*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260204]</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20251218">*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20251218]</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.1cudnn-2.15.1tf-matlab-qsc-u24.04-20241129">*QSC* u22.04 matlab24.2 tf2.15.1 torch2.2.2 cuda12.6.1 [20241129]</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-ollama-qsc-u24.04-20250811-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 ollama [20250811.2]</option>
@@ -474,7 +475,7 @@ from_data_lobot_a16: |2
                   <option value="2">2x A16 (16G)</option>
                   <option value="3">3x A16 (16G)</option>
                   <option value="4">4x A16 (16G)</option>
-                  <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
+                  <option value="-1">*Experimental* Share All GPUs with other sessions</option>
                 </select>
                 <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
               </div>
