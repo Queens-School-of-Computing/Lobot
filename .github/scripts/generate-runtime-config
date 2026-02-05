@@ -30,9 +30,7 @@ def main():
 
     yaml.add_representer(str, str_presenter)
 
-    with open(output_file, 'w') as f:
-        f.write(get_generated_disclaimer())
-        yaml.dump(config, f, indent=2, sort_keys=False)
+    write_out(config, output_file)
 
 def read_payload(path):
     """
@@ -129,6 +127,11 @@ def get_resource_pages(resource_names):
         with open(f"./assets/html/{name}.html") as f:
             pages[f"from_data_{name}"] = f.read()
     return pages
+
+def write_out(content, file_path):
+    with open(file_path, 'w') as f:
+        f.write(get_generated_disclaimer())
+        yaml.dump(content, f, indent=2, sort_keys=False)
 
 def get_generated_disclaimer():
     return ("###\n"
