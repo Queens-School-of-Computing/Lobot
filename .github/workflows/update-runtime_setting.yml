@@ -1,6 +1,7 @@
 name: Update runtime_setting.yaml
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [gpu-cluster-users-changed]
 
