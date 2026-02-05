@@ -17,6 +17,9 @@ always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES','[]
 
 def main():
     payload = read_payload(input_file)
+    if payload is None:
+        print('Empty payload; using existing configuration ...')
+        payload = read_existing_config(output_file)
 
     resource_names = extract_resources_names(payload)
     resources = extract_resources(payload, resource_names)
@@ -45,6 +48,19 @@ def read_payload(path):
         print(f"No payload file found at '{path}' -- quitting")
 
         sys.exit(1)
+
+def read_existing_config(file):
+    payload = []
+    with open(file, 'r') as f:
+        y = yaml.safe_load(f)['nodeaccess']
+        for resource, members in y.items():
+            for member in members:
+                payload.append({
+                    'GitHubUsername': member,
+                    'Membership': resource
+                    })
+
+    return payload
 
 
 def extract_resources_names(payload):
