@@ -37,6 +37,7 @@ nodeaccess:
   - hammamsalem
   - krishna11s
   - mohammedads1998
+  - muneefo
   - o-a-m
   - tasnim7ahmed
   - yasser-nabil-dev
@@ -453,19 +454,16 @@ from_data_lobot_a16: |2
     <div class="form-group">
                 <label for="inputIMG">Base docker image to be deployed</label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20251218" select="selected">*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20251218]</option>
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-ollama-qsc-u24.04-20250811-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 ollama [20250811.2]</option>
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2">*QSC* u24.04 matlab24.2 tf2.18 torch2.6 cuda12.6.85 [20250501]</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260205-2" select="selected">*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260205]</option>
                 </select>
                 <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
     </div>
     <div class="form-group">
                 <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL AMD EPYC 7H12]</label>
                 <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                  <option value="10.0" select="selected">10 cores</option>
-                  <option value="16.0" >16 cores</option>
+                  <option value="8.0" select="selected">8 cores</option>
                 </select>
-                <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
+                <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores. Server will use more if needed and available automatically.</small>
               </div>
               <div class="form-group">
                 <label for="inputGPU">Number of GPU accelerators</label>
@@ -483,8 +481,8 @@ from_data_lobot_a16: |2
                 <label for="inputRAM">RAM to be allocated</label>
                 <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
                   <option value="16G" select="selected">16G RAM</option>
+                  <option value="32G">32G RAM</option>
                   <option value="64G">64G RAM</option>
-                  <option value="128G">128G RAM</option>
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
               </div>
