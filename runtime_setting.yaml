@@ -27,7 +27,6 @@ nodeaccess:
   - steven-hh-ding
   edemsmithbusiness:
   - eklobodu
-  - wiegerthefarmer
   gandslab:
   - 1aomagic
   - ameekbains
@@ -49,6 +48,7 @@ nodeaccess:
   - esraaashraf12012
   - gholami7
   - zackbabcock
+  - wiegerthefarmer
   lobot_a40:
   - alongabriel
   - bennidhugg
@@ -475,7 +475,7 @@ from_data_lobot_a16: |2
                   <option value="2">2x A16 (16G)</option>
                   <option value="3">3x A16 (16G)</option>
                   <option value="4">4x A16 (16G)</option>
-                  <option value="-1">*Experimental* Share All GPUs with other sessions</option>
+                  <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option> -->
                 </select>
                 <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
               </div>
