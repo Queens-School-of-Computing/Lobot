@@ -1,0 +1,16 @@
+name: Invite GitHub user to QSC organisation
+
+on:
+    workflow_dispatch:
+
+jobs:
+    invite_to_org:
+      runs-on: ubuntu-latest
+      steps:
+          - name: Get user id
+            # TODO Use name from workflow_dispatch
+            # TODO Pass .id to next step
+            run: gh api /users/jm-duck
+          - name: Invite user to QSC org
+            run: echo TODO # TODO
+
