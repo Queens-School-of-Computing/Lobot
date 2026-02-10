@@ -17,7 +17,7 @@ jobs:
                 GH_TOKEN: ${{ github.token }}
           - name: Send invitation to user
             run: |
-              org_name=${{ github.event.repository.owner.name }}
+              org_name=${{ github.repository_owner }}
               echo gh api "/orgs/$org_name/invitations" \
                 -F "invitee_id=${{ steps.one.outputs.user_id }}" \
                 -f role=direct_member
