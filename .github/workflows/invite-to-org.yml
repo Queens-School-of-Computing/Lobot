@@ -2,6 +2,8 @@ name: Invite GitHub user to QSC organisation
 
 on:
     workflow_dispatch:
+env:
+  ORG_NAME: ${{ github.event.repository.owner.name }}
 
 jobs:
     invite_to_org:
@@ -15,6 +17,9 @@ jobs:
               echo "user_id=$id" >> $GITHUB_OUTPUT
             env:
                 GH_TOKEN: ${{ github.token }}
-          - name: Invite user to QSC org
-            run: echo "user_id=${{ steps.one.outputs.user_id }}"
+          - name: Send invitation to user
+            run: |
+              echo gh api "/orgs/$ORG_NAME/invitations" \
+                -F "invitee_id=${{ steps.one.outputs.user_id }}" \
+                -f role=direct_member
 
