@@ -21,4 +21,6 @@ jobs:
               gh api "/orgs/$org_name/invitations" \
                 -F "invitee_id=${{ steps.one.outputs.user_id }}" \
                 -f role=direct_member
+            env:
+                GH_TOKEN: ${{ github.token }}
 
