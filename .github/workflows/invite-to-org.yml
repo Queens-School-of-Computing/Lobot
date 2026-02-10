@@ -11,6 +11,8 @@ jobs:
             # TODO Use name from workflow_dispatch
             # TODO Pass .id to next step
             run: gh api /users/jm-duck
+            env:
+                GH_TOKEN: ${{ github.token }}
           - name: Invite user to QSC org
             run: echo TODO # TODO
 
