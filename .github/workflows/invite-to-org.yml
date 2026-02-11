@@ -1,7 +1,8 @@
 name: Invite GitHub user to QSC organisation
 
 on:
-    workflow_dispatch:
+    repository_dispatch:
+      types: [invite-user-to-org]
 
 jobs:
     invite_to_org:
@@ -9,9 +10,9 @@ jobs:
       steps:
           - name: Get user id
             id: one
-            # TODO Use name from workflow_dispatch
             run: |
-              id=$(gh api /users/jm-duck | jq .id)
+              username=${{ toJson(github.event.client_payload.username) }}
+              id=$(gh api "/users/$username" | jq .id)
               echo "user_id=$id" >> $GITHUB_OUTPUT
             env:
                 GH_TOKEN: ${{ github.token }}
