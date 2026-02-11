@@ -22,5 +22,5 @@ jobs:
                 -F "invitee_id=${{ steps.one.outputs.user_id }}" \
                 -f role=direct_member
             env:
-                GH_TOKEN: ${{ github.token }}
+                GH_TOKEN: ${{ secrets.INVITE_BOT_TOKEN }}
 
