@@ -1,27 +1,27 @@
 name: Invite GitHub user to QSC organisation
 
 on:
-    repository_dispatch:
-      types: [invite-user-to-org]
+  repository_dispatch:
+    types: [invite-user-to-org]
 
 jobs:
-    invite_to_org:
-      runs-on: ubuntu-latest
-      steps:
-          - name: Get user id
-            id: one
-            run: |
-              username=${{ toJson(github.event.client_payload.username) }}
-              id=$(gh api "/users/$username" | jq .id)
-              echo "user_id=$id" >> $GITHUB_OUTPUT
-            env:
-                GH_TOKEN: ${{ github.token }}
-          - name: Send invitation to user
-            run: |
-              org_name=${{ github.repository_owner }}
-              gh api "/orgs/$org_name/invitations" \
-                -F "invitee_id=${{ steps.one.outputs.user_id }}" \
-                -f role=direct_member
-            env:
-                GH_TOKEN: ${{ secrets.INVITE_BOT_TOKEN }}
+  invite_to_org:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get user id
+        id: one
+        run: |
+          username=${{ toJson(github.event.client_payload.username) }}
+          id=$(gh api "/users/$username" | jq .id)
+          echo "user_id=$id" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Send invitation to user
+        run: |
+          org_name=${{ github.repository_owner }}
+          gh api "/orgs/$org_name/invitations" \
+            -F "invitee_id=${{ steps.one.outputs.user_id }}" \
+            -f role=direct_member
+        env:
+          GH_TOKEN: ${{ secrets.INVITE_BOT_TOKEN }}
 
