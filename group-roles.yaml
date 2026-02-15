@@ -1,0 +1,38 @@
+# group-roles.yaml
+# please make nam with group-, this allows for collaboration features to work.
+# user can be an existing jupyter user, this allows for users to share their session with others.
+
+roles:
+# example of a non-github user (local user only) group-lobot, sharing with three other people.
+  - name: group-lobot-users
+    user: group-lobot           # hub username that owns the shared server
+    members:
+      - jm-janzen
+      - wiegerthefarmer
+      - aaronvisser
+    scopes:
+      # explicit scopes, with {user} placeholder
+      - access:servers!user={user}
+      - servers!user={user}
+      - read:users!user={user}
+
+  # example of the user aaronvisser sharing their account with wiegerthefarmer
+  - name: group-wiegerthefarmer-users
+    user: wiegerthefarmer
+    members:
+      - aaronvisser
+    # no scopes => will use default scopes in config
+    
+#  - name: group-demo
+#    user: group-demo-user
+#    members:
+#      - jm-janzen
+#   scopes:
+      # read-only access: can open, cannot start/stop
+#     - access:servers!user={user}
+
+#  - name: group-project1-users
+#    user: group-project1
+#    members:
+#      - student1
+#      - student2
