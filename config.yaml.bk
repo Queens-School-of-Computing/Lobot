@@ -124,7 +124,13 @@ hub:
 
       GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
 
+      # Global set of collaboration users, based on roles whose name starts with 'group-'
+      _COLLAB_USERS = set()
+
       def _load_group_roles():
+          global _COLLAB_USERS
+          _COLLAB_USERS = set()
+
           try:
               raw = urllib.request.urlopen(GROUP_ROLES_URL).read().decode("utf-8")
               data = yaml.safe_load(raw) or {}
@@ -142,60 +148,40 @@ hub:
               if not (name and owner):
                   continue
 
+              # any role whose name starts with "group-" is treated as a collab role
+              if name.startswith("group-"):
+                  _COLLAB_USERS.add(owner)
+
+              # default scopes if none specified in YAML, open only, no start or stop
+              default_scopes = [
+                  f"access:servers!user={owner}",
+              ]
+              #default_scopes = [
+              #    f"access:servers!user={owner}",
+              #    f"servers!user={owner}",
+              #    f"read:users!user={owner}",
+              #]
+
+              raw_scopes = r.get("scopes")
+              if raw_scopes:
+                  # substitute {user} with owner in each scope string
+                  scopes = [s.format(user=owner) for s in raw_scopes]
+              else:
+                  scopes = default_scopes
+
               roles.append(
                   {
                       "name": name,
-                      "scopes": [
-                          # allow members to access owner's server UI
-                          f"access:servers!user={owner}",
-                          # allow members to start/stop owner's default server
-                          f"servers!user={owner}",
-                          # allow them to read basic info about owner
-                          f"read:users!user={owner}",
-                      ],
+                      "scopes": scopes,
                       "users": members,
                   }
               )
+
           print(f"load_roles: feteched these roles in {GROUP_ROLES_URL}: {str(roles)}")
+          print(f"collab-users-from-roles: collaboration users = {sorted(_COLLAB_USERS)}")
           return roles
 
       c.JupyterHub.load_roles = _load_group_roles()
-    11-collab-users-from-roles: |
-      import urllib.request, yaml
-
-      GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
-
-      def _load_collab_users_from_roles():
-          """
-          Return a set of usernames that should be treated as
-          collaboration accounts, based on role names starting with 'group-'.
-          Uses the same group-roles.yaml as 10-group-roles-from-yaml.
-          """
-          try:
-              raw = urllib.request.urlopen(GROUP_ROLES_URL).read().decode("utf-8")
-              data = yaml.safe_load(raw) or {}
-          except Exception as e:
-              print(f"collab-users-from-roles: failed to fetch {GROUP_ROLES_URL}: {e}")
-              return set()
-
-          roles_cfg = data.get("roles", [])
-          collab_users = set()
-
-          for r in roles_cfg:
-              name = r.get("name")   # e.g. "group-lobot-users"
-              owner = r.get("user")  # e.g. "group-lobot"
-              if not (name and owner):
-                  continue
-
-              # Treat any role whose name starts with "group-" as a collab project
-              if name.startswith("group-"):
-                  collab_users.add(owner)
-
-          print(f"collab-users-from-roles: collaboration users = {sorted(collab_users)}")
-          return collab_users
-
-      # store the set on c.JupyterHub for later use in pre_spawn_hook
-      c.JupyterHub.collab_users = _load_collab_users_from_roles() 
     15-group-servers-template-vars: |
       import urllib.request, yaml
 
@@ -353,14 +339,9 @@ hub:
       c.Spawner.options_from_form = options_from_form 
     pre_spawn_hook: |
       async def my_pre_spawn_hook(spwnr):
-        # Enable RTC for collaboration accounts
-        # --- RTC for collaboration accounts ----
-        from jupyterhub.app import JupyterHub
-        app = JupyterHub.instance()
-        collab_users = getattr(c.JupyterHub, "collab_users", set())
-        if spwnr.user.name in collab_users:
+        if spwnr.user.name in _COLLAB_USERS:
           spwnr.log.info(f"Enabling RTC for collaboration user {spwnr.user.name}")
-          #spwnr.args.append("--LabApp.collaborative=True")
+          spwnr.args.append("--LabApp.collaborative=True") 
         spwnr.log.info('username:' + spwnr.user.name.strip().lower())
         spwnr.log.info('  spwnr.user_options: ' + str(spwnr.user_options))
         options = spwnr.user_options
