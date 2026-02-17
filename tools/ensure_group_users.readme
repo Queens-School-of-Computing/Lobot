@@ -13,3 +13,22 @@ $ export JUPYTERHUB_API_TOKEN="ADMINTOKENHERE"
 #--verbose, Enable verbose logging of HTTP requests and checks
 
 $ python3 /opt/Lobot/tools/ensure_group_users.py   --api-url https://lobot.cs.queensu.ca/hub/api   --verbose
+
+
+
+##################################
+python3 /opt/Lobot/tools/ensure_group_users.py   --api-url https://lobot.cs.queensu.ca/hub/api   --verbose
+[HTTP] GET https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml
+[HTTP] 200 https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml
+[CHECK] Ensuring group user 'group-lobot' exists
+[HTTP] GET https://lobot.cs.queensu.ca/hub/api/users/group-lobot
+[HTTP] 404 https://lobot.cs.queensu.ca/hub/api/users/group-lobot
+[INFO] Group user group-lobot does not exist
+[ACTION] Creating group user group-lobot
+[HTTP] POST https://lobot.cs.queensu.ca/hub/api/users/group-lobot
+[HTTP] 201 https://lobot.cs.queensu.ca/hub/api/users/group-lobot
+[CHECK] Ensuring group user 'wiegerthefarmer' exists
+[HTTP] GET https://lobot.cs.queensu.ca/hub/api/users/wiegerthefarmer
+[HTTP] 200 https://lobot.cs.queensu.ca/hub/api/users/wiegerthefarmer
+[INFO] Group user wiegerthefarmer already exists
+[SUMMARY] Created users: ['group-lobot']
