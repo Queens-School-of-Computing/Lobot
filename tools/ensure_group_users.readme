@@ -1,0 +1,15 @@
+# ensure_group_users.py
+# creates local users for group collaboration
+
+# Step 1: Get admin api token with admin:users rights from web 
+$ export JUPYTERHUB_API_TOKEN="ADMINTOKENHERE"
+
+# Step 2: Execute 
+# configuration
+#--api-url, required=True,JupyterHub base API URL, e.g. https://lobot.cs.queensu.ca/hub/api
+#--token, Admin API token. If omitted, uses JUPYTERHUB_API_TOKEN env var.",
+#--group-roles-url,default=GROUP_ROLES_URL_DEFAULT,URL to group-roles.yaml (default: {GROUP_ROLES_URL_DEFAULT})"    )
+#--dry-run,Don't create anything; just report what would be done
+#--verbose, Enable verbose logging of HTTP requests and checks
+
+$ python3 /opt/Lobot/tools/ensure_group_users.py   --api-url https://lobot.cs.queensu.ca/hub/api   --verbose

@@ -1,0 +1,46 @@
+import urllib.request
+import yaml
+
+from jupyterhub import orm
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# URL to your group-roles.yaml
+GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+
+# This must match your Hub's db_url
+# In Zero to JupyterHub defaults, it's sqlite at /srv/jupyterhub/jupyterhub.sqlite
+DB_URL = "sqlite:////srv/jupyterhub/jupyterhub.sqlite"
+
+
+def main():
+    # Fetch group-roles.yaml
+    raw = urllib.request.urlopen(GROUP_ROLES_URL).read().decode("utf-8")
+    data = yaml.safe_load(raw) or {}
+    roles_cfg = data.get("roles", [])
+
+    # Set up a direct DB session
+    engine = create_engine(DB_URL)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+
+    created = []
+    for r in roles_cfg:
+        group_user = r.get("user")
+        if not group_user:
+            continue
+        user = db.query(orm.User).filter_by(name=group_user).first()
+        if not user:
+            print("Creating group user", group_user)
+            user = orm.User(name=group_user)
+            db.add(user)
+            db.commit()
+            created.append(group_user)
+        else:
+            print("Group user", group_user, "already exists")
+
+    print("Done. Created:", created)
+
+
+if __name__ == "__main__":
+    main()
