@@ -7,16 +7,59 @@
     <h1 class="sr-only">JupyterHub home page</h1>
     <div class="row">
       <div class="text-center">
-        {% if default_server.active %}<a id="stop" role="button" class="btn btn-lg btn-danger">Stop My Server</a>{% endif %}
-        <a id="start"
+        {# Stop only if default server is running #}
+        {% if default_server and default_server.active %}
+          <a id="stop"
+             role="button"
+             class="btn btn-lg btn-danger">
+            Stop My Server
+          </a>
+        {% endif %}
+
+        {# Single primary link: open or spawn as needed #}
+        <a id="open"
            role="button"
            class="btn btn-lg btn-primary"
            href="{{ url }}">
-          {% if not default_server.active %}Start{% endif %}
-          My Server
+          Open My Server
         </a>
       </div>
     </div>
+
+  {# === My Group Servers section === #}
+    {% set username = user.name.lower() %}
+    {% set group_map = group_servers_by_user or {} %}
+    {% set group_servers = group_map.get(username, []) %}
+
+    {% if group_servers %}
+      <hr>
+      <h2>My Group Servers</h2>
+      <ul>
+        {% for g in group_servers %}
+          {% set owner = g.owner if g.owner is defined else g.get('owner') %}
+          <li>            
+            <a href="{{ base_url }}user/{{ owner }}/"
+               class="btn btn-xs btn-primary">
+              Open : {{ owner }}
+            </a>
+            {% if g.can_manage %}
+             <!-- <button type="button"
+                      class="btn btn-xs btn-success group-start-btn"
+                      data-group-owner="{{ owner }}">
+                Start
+              </button>-->
+&nbsp;&nbsp;
+              <button type="button"
+                      class="btn btn-xs btn-danger group-stop-btn"
+                      data-group-owner="{{ owner }}">
+                Stop : {{ owner }}
+              </button>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {# === end My Group Servers section === #}
     {% if allow_named_servers %}
       <h2>Named Servers</h2>
       <p>
@@ -68,15 +111,13 @@
               </td>
               {# actions #}
               <td>
+                {# Stop button only when the named server is active #}
                 <a role="button"
                    class="stop-server btn btn-xs btn-danger{% if not spawner.active %} hidden{% endif %}"
                    id="stop-{{ spawner.name }}">stop</a>
-                <a role="button"
-                   class="start-server btn btn-xs btn-primary {% if spawner.active %}hidden{% endif %}"
-                   id="start-{{ spawner.name }}"
-                   href="{{ base_url }}spawn/{{ user.name }}/{{ spawner.name }}">start</a>
+                {# Start button removed #}
                 <button role="button"
-                        class="delete-server btn btn-xs btn-danger{% if spawner.active %} hidden{% endif %}"
+                        class="delete-server btn btn-xs btn-danger{% if not spawner.active %} hidden{% endif %}"
                         id="delete-{{ spawner.name }}">delete</button>
               </td>
             </tr>
@@ -89,6 +130,68 @@
 {% block script %}
   {{ super() }}
   <script type="text/javascript">
-    require(["home"]);
+    require(["home"], function() {
+      function getXsrfToken() {
+        var m = document.cookie.match("\\b_xsrf=([^;]*)\\b");
+        return m ? decodeURIComponent(m[1]) : null;
+      }
+
+      function apiRequest(method, url, onSuccess, onError) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var xsrf = getXsrfToken();
+        if (xsrf) {
+          xhr.setRequestHeader("X-XSRFToken", xsrf);
+        }
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            if (onSuccess) onSuccess(xhr);
+          } else {
+            if (onError) onError(xhr);
+          }
+        };
+        xhr.onerror = function() {
+          if (onError) onError(xhr);
+        };
+        xhr.send(null);
+      }
+
+      function startGroupServer(owner) {
+        var url = "{{ base_url }}api/users/" + encodeURIComponent(owner) + "/server";
+        apiRequest("POST", url,
+          function() { window.location.reload(); },
+          function(xhr) {
+            console.error("Failed to start server for", owner, xhr.status, xhr.responseText);
+            alert("Failed to start group server " + owner + ": " + xhr.status);
+          }
+        );
+      }
+
+      function stopGroupServer(owner) {
+        var url = "{{ base_url }}api/users/" + encodeURIComponent(owner) + "/server";
+        apiRequest("DELETE", url,
+          function() { window.location.reload(); },
+          function(xhr) {
+            console.error("Failed to stop server for", owner, xhr.status, xhr.responseText);
+            alert("Failed to stop group server " + owner + ": " + xhr.status);
+          }
+        );
+      }
+
+      document.querySelectorAll(".group-start-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var owner = btn.getAttribute("data-group-owner");
+          startGroupServer(owner);
+        });
+      });
+
+      document.querySelectorAll(".group-stop-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var owner = btn.getAttribute("data-group-owner");
+          stopGroupServer(owner);
+        });
+      });
+    });
   </script>
 {% endblock script %}
