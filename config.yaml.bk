@@ -40,7 +40,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
-    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20251218 
+    tag: 12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2
   extraEnv:
     #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
     #GRANT_SUDO: "yes"
@@ -74,7 +74,7 @@ hub:
       auto_login: true
       client_id: xxx
       client_secret: xxx
-      oauth_callback_url: https://lobot.cs.queensu.ca/hub/oauth_callback
+      oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
       allowed_organizations:
         - qumulab
         - L1NNA
@@ -87,6 +87,7 @@ hub:
         - WiegerTheFarmer
         - drdoog
         - sjwhittaker
+        - jm-janzen 
       scope:
         - read:org
         - read:user
@@ -156,11 +157,6 @@ hub:
               default_scopes = [
                   f"access:servers!user={owner}",
               ]
-              #default_scopes = [
-              #    f"access:servers!user={owner}",
-              #    f"servers!user={owner}",
-              #    f"read:users!user={owner}",
-              #]
 
               raw_scopes = r.get("scopes")
               if raw_scopes:
@@ -230,15 +226,16 @@ hub:
     20-rtc: |
       # Make JupyterLab the default and enable RTC
       c.Spawner.default_url = "/lab"
-      c.ServerApp.collaborative = True
+      #AV Feb 17 2026 - don't need specific RTC flags. Images are updated to support it.      
+      #c.ServerApp.collaborative = True
     templates: |
       c.JupyterHub.template_paths = ['/etc/jupyterhub/custom/templates/']
     debug: |
       # Set the log level by value or name.
-      c.JupyterHub.log_level = 'DEBUG'
+      c.JupyterHub.log_level = 'WARN'
 
       # Enable debug-logging of the single-user server
-      c.Spawner.debug = True 
+      c.Spawner.debug = False 
 
       # add some extra timeouts
       c.Spawner.http_timeout = 150 
@@ -247,7 +244,7 @@ hub:
       #c.Spawner.start_timeout = 3600 
       
       # Enable debug-logging of the single-user server
-      c.LocalProcessSpawner.debug = True
+      c.LocalProcessSpawner.debug = False
     
     custom_options_form: |
       def options_from_form(formdata):
@@ -290,6 +287,11 @@ hub:
           ss = 'lobot_a16-socsharedstorage'
           ds = 'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'
           sp_form = data['from_data_lobot_a16']   
+          return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['digilab']:
+          ss = 'digilab-socsharedstorage'
+          ds = 'Digilians Compute Resources'
+          sp_form = data['from_data_digilab']
           return sp_form.format(ss, ds)
         if username in data['nodeaccess']['lobot_problackwell']:
           ss = 'lobot_problackwell-socsharedstorage'
@@ -340,8 +342,9 @@ hub:
     pre_spawn_hook: |
       async def my_pre_spawn_hook(spwnr):
         if spwnr.user.name in _COLLAB_USERS:
-          spwnr.log.info(f"Enabling RTC for collaboration user {spwnr.user.name}")
-          spwnr.args.append("--LabApp.collaborative=True") 
+          spwnr.log.info(f"(DISABLED) Enabling RTC for collaboration user {spwnr.user.name}")
+          #AV Feb 17 2026 - don't need specific RTC flags. Images are updated to support it.      
+          #c.ServerApp.collaborative = True 
         spwnr.log.info('username:' + spwnr.user.name.strip().lower())
         spwnr.log.info('  spwnr.user_options: ' + str(spwnr.user_options))
         options = spwnr.user_options
