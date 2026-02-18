@@ -27,7 +27,6 @@ nodeaccess:
   - steven-hh-ding
   digilab:
   - wiegerthefarmer
-  - group-lobot
   edemsmithbusiness:
   - eklobodu
   gandslab:
@@ -308,7 +307,7 @@ from_data_digilab: |2
                 <label for="inputIMG">Base docker image to be deployed</label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260215" select="selected">*RTC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260215]</option>
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260205-2" >u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260205]</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260205-2">u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260205]</option>
                 </select>
                 <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
     </div>
