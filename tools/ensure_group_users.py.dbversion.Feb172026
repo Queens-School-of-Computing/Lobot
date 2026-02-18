@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # URL to your group-roles.yaml
-GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev/group-roles.yaml"
 
 # This must match your Hub's db_url
 # In Zero to JupyterHub defaults, it's sqlite at /srv/jupyterhub/jupyterhub.sqlite

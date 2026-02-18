@@ -1,34 +1,10 @@
 # ensure_group_users.py
 # creates local users for group collaboration
 
-# Step 1: Get admin api token with admin:users rights from web 
-$ export JUPYTERHUB_API_TOKEN="ADMINTOKENHERE"
-
-# Step 2: Execute 
 # configuration
 #--api-url, required=True,JupyterHub base API URL, e.g. https://lobot.cs.queensu.ca/hub/api
-#--token, Admin API token. If omitted, uses JUPYTERHUB_API_TOKEN env var.",
 #--group-roles-url,default=GROUP_ROLES_URL_DEFAULT,URL to group-roles.yaml (default: {GROUP_ROLES_URL_DEFAULT})"    )
 #--dry-run,Don't create anything; just report what would be done
 #--verbose, Enable verbose logging of HTTP requests and checks
 
 $ python3 /opt/Lobot/tools/ensure_group_users.py   --api-url https://lobot.cs.queensu.ca/hub/api   --verbose
-
-
-
-##################################
-python3 /opt/Lobot/tools/ensure_group_users.py   --api-url https://lobot.cs.queensu.ca/hub/api   --verbose
-[HTTP] GET https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml
-[HTTP] 200 https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml
-[CHECK] Ensuring group user 'group-lobot' exists
-[HTTP] GET https://lobot.cs.queensu.ca/hub/api/users/group-lobot
-[HTTP] 404 https://lobot.cs.queensu.ca/hub/api/users/group-lobot
-[INFO] Group user group-lobot does not exist
-[ACTION] Creating group user group-lobot
-[HTTP] POST https://lobot.cs.queensu.ca/hub/api/users/group-lobot
-[HTTP] 201 https://lobot.cs.queensu.ca/hub/api/users/group-lobot
-[CHECK] Ensuring group user 'wiegerthefarmer' exists
-[HTTP] GET https://lobot.cs.queensu.ca/hub/api/users/wiegerthefarmer
-[HTTP] 200 https://lobot.cs.queensu.ca/hub/api/users/wiegerthefarmer
-[INFO] Group user wiegerthefarmer already exists
-[SUMMARY] Created users: ['group-lobot']
