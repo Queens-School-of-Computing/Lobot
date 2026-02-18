@@ -120,15 +120,23 @@ hub:
     - name: custom-templates
       mountPath: /etc/jupyterhub/custom
   extraConfig:
+    05-services: |
+      # Define the group-manager service with its API token
+      c.JupyterHub.services = [
+          {
+              "name": "group-manager",
+              "api_token": "xxx",  
+          }
+      ]
     10-group-roles-from-yaml: |
       import urllib.request, yaml
 
-      GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+      GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev/group-roles.yaml"
 
       # Global set of collaboration users, based on roles whose name starts with 'group-'
       _COLLAB_USERS = set()
 
-      def _load_group_roles():
+      def _load_group_roles_and_service_role():
           global _COLLAB_USERS
           _COLLAB_USERS = set()
 
@@ -172,12 +180,20 @@ hub:
                       "users": members,
                   }
               )
-
+          
+          # Add the group-manager service role here
+          roles.append(
+              {
+                  "name": "group-manager-role",
+                  "scopes": ["admin:users"],
+                  "services": ["group-manager"],
+              }
+          )
           print(f"load_roles: feteched these roles in {GROUP_ROLES_URL}: {str(roles)}")
           print(f"collab-users-from-roles: collaboration users = {sorted(_COLLAB_USERS)}")
           return roles
 
-      c.JupyterHub.load_roles = _load_group_roles()
+      c.JupyterHub.load_roles = _load_group_roles_and_service_role()
     15-group-servers-template-vars: |
       import urllib.request, yaml
 
