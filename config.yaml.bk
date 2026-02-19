@@ -131,7 +131,7 @@ hub:
     10-group-roles-from-yaml: |
       import urllib.request, yaml
 
-      GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev/group-roles.yaml"
+      GROUP_ROLES_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
 
       # Global set of collaboration users, based on roles whose name starts with 'group-'
       _COLLAB_USERS = set()
@@ -185,7 +185,10 @@ hub:
           roles.append(
               {
                   "name": "group-manager-role",
-                  "scopes": ["admin:users"],
+                   "scopes": [
+                      "admin:users", # for adding new local users
+                      "admin:groups",# for read/write group and membership
+                  ],
                   "services": ["group-manager"],
               }
           )
