@@ -153,7 +153,7 @@ hub:
           for r in roles_cfg:
               name = r.get("name")
               owner = r.get("user")
-              members = r.get("members", [])
+              members = r.get("members", []) or []
               if not (name and owner):
                   continue
 
@@ -221,7 +221,7 @@ hub:
 
           for r in roles_cfg:
               group_user = r.get("user")
-              members = r.get("members", [])
+              members = r.get("members", [])  or []
               if not group_user:
                   continue
 
