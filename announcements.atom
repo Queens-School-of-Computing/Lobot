@@ -2,8 +2,15 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Lobot Announcements</title>
   <id>https://lobot-dev.cs.queensu.ca/announcements/feed</id>
-  <updated>2026-02-19T12:00:00Z</updated>
-
+  <updated>2026-02-20T08:00:00Z</updated>
+  <!-- Example 4: Filesystem maintenance -->
+  <entry>
+    <title>Filesystem maintenance</title>
+    <id>tag:lobot-dev.cs.queensu.ca,2026-02-20:fs-maintenance-1</id>
+    <updated>2026-02-20T08:00:00Z</updated>
+    <link href="https://lobot-dev.cs.queensu.ca" />
+    <summary>Shared storage will be in read-only mode on Sunday from 09:00 to 11:00 for filesystem checks. Running servers will remain available but cannot write to shared volumes during this window.</summary>
+  </entry>
   <!-- Example 1: Scheduled maintenance -->
   <entry>
     <title>Scheduled maintenance</title>
