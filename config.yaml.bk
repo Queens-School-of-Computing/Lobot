@@ -40,7 +40,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
-    tag: 12.6.85cudnn-2.18.0tf-matlab-qsc-u24.04-20250501-2
+    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260223
   extraEnv:
     #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
     #GRANT_SUDO: "yes"
@@ -185,7 +185,7 @@ hub:
           roles.append(
               {
                   "name": "group-manager-role",
-                   "scopes": [
+                  "scopes": [
                       "admin:users", # for adding new local users
                       "admin:groups",# for read/write group and membership
                   ],
@@ -224,7 +224,7 @@ hub:
 
           for r in roles_cfg:
               group_user = r.get("user")
-              members = r.get("members", [])  or []
+              members = r.get("members", []) or []
               if not group_user:
                   continue
 
@@ -242,6 +242,40 @@ hub:
 
       c.JupyterHub.template_vars = getattr(c.JupyterHub, "template_vars", {})
       c.JupyterHub.template_vars["group_servers_by_user"] = _load_group_servers_by_user()
+    16-dynamic-announcement: |
+      import urllib.request, urllib.error, yaml
+      from jupyterhub.handlers import BaseHandler
+
+      ANNOUNCEMENT_URL = (
+          "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/announcement.yaml"
+      )
+
+      def _fetch_announcement():
+          try:
+              raw = urllib.request.urlopen(ANNOUNCEMENT_URL, timeout=3).read().decode("utf-8")
+              data = yaml.safe_load(raw) or {}
+          except Exception as e:
+              # Don't break the page if the URL is unreachable
+              print(f"[dynamic-announcement] Failed to fetch {ANNOUNCEMENT_URL}: {e}")
+              return ""
+          text = data.get("announcement_home", "") or ""
+          return text
+
+      _orig_render_template_announce = BaseHandler.render_template
+
+      def _render_template_with_announcement(self, name, sync=False, **ns):
+          try:
+              ann = _fetch_announcement()
+              # Only set if non-empty; templates can test 'announcement_home'
+              if ann:
+                  ns.setdefault("announcement_login", ann)
+                  ns.setdefault("announcement_home", ann)
+                  ns.setdefault("announcement_spawn", ann)
+          except Exception as e:
+              self.log.error(f"[dynamic-announcement] Error injecting announcement: {e}")
+          return _orig_render_template_announce(self, name, sync=sync, **ns)
+
+      BaseHandler.render_template = _render_template_with_announcement 
     20-rtc: |
       # Make JupyterLab the default and enable RTC
       c.Spawner.default_url = "/lab"
@@ -251,7 +285,9 @@ hub:
       c.JupyterHub.template_paths = ['/etc/jupyterhub/custom/templates/']
     debug: |
       # Set the log level by value or name.
-      c.JupyterHub.log_level = 'WARN'
+      c.JupyterHub.log_level = 'DEBUG'
+
+      c.JupyterHub.default_url = "/hub/home"
 
       # Enable debug-logging of the single-user server
       c.Spawner.debug = False 
