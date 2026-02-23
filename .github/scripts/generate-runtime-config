@@ -35,7 +35,7 @@ def main():
 def read_payload(path):
     """
     Expecting file of given name with JSON payload like
-    [{"GitHubUsername":"isaac","Membership":"ishimura"}, ...]
+    [{"Username":"isaac","Membership":"ishimura"}, ...]
     Parses and returns file as a list of dicts.
     """
     try:
@@ -59,7 +59,7 @@ def read_existing_config(file):
         for resource, members in y.items():
             for member in members:
                 payload.append({
-                    'GitHubUsername': member,
+                    'Username': member,
                     'Membership': resource
                     })
 
@@ -84,9 +84,9 @@ def extract_resources(payload, resource_names):
     """
     Sorts members by resources. Given input payload of the form
     [
-        {"GitHubUsername":"samus","Membership":"nintendo"},
-        {"GitHubUsername":"mario","Membership":"nintendo"},
-        {"GitHubUsername":"sonic","Membership":"sega"},
+        {"Username":"samus","Membership":"nintendo"},
+        {"Username":"mario","Membership":"nintendo"},
+        {"Username":"sonic","Membership":"sega"},
     ]
     outputs a dict of the following form
     {
@@ -106,7 +106,7 @@ def extract_resources(payload, resource_names):
 
         # Since GitHub usernames are case-insensitive,
         # we always downcase them
-        resources[res].append(member['GitHubUsername'].lower())
+        resources[res].append(member['Username'].lower())
 
     return resources
 
