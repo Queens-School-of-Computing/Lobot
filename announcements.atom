@@ -1,40 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Lobot Announcements</title>
-  <id>https://lobot-dev.cs.queensu.ca/announcements/feed</id>
-  <updated>2026-02-20T08:00:00Z</updated>
-  <!-- Example 4: Filesystem maintenance -->
+  <id>https://lobot.cs.queensu.ca/announcements/feed</id>
+  <updated>2026-02-23T08:00:00Z</updated>
   <entry>
-    <title>Filesystem maintenance</title>
-    <id>tag:lobot-dev.cs.queensu.ca,2026-02-20:fs-maintenance-1</id>
-    <updated>2026-02-20T08:00:00Z</updated>
-    <link href="https://lobot-dev.cs.queensu.ca" />
-    <summary>Shared storage will be in read-only mode on Sunday from 09:00 to 11:00 for filesystem checks. Running servers will remain available but cannot write to shared volumes during this window.</summary>
-  </entry>
-  <!-- Example 1: Scheduled maintenance -->
-  <entry>
-    <title>Scheduled maintenance</title>
-    <id>tag:lobot-dev.cs.queensu.ca,2026-02-19:maintenance-1</id>
-    <updated>2026-02-19T12:00:00Z</updated>
-    <link href="https://lobot-dev.cs.queensu.ca" />
-    <summary>Cluster will be unavailable on Saturday from 22:00 to 23:00 for maintenance.</summary>
-  </entry>
-
-  <!-- Example 2: New image available -->
-  <entry>
-    <title>New GPU image available</title>
-    <id>tag:lobot-dev.cs.queensu.ca,2026-02-18:image-13.0.2</id>
-    <updated>2026-02-18T09:30:00Z</updated>
-    <link href="https://lobot-dev.cs.queensu.ca" />
-    <summary>The default GPU image has been updated to 13.0.2 with newer CUDA and TensorFlow versions.</summary>
-  </entry>
-
-  <!-- Example 3: Short-term advisory -->
-  <entry>
-    <title>High load advisory</title>
-    <id>tag:lobot-dev.cs.queensu.ca,2026-02-17:high-load-1</id>
-    <updated>2026-02-17T15:15:00Z</updated>
-    <link href="https://lobot-dev.cs.queensu.ca" />
-    <summary>You may experience slower startup times today between 15:00 and 17:00 due to heavy usage.</summary>
-  </entry>
+    <title>RTC and Latest Image Available</title>
+    <id>tag:lobot.cs.queensu.ca,2026-02-23:rtc-image-1</id>
+    <updated>2026-02-23T08:00:00Z</updated>
+    <link href="https://lobot.cs.queensu.ca" />
+    <summary>RTC (real time collaboration) is now available for groups. Image updated vs code for chat features, remote desktop desktop icons and logout fix.</summary>
+  </entry>  
 </feed>
