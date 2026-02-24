@@ -2,18 +2,17 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Lobot Announcements</title>
   <id>https://lobot.cs.queensu.ca/announcements/feed</id>
-  <updated>2026-02-24T08:00:00Z</updated>
+  <updated>2026-02-24T00:00:00Z</updated>
   <entry>
     <title>Updates Complete!/title>
     <id>tag:lobot.cs.queensu.ca,2026-02-24:updates-complete-1</id>
-    <updated>2026-02-24T08:00:00Z</updated>
-    <link href="https://lobot.cs.queensu.ca" />
+    <updated>2026-02-24T00:00:00Z</updated>
     <summary>RTC is now available for groups. VSCode Updated for ai agent chat, remote desktop desktop icons and logout fix.</summary>
   </entry>  
   <entry>
     <title>VSCode Github Chat Full Version Only</title>
     <id>tag:lobot.cs.queensu.ca,2026-02-24:gitchat-1</id>
-    <updated>2026-02-24T08:00:00Z</updated>
+    <updated>2026-02-24T00:00:00Z</updated>
     <link href="https://coder.com/docs/code-server/FAQ#why-cant-code-server-use-microsofts-extension-marketplace" />
     <summary>To use VS Code Github Chat Agents, use the Remote Desktop of VS Code. Extensions not supported in code-server.</summary>
   </entry>  
