@@ -16,7 +16,7 @@ denied_resources = json.loads(os.getenv('DENIED_RESOURCES', '[]'))
 always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES','[]'))
 
 def main():
-    payload = read_payload(input_file)
+    payload = read_payload(input_file, 'users')
     if payload is None:
         print('Empty payload; using existing configuration ...')
         payload = read_existing_config(output_file)
@@ -32,7 +32,7 @@ def main():
 
     write_out(config, output_file)
 
-def read_payload(path):
+def read_payload(path, root_property):
     """
     Expecting file of given name with JSON payload like
     [{"Username":"isaac","Membership":"ishimura"}, ...]
@@ -41,7 +41,7 @@ def read_payload(path):
     try:
         content = Path(path).read_text()
         print('Payload:', content)
-        return json.loads(content)
+        return json.loads(content)[root_property]
     except FileNotFoundError as e:
         print(f"No payload file found at '{path}' -- quitting")
 
