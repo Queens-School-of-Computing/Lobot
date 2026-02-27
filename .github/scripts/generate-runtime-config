@@ -44,7 +44,9 @@ def read_payload(path, root_property):
         return json.loads(content)[root_property]
     except FileNotFoundError as e:
         print(f"No payload file found at '{path}' -- quitting")
-
+        sys.exit(1)
+    except KeyError as e:
+        print(f"Payload missing root property '{root_property}' -- quitting")
         sys.exit(1)
 
 def read_existing_config(file):
