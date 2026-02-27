@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+
+import os
+import json
+import sys
+import yaml
+
+from pathlib import Path
+
+input_file = os.getenv('INPUT_FILE', './members-payload.json')
+output_file = os.getenv('OUTPUT_FILE', './group-roles.yaml')
+
+def main():
+    users_payload = read_payload(input_file, 'users')
+    users_payload = simplify_users_payload(users_payload)
+    groups_payload = read_payload(input_file, 'groups')
+    groups_payload = simplify_groups_payload(groups_payload)
+    if users_payload is None or groups_payload is None:
+        # Maybe one day will have a reason to run this script in "refresh existing"
+        raise NotImplementedError('Need a source payload to run this script')
+
+    roles = transform_payload(users_payload, groups_payload)
+    config = { 'roles': roles }
+
+    print(config)
+
+    write_out(config, output_file)
+
+def simplify_users_payload(payload):
+    """
+    NOTE This function fixes some abstraction leakage from the consumer of this
+    script. Eventually, would like to do this transformation before getting
+    into this script. At which time this function can be deleted. :)
+    Converts dict from form like:
+      [{"Groups":[{"Value":"Mario Bros."}, ..],"Username":"Luigi Mario"}, ...]
+    Into form like:
+      [{"Groups":["Mario Bros."],"Username":"Luigi Mario"}, ...]
+    """
+    simplified_payload = []
+    for user in payload:
+        simplified_user = {
+            'Username': user['Username'],
+            'Groups': [x['Value'] for x in user['Groups']]
+        }
+        simplified_payload.append(simplified_user)
+
+    return simplified_payload
+
+def simplify_groups_payload(payload):
+    """
+    NOTE Like simplify_users_payload, this function can be removed
+    once we fix the output from the consumer of this script.
+    It converts a dict like
+    [{"Permissions":[{"Value":"foo","bar"}]}, ...]
+    Into form like:
+    [{"Permissions":["foo","bar"]}, ...]
+    """
+    simplified_payload = []
+    for group in payload:
+        simplified_group = {
+            'Name': group['Name'],
+            'Owner': group['Owner'],
+            'Permissions': [x['Value'] for x in group['Permissions']]
+        }
+        simplified_payload.append(simplified_group)
+
+    return simplified_payload
+
+def transform_payload(users_payload, groups_payload):
+    """
+    Converts these:
+      "groups" = [{"Name":"foo","Owner":"mario"}, ...]},
+      "users" = [{"Groups":["bar"],"Username":"luigi"}, ...]
+    Into this:
+      [{
+        "name": "group-foo-users",
+        "user": "mario",
+        "members": ["luigi"],
+        "scopes": []
+      }, ...]
+    """
+
+    groups = {}
+    for user in users_payload:
+        for group in user['Groups']:
+            group_name = parse_group_name(group)
+            if group not in groups:
+                groups[group] = []
+            groups[group].append(user['Username'])
+
+
+    roles = []
+    for group in groups_payload:
+        group_name = group['Name']
+        role = {
+            'name': group_name,
+            'user': group['Owner'],
+            'members': groups.get(group_name),
+            # TODO Skip key entirely if empty
+            'scopes': parse_permissions(group.get('Permissions', [])),
+        }
+        roles.append(role)
+
+    return roles
+
+def parse_group_name(s):
+    """ Enforces correct "shape" of group name, and crashes if not fixable """
+    s = s.lower()
+
+    non_alphanumerics = [not c.isalnum() for c in s]
+    if any(non_alphanumerics):
+        raise Exception(f"The group name '{s}' contains non-alphanumeric characters")
+
+    if s[0:5] != 'group-':
+        s = 'group-' + s
+    if s[-7:] != '-users':
+        s += '-users'
+
+    return s
+
+def parse_permissions(permissions):
+    scope_map = {
+            'Access': 'access:servers!user={user}',
+            'Create': 'servers!user={user}',
+            'List': 'read:users!user={user}',
+            }
+
+    return [scope_map[perm] for perm in permissions]
+
+def read_payload(path, root_property):
+    """
+    Expecting file of given name with JSON payload like
+    {
+      "groups":[{"Name":"Mario Bros.","Owner":"Mario Mario"}, ...]},
+      "users":[{"Groups":[{"Value":"Mario Bros."}, ..],"Username":"Luigi Mario"}, ...]
+    }
+    Parses and returns file as a list of dicts.
+    """
+    try:
+        content = Path(path).read_text()
+        return json.loads(content)[root_property]
+    except FileNotFoundError as e:
+        print(f"No payload file found at '{path}' -- quitting")
+        sys.exit(1)
+    except KeyError as e:
+        print(f"Payload missing root property '{root_property}' -- quitting")
+        sys.exit(1)
+
+def write_out(content, file_path):
+    with open(file_path, 'w') as f:
+        f.write(get_generated_disclaimer())
+        yaml.dump(content, f, indent=2, sort_keys=False)
+
+def get_generated_disclaimer():
+    return ("###\n"
+            "### NOTE THIS FILE IS AUTOMATICALLY GENERATED\n"
+            "### ANY MANUAL EDITS WILL BE OVERWRITTEN\n"
+            "### EDIT .github/scripts/generate-group-roles\n"
+            "### OR THE SOURCE WHICH TRIGGERS THIS WORKFLOW\n"
+            "### TO CHANGE THIS FILE PERMANENTLY\n"
+            "###\n"
+            "\n")
+
+if __name__ == "__main__":
+    print("NOTE This program is meant to be run non-interactively"
+          "\n" + '-' * 80)
+    main()
