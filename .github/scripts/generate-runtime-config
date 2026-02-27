@@ -35,7 +35,7 @@ def main():
 def read_payload(path, root_property):
     """
     Expecting file of given name with JSON payload like
-    [{"Username":"isaac","Membership":"ishimura"}, ...]
+    {"users":[{"Username":"isaac","Membership":"ishimura"}, ...]}
     Parses and returns file as a list of dicts.
     """
     try:
