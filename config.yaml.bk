@@ -76,14 +76,9 @@ hub:
       client_secret: xxx
       oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
       allowed_organizations:
-        - qumulab
-        - L1NNA
         - Queens-School-of-Computing
-        - RISElabQueens
         - TheBaleHouse
       admin_users:
-        - steven-hh-ding
-        - haz
         - WiegerTheFarmer
         - drdoog
         - sjwhittaker
