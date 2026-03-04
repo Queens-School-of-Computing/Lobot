@@ -1,5 +1,5 @@
 # Kubernetes Image Management Scripts
-
+![Lobot Cluster Management](https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/assets/images/cleanpullbanner.jpg)
 ## Overview
 
 Two bash scripts for managing large container images across a Kubernetes cluster
