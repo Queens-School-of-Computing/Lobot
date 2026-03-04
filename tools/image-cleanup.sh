@@ -3,30 +3,153 @@
 NAMESPACE="kube-system"
 LABEL="name=image-cleanup"
 DAEMONSET_FILE="image-cleanup-ds.yaml"
-POLL_INTERVAL=10        # seconds between checks
-TIMEOUT=600             # max seconds to wait per pod (10 min)
-DS_READY_TIMEOUT=120    # max seconds to wait for DaemonSet to be ready
+POLL_INTERVAL=10
+TIMEOUT=600
+DS_READY_TIMEOUT=120
+
+# ==========================================
+# Email configuration
+# ==========================================
+EMAIL_ENABLED=true
+SMTP_SERVER="innovate.cs.queensu.ca"
+SMTP_PORT=25
+SMTP_USE_TLS=false
+SMTP_USERNAME=""
+SMTP_PASSWORD=""
+FROM_EMAIL="lobot@cs.queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+
+# ==========================================
+# Email helper - reads body from temp file
+# ==========================================
+send_email() {
+  local SUBJECT="$1"
+  local BODY_FILE="$2"
+
+  if [ "$EMAIL_ENABLED" != "true" ]; then
+    rm -f "$BODY_FILE"
+    return 0
+  fi
+
+  python3 <<PYEOF
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+smtp_server = "${SMTP_SERVER}"
+smtp_port   = ${SMTP_PORT}
+use_tls     = "${SMTP_USE_TLS}" in ("true", "True", "1")
+username    = "${SMTP_USERNAME}"
+password    = "${SMTP_PASSWORD}"
+from_email  = "${FROM_EMAIL}"
+to_emails   = [a.strip() for a in "${TO_EMAIL}".split(",")]
+
+with open("${BODY_FILE}", "r") as f:
+    body = f.read()
+
+msg = MIMEMultipart("alternative")
+msg["Subject"] = """${SUBJECT}"""
+msg["From"]    = f"Lobot Cluster <{from_email}>"
+msg["To"]      = ", ".join(to_emails)
+msg.attach(MIMEText(body, "html"))
+
+try:
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        if use_tls:
+            server.starttls()
+        if username and password:
+            server.login(username, password)
+        server.sendmail(from_email, to_emails, msg.as_string())
+    print("ok")
+except Exception as e:
+    print(f"error: {e}")
+    exit(1)
+PYEOF
+
+  if [ $? -eq 0 ]; then
+    echo " 📧 Email notification sent to $TO_EMAIL"
+  else
+    echo " ⚠️  Email notification failed to send"
+  fi
+
+  rm -f "$BODY_FILE"
+}
+
+# ==========================================
+# HTML email body builder
+# Writes directly to stdout - redirect to file at call site
+# ==========================================
+build_email_body() {
+  local LOG="$1"
+  local STATUS="$2"
+
+  if [ "$STATUS" = "success" ]; then
+    STATUS_COLOR="#2e7d32"
+    STATUS_LABEL="✅ Completed Successfully"
+  else
+    STATUS_COLOR="#c62828"
+    STATUS_LABEL="❌ Completed With Errors"
+  fi
+
+  LOG_CONTENT=$(cat "$LOG" | \
+    sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | \
+    sed 's/✅/<span style="color:#2e7d32">✅/g' | \
+    sed 's/❌/<span style="color:#c62828">❌/g' | \
+    sed 's/⚠️/<span style="color:#f57f17">⚠️/g' | \
+    sed 's/🚀/<span style="color:#1565c0">🚀/g' | \
+    sed 's/⏭️/<span style="color:#6a1e99">⏭️/g' | \
+    awk '{print $0"</span><br>"}')
+
+  cat <<BODYEOF
+<html>
+<body style="font-family: monospace; background-color: #1e1e1e; color: #d4d4d4; padding: 20px;">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="background-color: #2d2d2d; border-left: 5px solid ${STATUS_COLOR}; padding: 15px 20px; margin-bottom: 20px; border-radius: 4px;">
+      <h2 style="margin: 0; color: ${STATUS_COLOR}; font-family: monospace;">${STATUS_LABEL}</h2>
+      <p style="margin: 5px 0 0 0; color: #9e9e9e;">image-cleanup.sh &mdash; $(date)</p>
+    </div>
+    <div style="background-color: #2d2d2d; padding: 20px; border-radius: 4px; line-height: 1.6;">
+${LOG_CONTENT}
+    </div>
+    <div style="margin-top: 15px; color: #616161; font-size: 0.85em;">
+      Sent by Lobot Cluster Management &mdash; ${SMTP_SERVER}
+    </div>
+  </div>
+</body>
+</html>
+BODYEOF
+}
 
 # ==========================================
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-e <exclude_nodes>] [-n <node>]"
+  echo "Usage: $0 -i <image:tag> [-e <exclude_nodes>] [-n <node>] [--dry-run]"
   echo ""
-  echo "  -i  Full image name and tag to KEEP (all other tags will be removed)"
-  echo "  -e  Comma-separated list of nodes to exclude"
-  echo "  -n  Target a single specific node only"
+  echo "  -i        Full image name and tag to KEEP (all other tags will be removed)"
+  echo "  -e        Comma-separated list of nodes to exclude"
+  echo "  -n        Target a single specific node only"
+  echo "  --dry-run Report what would be removed without actually removing anything"
   echo ""
   echo "Examples:"
-  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 -e lobot-dev.cs.queensu.ca"
-  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 -n newcluster-gpunode3"
+  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -e lobot-dev.cs.queensu.ca"
+  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -n newcluster-gpunode3 --dry-run"
   exit 1
 }
 
 EXCLUDE_NODES=""
 TARGET_NODE=""
+DRY_RUN=false
 
-while getopts ":i:e:n:" opt; do
+ARGS=()
+for arg in "$@"; do
+  case $arg in
+    --dry-run) DRY_RUN=true ;;
+    *) ARGS+=("$arg") ;;
+  esac
+done
+
+while getopts ":i:e:n:" opt "${ARGS[@]}"; do
   case $opt in
     i) KEEP_IMAGE="$OPTARG" ;;
     e) EXCLUDE_NODES="$OPTARG" ;;
@@ -45,25 +168,32 @@ if [ -n "$TARGET_NODE" ] && [ -n "$EXCLUDE_NODES" ]; then
   usage
 fi
 
-# Parse image name and tag from the parameter
 IMAGE_NAME=$(echo $KEEP_IMAGE | cut -d: -f1)
 IMAGE_TAG=$(echo $KEEP_IMAGE | cut -d: -f2)
 IMAGE_SHORT=$(basename $IMAGE_NAME)
-
-# Full docker.io reference for exact string matching inside the container
 KEEP_IMAGE_FULL="docker.io/${IMAGE_NAME}:${IMAGE_TAG}"
 
-# Set up log file - output goes to both terminal and log file
 LOG_FILE="cleanup-results-$(date +%Y%m%d-%H%M%S).log"
+if [ "$DRY_RUN" = "true" ]; then
+  LOG_FILE="cleanup-dryrun-$(date +%Y%m%d-%H%M%S).log"
+fi
+
 exec > >(tee -a $LOG_FILE) 2>&1
 
 echo "=========================================="
+if [ "$DRY_RUN" = "true" ]; then
+echo " Image Cleanup - DRY RUN (no changes will be made)"
+else
 echo " Image Cleanup - Full Run"
+fi
 echo " $(date)"
 echo "=========================================="
 echo " Keeping:   $KEEP_IMAGE_FULL"
 echo " Removing:  Unused old tags of $IMAGE_SHORT"
 echo " Log file:  $LOG_FILE"
+if [ "$DRY_RUN" = "true" ]; then
+echo " Mode:      🔍 DRY RUN - no images will be removed"
+fi
 if [ -n "$TARGET_NODE" ]; then
 echo " Target:    $TARGET_NODE (single node mode)"
 elif [ -n "$EXCLUDE_NODES" ]; then
@@ -71,7 +201,6 @@ echo " Excluding: $(echo $EXCLUDE_NODES | tr ',' ' ')"
 fi
 echo "=========================================="
 
-# Preflight check - make sure kubectl is working
 if ! kubectl get nodes &>/dev/null; then
   echo "❌ ERROR: kubectl cannot reach the cluster!"
   exit 1
@@ -85,7 +214,6 @@ NODES=""
 EXCLUDED_COUNT=0
 
 if [ -n "$TARGET_NODE" ]; then
-  # Single node mode - verify it exists
   if ! echo "$ALL_NODES" | grep -q "^${TARGET_NODE}$"; then
     echo "❌ ERROR: Node '$TARGET_NODE' not found in cluster!"
     echo " Available nodes:"
@@ -94,7 +222,6 @@ if [ -n "$TARGET_NODE" ]; then
   fi
   NODES="$TARGET_NODE"
 else
-  # Normal mode - all nodes minus exclusions
   for NODE in $ALL_NODES; do
     EXCLUDED=false
     if [ -n "$EXCLUDE_NODES" ]; then
@@ -130,8 +257,7 @@ fi
 echo " Nodes to clean:         $TOTAL_NODES"
 
 # ==========================================
-# STEP 0: Build in-use image list per node
-# Format: nodename|namespace|podname|image
+# STEP 0: Scan in-use images per node
 # ==========================================
 echo ""
 echo "=========================================="
@@ -145,8 +271,6 @@ kubectl get pods --all-namespaces \
 
 echo " In-use image scan complete"
 
-# Helper: get in-use tags of IMAGE_SHORT on a specific node
-# Returns lines of format: image|namespace|podname
 get_inuse_tags_for_node() {
   local NODE=$1
   grep "^$NODE|" $IN_USE_TMPFILE | while IFS='|' read -r NODENAME NS POD IMAGES; do
@@ -158,13 +282,11 @@ get_inuse_tags_for_node() {
   done | sort -u
 }
 
-# Helper: get just the image refs (for ConfigMap encoding)
 get_inuse_imagetags_for_node() {
   local NODE=$1
   get_inuse_tags_for_node $NODE | cut -d'|' -f1
 }
 
-# Print summary of in-use images per node
 for NODE in $NODES; do
   INUSE=$(get_inuse_tags_for_node $NODE)
   if [ -n "$INUSE" ]; then
@@ -179,6 +301,99 @@ for NODE in $NODES; do
 done
 
 # ==========================================
+# DRY RUN
+# ==========================================
+if [ "$DRY_RUN" = "true" ]; then
+  echo ""
+  echo "=========================================="
+  echo " DRY RUN: Checking images on each node"
+  echo "=========================================="
+
+  for NODE in $NODES; do
+    echo ""
+    echo " Node: $NODE"
+    echo "------------------------------------------"
+
+    INUSE_TAGS=$(get_inuse_imagetags_for_node $NODE)
+
+    CHECK_POD="dry-run-check-$(echo $NODE | tr '.' '-' | tr '[:upper:]' '[:lower:]')-$(date +%s)"
+    CHECK_POD=$(echo $CHECK_POD | cut -c1-63)
+
+    kubectl run $CHECK_POD \
+      -n $NAMESPACE \
+      --image=alpine:latest \
+      --restart=Never \
+      --overrides="{
+        \"spec\": {
+          \"nodeName\": \"$NODE\",
+          \"hostPID\": true,
+          \"tolerations\": [{\"operator\": \"Exists\"}],
+          \"containers\": [{
+            \"name\": \"check\",
+            \"image\": \"alpine:latest\",
+            \"command\": [\"/bin/sh\", \"-c\",
+              \"nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep '$IMAGE_SHORT' | awk '{print \\\$1}'\"
+            ],
+            \"securityContext\": {\"privileged\": true, \"runAsUser\": 0}
+          }],
+          \"restartPolicy\": \"Never\"
+        }
+      }" \
+      --wait=true \
+      -i \
+      --quiet 2>/dev/null | while read IMAGE_REF; do
+        [ -z "$IMAGE_REF" ] && continue
+
+        if [ "$IMAGE_REF" = "$KEEP_IMAGE_FULL" ]; then
+          echo "  ✅ Would keep:   $IMAGE_REF"
+          continue
+        fi
+
+        SKIP=false
+        for INUSE_TAG in $INUSE_TAGS; do
+          if [ "$IMAGE_REF" = "$INUSE_TAG" ]; then
+            SKIP=true
+            break
+          fi
+        done
+
+        if [ "$SKIP" = "true" ]; then
+          echo "  ⚠️  Would skip:   $IMAGE_REF (in use by running pod)"
+        else
+          echo "  🗑️  Would remove: $IMAGE_REF"
+        fi
+      done
+
+    kubectl delete pod $CHECK_POD -n $NAMESPACE --ignore-not-found=true --wait=false > /dev/null 2>&1
+  done
+
+  echo ""
+  echo "=========================================="
+  echo " DRY RUN SUMMARY - $(date)"
+  echo "=========================================="
+  echo " Image kept:    $KEEP_IMAGE_FULL"
+  echo " Total nodes:   $TOTAL_NODES"
+  if [ -n "$TARGET_NODE" ]; then
+  echo " Mode:          Single node"
+  else
+  echo " ⏭️  Excluded:   $EXCLUDED_COUNT"
+  fi
+  echo " No changes were made."
+  echo "=========================================="
+
+  rm -f $IN_USE_TMPFILE
+
+  # Flush log before emailing
+  sleep 2
+
+  BODY_TMPFILE=$(mktemp)
+  build_email_body "$LOG_FILE" "success" > "$BODY_TMPFILE"
+  send_email "🔍 [DRY RUN] image-cleanup.sh | $IMAGE_SHORT | $TOTAL_NODES node(s) checked" "$BODY_TMPFILE"
+
+  exit 0
+fi
+
+# ==========================================
 # STEP 1: Generate DaemonSet yaml
 # ==========================================
 echo ""
@@ -186,7 +401,6 @@ echo "=========================================="
 echo " STEP 1: Generating DaemonSet with image"
 echo "=========================================="
 
-# Build ConfigMap data with in-use image refs per node
 CONFIGMAP_DATA=""
 for NODE in $NODES; do
   INUSE=$(get_inuse_imagetags_for_node $NODE)
@@ -197,7 +411,6 @@ for NODE in $NODES; do
   fi
 done
 
-# Create ConfigMap with in-use tags per node
 cat <<CMEOF | kubectl apply -f - > /dev/null 2>&1
 apiVersion: v1
 kind: ConfigMap
@@ -207,7 +420,6 @@ metadata:
 data:$CONFIGMAP_DATA
 CMEOF
 
-# Build DaemonSet yaml
 {
 cat <<DSEOF
 apiVersion: apps/v1
@@ -229,7 +441,6 @@ spec:
       - operator: Exists
 DSEOF
 
-# Add nodeAffinity - either target a single node or exclude nodes
 if [ -n "$TARGET_NODE" ]; then
   echo "      affinity:"
   echo "        nodeAffinity:"
@@ -268,10 +479,8 @@ cat <<DSEOF2
         - |
           echo "=== Node: \$NODE_NAME ==="
 
-          # The image we must always keep - full docker.io reference
           KEEP_IMAGE_FULL="${KEEP_IMAGE_FULL}"
 
-          # Load in-use image refs from ConfigMap for this node
           INUSE_TAGS=""
           ENCODED=\$(cat /etc/image-cleanup-inuse/\$NODE_NAME 2>/dev/null)
           if [ -n "\$ENCODED" ]; then
@@ -293,13 +502,11 @@ cat <<DSEOF2
             awk '{print \$1}' | \
             while read IMAGE_REF; do
 
-              # Skip the image we explicitly want to keep - plain string match
               if [ "\$IMAGE_REF" = "\$KEEP_IMAGE_FULL" ]; then
                 echo "  Keeping: \$IMAGE_REF"
                 continue
               fi
 
-              # Skip any images in use by running pods - plain string match
               SKIP=false
               for INUSE_TAG in \$INUSE_TAGS; do
                 if [ "\$IMAGE_REF" = "\$INUSE_TAG" ]; then
@@ -310,26 +517,20 @@ cat <<DSEOF2
               done
               [ "\$SKIP" = "true" ] && continue
 
-              # Get the manifest digest for this image ref so we can also
-              # remove any digest refs pointing to the same content
               MANIFEST_DIGEST=\$(nsenter --mount=/proc/1/ns/mnt -- \
                 /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | \
                 grep "^\$IMAGE_REF " | awk '{print \$3}')
 
-              # Remove the named tag
               echo "  Removing: \$IMAGE_REF"
               nsenter --mount=/proc/1/ns/mnt -- \
                 /usr/bin/ctr --namespace k8s.io images rm "\$IMAGE_REF" 2>&1
 
-              # Also remove any digest refs pointing to the same manifest
-              # These are the sha256: refs that prevent blob GC
               if [ -n "\$MANIFEST_DIGEST" ]; then
                 nsenter --mount=/proc/1/ns/mnt -- \
                   /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | \
                   grep "\$MANIFEST_DIGEST" | \
                   awk '{print \$1}' | \
                   while read DIGEST_REF; do
-                    # Never remove a digest ref that belongs to the keep image
                     KEEP_DIGEST=\$(nsenter --mount=/proc/1/ns/mnt -- \
                       /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | \
                       grep "^\$KEEP_IMAGE_FULL " | awk '{print \$3}')
@@ -386,7 +587,7 @@ fi
 echo "✅ DaemonSet applied successfully"
 
 # ==========================================
-# STEP 3: Wait for all pods to be scheduled
+# STEP 3: Wait for pods to be scheduled
 # ==========================================
 echo ""
 echo "=========================================="
@@ -430,7 +631,6 @@ if [ -z "$PODS" ]; then
   exit 1
 fi
 
-# Counters for summary
 TOTAL=0
 SUCCESS=0
 FAILED=0
@@ -483,7 +683,6 @@ for POD in $PODS; do
   else
     FAILED=$((FAILED + 1))
   fi
-
 done
 
 # ==========================================
@@ -497,7 +696,6 @@ kubectl delete -f $DAEMONSET_FILE > /dev/null 2>&1
 kubectl delete configmap image-cleanup-inuse -n kube-system > /dev/null 2>&1
 echo "✅ DaemonSet and ConfigMap deleted successfully"
 
-# Cleanup temp file
 rm -f $IN_USE_TMPFILE
 
 # ==========================================
@@ -518,7 +716,6 @@ echo " ✅ Succeeded:   $SUCCESS"
 echo " ❌ Failed:      $FAILED"
 echo " ⚠️  Timed out:  $TIMEOUT_COUNT"
 
-# Report any in-use images that were skipped with pod details
 INUSE_FOUND=false
 while IFS='|' read -r NODE NS POD IMAGES; do
   IS_EXCLUDED=false
@@ -544,10 +741,19 @@ done < <(kubectl get pods --all-namespaces \
 
 echo "=========================================="
 
+# Flush log before emailing
+sleep 2
+
 if [ $((FAILED + TIMEOUT_COUNT)) -gt 0 ]; then
   echo " ⚠️  Some nodes had issues - review logs above"
-  exit 1
+  BODY_TMPFILE=$(mktemp)
+  build_email_body "$LOG_FILE" "failure" > "$BODY_TMPFILE"
+  send_email "❌ image-cleanup.sh FAILED | $IMAGE_SHORT | ${FAILED} failed, ${TIMEOUT_COUNT} timed out" "$BODY_TMPFILE"
+else
+  echo " 🎉 All nodes cleaned up successfully!"
+  BODY_TMPFILE=$(mktemp)
+  build_email_body "$LOG_FILE" "success" > "$BODY_TMPFILE"
+  send_email "✅ image-cleanup.sh complete | $IMAGE_SHORT | ${SUCCESS} node(s) cleaned" "$BODY_TMPFILE"
 fi
 
-echo " 🎉 All nodes cleaned up successfully!"
-exit 0
+exit $( [ $((FAILED + TIMEOUT_COUNT)) -gt 0 ] && echo 1 || echo 0 )
