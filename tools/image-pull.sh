@@ -4,20 +4,158 @@ NAMESPACE="kube-system"
 POLL_INTERVAL=10        # seconds between checks
 
 # ==========================================
+# Email configuration
+# ==========================================
+EMAIL_ENABLED=true
+SMTP_SERVER="innovate.cs.queensu.ca"
+SMTP_PORT=25
+SMTP_USE_TLS=false
+SMTP_USERNAME=""
+SMTP_PASSWORD=""
+FROM_EMAIL="lobot@cs.queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+
+# ==========================================
+# Email helper - reads body from temp file
+# ==========================================
+send_email() {
+  local SUBJECT="$1"
+  local BODY_FILE="$2"
+
+  if [ "$EMAIL_ENABLED" != "true" ]; then
+    rm -f "$BODY_FILE"
+    return 0
+  fi
+
+  python3 <<PYEOF
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+smtp_server = "${SMTP_SERVER}"
+smtp_port   = ${SMTP_PORT}
+use_tls     = "${SMTP_USE_TLS}" in ("true", "True", "1")
+username    = "${SMTP_USERNAME}"
+password    = "${SMTP_PASSWORD}"
+from_email  = "${FROM_EMAIL}"
+to_emails   = [a.strip() for a in "${TO_EMAIL}".split(",")]
+
+with open("${BODY_FILE}", "r") as f:
+    body = f.read()
+
+msg = MIMEMultipart("alternative")
+msg["Subject"] = """${SUBJECT}"""
+msg["From"]    = f"Lobot Cluster <{from_email}>"
+msg["To"]      = ", ".join(to_emails)
+msg.attach(MIMEText(body, "html"))
+
+try:
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        if use_tls:
+            server.starttls()
+        if username and password:
+            server.login(username, password)
+        server.sendmail(from_email, to_emails, msg.as_string())
+    print("ok")
+except Exception as e:
+    print(f"error: {e}")
+    exit(1)
+PYEOF
+
+  if [ $? -eq 0 ]; then
+    echo " 📧 Email notification sent to $TO_EMAIL"
+  else
+    echo " ⚠️  Email notification failed to send"
+  fi
+
+  rm -f "$BODY_FILE"
+}
+
+# ==========================================
+# HTML email body builder
+# Writes directly to stdout - redirect to file at call site
+# ==========================================
+build_email_body() {
+  local LOG="$1"
+  local STATUS="$2"
+
+  if [ "$STATUS" = "success" ]; then
+    STATUS_COLOR="#2e7d32"
+    STATUS_LABEL="✅ Completed Successfully"
+  else
+    STATUS_COLOR="#c62828"
+    STATUS_LABEL="❌ Completed With Errors"
+  fi
+
+  LOG_CONTENT=$(cat "$LOG" | \
+    sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | \
+    sed 's/✅/<span style="color:#2e7d32">✅/g' | \
+    sed 's/❌/<span style="color:#c62828">❌/g' | \
+    sed 's/⚠️/<span style="color:#f57f17">⚠️/g' | \
+    sed 's/🚀/<span style="color:#1565c0">🚀/g' | \
+    sed 's/⏭️/<span style="color:#6a1e99">⏭️/g' | \
+    awk '{print $0"</span><br>"}')
+
+  cat <<BODYEOF
+<html>
+<body style="font-family: monospace; background-color: #1e1e1e; color: #d4d4d4; padding: 20px;">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="background-color: #2d2d2d; border-left: 5px solid ${STATUS_COLOR}; padding: 15px 20px; margin-bottom: 20px; border-radius: 4px;">
+      <h2 style="margin: 0; color: ${STATUS_COLOR}; font-family: monospace;">${STATUS_LABEL}</h2>
+      <p style="margin: 5px 0 0 0; color: #9e9e9e;">image-pull.sh &mdash; $(date)</p>
+    </div>
+    <div style="background-color: #2d2d2d; padding: 20px; border-radius: 4px; line-height: 1.6;">
+${LOG_CONTENT}
+    </div>
+    <div style="margin-top: 15px; color: #616161; font-size: 0.85em;">
+      Sent by Lobot Cluster Management &mdash; ${SMTP_SERVER}
+    </div>
+  </div>
+</body>
+</html>
+BODYEOF
+}
+
+# ==========================================
+# Helper: finalize log and send email
+# Cleans raw capture into log file then emails
+# ==========================================
+finalize_and_email() {
+  local SUBJECT="$1"
+  local STATUS="$2"
+
+  # Close the raw capture by redirecting back to terminal
+  # then generate the clean log synchronously
+  exec >/dev/tty 2>&1
+
+  sed 's/\x1B\[[0-9;]*[mGKHF]//g' "$RAW_TMPFILE" \
+    | grep -v "^\s*[└├─|]" \
+    | grep -v "fetching\|waiting\|already exists\|elapsed\|saved\|application/vnd" \
+    > "$LOG_FILE"
+
+  BODY_TMPFILE=$(mktemp)
+  build_email_body "$LOG_FILE" "$STATUS" > "$BODY_TMPFILE"
+  send_email "$SUBJECT" "$BODY_TMPFILE"
+
+  rm -f "$RAW_TMPFILE"
+}
+
+# ==========================================
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-b <batch_size>] [-t <timeout_seconds>] [-e <exclude_nodes>] [-n <node>]"
+  echo "Usage: $0 -i <image:tag> [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]"
   echo ""
-  echo "  -i  Full image name and tag to pull (required)"
-  echo "  -b  Number of nodes to pull simultaneously (default: 3)"
-  echo "  -t  Timeout in seconds per node pull (default: 1200 = 20 minutes)"
-  echo "  -e  Comma-separated list of nodes to exclude"
-  echo "  -n  Target a single specific node only"
+  echo "  -i        Full image name and tag to pull (required)"
+  echo "  -b        Number of nodes pulling simultaneously (default: 3)"
+  echo "  -t        Timeout in seconds per node (default: 1200)"
+  echo "  -e        Comma-separated list of nodes to exclude"
+  echo "  -n        Target a single specific node only"
+  echo "  --dry-run Report what would be pulled without actually pulling"
   echo ""
   echo "Examples:"
-  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 -b 3 -t 1200 -e lobot-dev.cs.queensu.ca"
-  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 -n newcluster-gpunode3"
+  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -b 3 -e lobot-dev.cs.queensu.ca"
+  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -n newcluster-gpunode3 --dry-run"
   exit 1
 }
 
@@ -25,8 +163,17 @@ BATCH_SIZE=3
 TIMEOUT=1200
 EXCLUDE_NODES=""
 TARGET_NODE=""
+DRY_RUN=false
 
-while getopts ":i:b:t:e:n:" opt; do
+ARGS=()
+for arg in "$@"; do
+  case $arg in
+    --dry-run) DRY_RUN=true ;;
+    *) ARGS+=("$arg") ;;
+  esac
+done
+
+while getopts ":i:b:t:e:n:" opt "${ARGS[@]}"; do
   case $opt in
     i) PULL_IMAGE="$OPTARG" ;;
     b) BATCH_SIZE="$OPTARG" ;;
@@ -50,24 +197,27 @@ fi
 IMAGE_SHORT=$(basename $(echo $PULL_IMAGE | cut -d: -f1))
 IMAGE_TAG=$(echo $PULL_IMAGE | cut -d: -f2)
 
-# Ensure image has docker.io/ prefix for ctr
 if echo "$PULL_IMAGE" | grep -qv "^docker.io/"; then
   CTR_IMAGE="docker.io/$PULL_IMAGE"
 else
   CTR_IMAGE="$PULL_IMAGE"
 fi
 
-# Set up log file with dual output:
-# - terminal gets raw output (ctr progress bars intact)
-# - log file gets stripped output (no ANSI codes, no ctr progress lines)
 LOG_FILE="pull-results-$(date +%Y%m%d-%H%M%S).log"
-exec > >(tee >(sed 's/\x1B\[[0-9;]*[mGKHF]//g' \
-  | grep -v "^\s*[└├─|]" \
-  | grep -v "fetching\|waiting\|already exists\|elapsed\|saved\|application/vnd" \
-  >> $LOG_FILE)) 2>&1
+if [ "$DRY_RUN" = "true" ]; then
+  LOG_FILE="pull-dryrun-$(date +%Y%m%d-%H%M%S).log"
+fi
+
+# Capture raw output to temp file - clean log generated at end
+RAW_TMPFILE=$(mktemp)
+exec > >(tee "$RAW_TMPFILE") 2>&1
 
 echo "=========================================="
+if [ "$DRY_RUN" = "true" ]; then
+echo " Image Pull - DRY RUN (no changes will be made)"
+else
 echo " Image Pull - Staggered Batch Run"
+fi
 echo " $(date)"
 echo "=========================================="
 echo " Image:      $PULL_IMAGE"
@@ -79,12 +229,14 @@ echo " Batch size: $BATCH_SIZE nodes at a time"
 fi
 echo " Timeout:    ${TIMEOUT}s per node"
 echo " Log file:   $LOG_FILE"
+if [ "$DRY_RUN" = "true" ]; then
+echo " Mode:       🔍 DRY RUN - no pods will be launched"
+fi
 if [ -n "$EXCLUDE_NODES" ]; then
 echo " Excluding:  $(echo $EXCLUDE_NODES | tr ',' ' ')"
 fi
 echo "=========================================="
 
-# Preflight check - make sure kubectl is working
 if ! kubectl get nodes &>/dev/null; then
   echo "❌ ERROR: kubectl cannot reach the cluster!"
   exit 1
@@ -98,7 +250,6 @@ NODES=""
 EXCLUDED_COUNT=0
 
 if [ -n "$TARGET_NODE" ]; then
-  # Single node mode - verify it exists
   if ! echo "$ALL_NODES" | grep -q "^${TARGET_NODE}$"; then
     echo "❌ ERROR: Node '$TARGET_NODE' not found in cluster!"
     echo " Available nodes:"
@@ -107,7 +258,6 @@ if [ -n "$TARGET_NODE" ]; then
   fi
   NODES="$TARGET_NODE"
 else
-  # Normal mode - all nodes minus exclusions
   for NODE in $ALL_NODES; do
     EXCLUDED=false
     if [ -n "$EXCLUDE_NODES" ]; then
@@ -145,18 +295,94 @@ echo " Total batches:          $(( (TOTAL_NODES + BATCH_SIZE - 1) / BATCH_SIZE )
 echo "=========================================="
 
 # ==========================================
+# DRY RUN
+# ==========================================
+if [ "$DRY_RUN" = "true" ]; then
+  echo ""
+  echo "=========================================="
+  echo " DRY RUN: Checking image status per node"
+  echo "=========================================="
+
+  NODE_ARRAY=($NODES)
+  TOTAL=${#NODE_ARRAY[@]}
+  BATCH_NUM=0
+
+  i=0
+  while [ $i -lt $TOTAL ]; do
+    BATCH_NUM=$((BATCH_NUM + 1))
+    BATCH_END=$((i + BATCH_SIZE))
+    if [ $BATCH_END -gt $TOTAL ]; then BATCH_END=$TOTAL; fi
+
+    echo ""
+    echo " BATCH $BATCH_NUM: Nodes $((i+1)) to $BATCH_END of $TOTAL"
+    echo "------------------------------------------"
+
+    for j in $(seq $i $((BATCH_END - 1))); do
+      NODE=${NODE_ARRAY[$j]}
+      echo "  🔍 Checking $NODE..."
+
+      EXISTS=$(kubectl run dry-run-check-$(date +%s) \
+        -n $NAMESPACE \
+        --image=alpine:latest \
+        --restart=Never \
+        --rm \
+        --overrides="{
+          \"spec\": {
+            \"nodeName\": \"$NODE\",
+            \"hostPID\": true,
+            \"tolerations\": [{\"operator\": \"Exists\"}],
+            \"containers\": [{
+              \"name\": \"check\",
+              \"image\": \"alpine:latest\",
+              \"command\": [\"/bin/sh\", \"-c\",
+                \"nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep -c '$CTR_IMAGE' || echo 0\"
+              ],
+              \"securityContext\": {\"privileged\": true, \"runAsUser\": 0}
+            }],
+            \"restartPolicy\": \"Never\"
+          }
+        }" \
+        --wait=true \
+        -i \
+        --quiet 2>/dev/null | tr -d '[:space:]')
+
+      if [ "$EXISTS" -gt "0" ] 2>/dev/null; then
+        echo "  ✅ $NODE — image already present, pull would be skipped"
+      else
+        echo "  📥 $NODE — image NOT present, would pull: $CTR_IMAGE"
+      fi
+    done
+
+    i=$BATCH_END
+  done
+
+  echo ""
+  echo "=========================================="
+  echo " DRY RUN SUMMARY - $(date)"
+  echo "=========================================="
+  echo " Image:        $PULL_IMAGE"
+  echo " Total nodes:  $TOTAL_NODES"
+  echo " Batch size:   $BATCH_SIZE"
+  if [ -n "$TARGET_NODE" ]; then
+  echo " Mode:         Single node"
+  else
+  echo " ⏭️  Excluded:  $EXCLUDED_COUNT"
+  fi
+  echo " No changes were made."
+  echo "=========================================="
+
+  finalize_and_email "🔍 [DRY RUN] image-pull.sh | $IMAGE_SHORT | $TOTAL_NODES node(s) checked" "success"
+  exit 0
+fi
+
+# ==========================================
 # Helper: pull image on a single node
-# Returns clean pod name only
 # ==========================================
 pull_on_node() {
   local NODE=$1
   local POD_NAME="image-pull-$(echo $NODE | tr '.' '-' | tr '[:upper:]' '[:lower:]')-$(date +%s)"
-
-  # Truncate pod name to 63 chars (kubernetes limit)
   POD_NAME=$(echo $POD_NAME | cut -c1-63)
 
-  # Redirect ALL kubectl run output to /dev/null so only echo $POD_NAME
-  # is captured by the caller
   kubectl run $POD_NAME \
     -n $NAMESPACE \
     --image=alpine:latest \
@@ -180,7 +406,6 @@ pull_on_node() {
     }" \
     --wait=false > /dev/null 2>&1
 
-  # Only this line is captured by caller - clean pod name
   echo $POD_NAME
 }
 
@@ -195,9 +420,7 @@ wait_for_running() {
   while [ $ELAPSED -lt 120 ]; do
     STATUS=$(kubectl get pod -n $NAMESPACE $POD -o jsonpath='{.status.phase}' 2>/dev/null)
     case $STATUS in
-      Running|Succeeded|Failed)
-        return 0
-        ;;
+      Running|Succeeded|Failed) return 0 ;;
     esac
     echo "  ⏳ $NODE - Waiting for pod to start... ${ELAPSED}s"
     sleep 5
@@ -210,32 +433,25 @@ wait_for_running() {
 
 # ==========================================
 # Helper: stream logs and wait for completion
-# Terminal gets live ctr progress
-# Returns 0 on success, 1 on failure, 2 on timeout
 # ==========================================
 stream_and_wait() {
   local POD=$1
   local NODE=$2
   local ELAPSED=0
 
-  # Wait for pod to be running first
   wait_for_running $POD $NODE || return 1
 
-  # Stream logs to terminal in background
   kubectl logs -n $NAMESPACE $POD -f --pod-running-timeout=30s 2>/dev/null &
   LOG_PID=$!
 
-  # Poll for pod completion silently - let ctr progress own the terminal
   while [ $ELAPSED -lt $TIMEOUT ]; do
     STATUS=$(kubectl get pod -n $NAMESPACE $POD -o jsonpath='{.status.phase}' 2>/dev/null)
 
     if [ "$STATUS" = "Succeeded" ] || [ "$STATUS" = "Failed" ]; then
-      # Give log stream a moment to flush final output
       sleep 3
       kill $LOG_PID 2>/dev/null
       wait $LOG_PID 2>/dev/null
 
-      # Check for explicit failure marker in logs
       FAILED=$(kubectl logs -n $NAMESPACE $POD 2>/dev/null | grep -c "Pull FAILED on")
       if [ "$FAILED" -gt "0" ] || [ "$STATUS" = "Failed" ]; then
         echo "  ❌ Pull failed on $NODE"
@@ -248,7 +464,6 @@ stream_and_wait() {
     ELAPSED=$((ELAPSED + POLL_INTERVAL))
   done
 
-  # Timeout reached
   kill $LOG_PID 2>/dev/null
   wait $LOG_PID 2>/dev/null
   echo "  ⚠️  TIMED OUT after ${TIMEOUT}s on $NODE"
@@ -284,7 +499,6 @@ while [ $i -lt $TOTAL ]; do
   echo " $(date)"
   echo "=========================================="
 
-  # Launch all pods in this batch simultaneously
   declare -A BATCH_PODS
   for j in $(seq $i $((BATCH_END - 1))); do
     NODE=${NODE_ARRAY[$j]}
@@ -294,7 +508,6 @@ while [ $i -lt $TOTAL ]; do
     echo "  📦 Pod $POD launched on $NODE"
   done
 
-  # Wait for all pods in this batch sequentially
   for NODE in "${!BATCH_PODS[@]}"; do
     POD=${BATCH_PODS[$NODE]}
     echo ""
@@ -318,7 +531,7 @@ while [ $i -lt $TOTAL ]; do
 done
 
 # ==========================================
-# RETRY PASS: failed nodes one at a time
+# RETRY PASS
 # ==========================================
 RETRY_SUCCESS=0
 RETRY_FAILED=0
@@ -378,8 +591,10 @@ echo "=========================================="
 
 if [ $RETRY_FAILED -gt 0 ]; then
   echo " ⚠️  Some nodes failed even after retry - review logs above"
-  exit 1
+  finalize_and_email "❌ image-pull.sh FAILED | $IMAGE_SHORT | ${RETRY_FAILED} node(s) failed" "failure"
+else
+  echo " 🎉 All nodes pulled successfully!"
+  finalize_and_email "✅ image-pull.sh complete | $IMAGE_SHORT | ${TOTAL} node(s) pulled" "success"
 fi
 
-echo " 🎉 All nodes pulled successfully!"
-exit 0
+exit $( [ $RETRY_FAILED -gt 0 ] && echo 1 || echo 0 )
