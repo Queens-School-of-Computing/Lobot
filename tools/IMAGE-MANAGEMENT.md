@@ -9,6 +9,9 @@ network bandwidth must be carefully managed during image operations.
 - **[`image-pull.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-pull.sh)** — Pre-pulls images across nodes in controlled batches to avoid saturating the network during helm upgrades
 - **[`image-cleanup.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-cleanup.sh)** — Removes old image tags from all nodes while protecting images in active use by running pods
 
+Both scripts support `--dry-run` mode for safe pre-flight checks, and send HTML
+email notifications on completion via Python smtplib.
+
 Both scripts are designed to run from the cluster control plane with `kubectl`
 access and write log files automatically alongside their output.
 
@@ -21,6 +24,7 @@ access and write log files automatically alongside their output.
 - Nodes must allow privileged pods with `hostPID: true` in `kube-system`
 - `alpine:latest` must be pullable on all nodes (used as the lightweight pod base)
 - `nsenter` available in alpine (used to access host containerd from within pods)
+- Python 3 on the control plane (used for HTML email notifications via smtplib)
 
 ---
 
@@ -35,7 +39,7 @@ saturating the network and causing pod scheduling delays.
 ### Usage
 
 ```bash
-./image-pull.sh -i <image:tag> [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>]
+./image-pull.sh -i <image:tag> [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]
 ```
 
 ### Parameters
@@ -47,6 +51,7 @@ saturating the network and causing pod scheduling delays.
 | `-t` | Timeout in seconds per node | `1200` |
 | `-e` | Comma-separated list of nodes to exclude | — |
 | `-n` | Target a single specific node only | — |
+| `--dry-run` | Check image presence per node; report what would be pulled without pulling | — |
 
 > `-n` and `-e` are mutually exclusive.
 
@@ -64,6 +69,13 @@ saturating the network and causing pod scheduling delays.
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
+
+# Dry-run: check which nodes already have the image, without pulling
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -b 3 \
+  -e lobot-dev.cs.queensu.ca \
+  --dry-run
 ```
 
 ### How It Works
@@ -80,6 +92,21 @@ saturating the network and causing pod scheduling delays.
 7. Writes a clean log file (ANSI codes and `ctr` progress lines stripped)
    alongside the full terminal output
 
+### Dry-Run Mode
+
+When `--dry-run` is passed, no pods are launched for actual pulling. Instead:
+
+1. A temporary `alpine:latest` pod is launched per node (with `--rm --wait=true`)
+2. The pod runs `ctr images ls | grep -c <image>` via `nsenter` to check presence
+3. Results are reported per node, grouped by batch:
+   - `✅ already present — pull would be skipped`
+   - `📥 not present — would pull: <image-ref>`
+4. A summary is printed and a dry-run email notification is sent
+5. Log file is named `pull-dryrun-YYYYMMDD-HHMMSS.log`
+
+Useful for auditing which nodes still need a given image before committing to
+the full batch run — for example, after an interrupted pull.
+
 ### Batch Sizing Guidelines
 
 | Cluster size | Recommended `-b` | Expected time per batch |
@@ -92,9 +119,51 @@ On a 10G link with 2–3 Gbps usable, pulling a single 18.7GB image takes roughl
 5–7 minutes. Batch size 3 means 3 simultaneous pulls sharing that bandwidth,
 so allow 10–15 min per batch on large images.
 
+### Email Notifications
+
+Configure the block at the top of the script:
+
+```bash
+EMAIL_ENABLED=true
+SMTP_SERVER="innovate.cs.queensu.ca"
+SMTP_PORT=25
+SMTP_USE_TLS=false
+SMTP_USERNAME=""
+SMTP_PASSWORD=""
+FROM_EMAIL="lobot@cs.queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+```
+
+| Variable | Description |
+|----------|-------------|
+| `EMAIL_ENABLED` | Set to `false` to disable all notifications |
+| `SMTP_SERVER` | Hostname of the SMTP relay |
+| `SMTP_PORT` | SMTP port (`25` = plain, `587` = submission+TLS) |
+| `SMTP_USE_TLS` | Set to `true` to enable STARTTLS |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | Leave empty for unauthenticated relay |
+| `FROM_EMAIL` | Sender address |
+| `TO_EMAIL` | Recipient(s), comma-separated |
+
+Email is sent via Python 3 `smtplib` on the control plane. The body is a
+dark-themed HTML page with monospace font and a colour-coded status banner
+(green for success, red for failure). Emoji in log output are colour-coded
+with inline spans. Email is sent on every run — live, failed, and dry-run.
+
+Subject line format:
+- `✅ image-pull.sh complete | gpu-jupyter-latest | N node(s) pulled`
+- `❌ image-pull.sh FAILED | gpu-jupyter-latest | N node(s) failed`
+- `🔍 [DRY RUN] image-pull.sh | gpu-jupyter-latest | N node(s) checked`
+
+> **Note:** `curl` SMTP does not work on this system. Python `smtplib` is used
+> exclusively. Python 3 must be available on the control plane.
+
 ### Typical Workflow Before a Helm Upgrade
 
 ```bash
+# 0. Dry-run to preview what will happen (recommended before every run)
+./image-pull.sh -i <new-image:tag> -b 3 -e <control-plane> --dry-run
+./image-cleanup.sh -i <new-image:tag> -e <control-plane> --dry-run
+
 # 1. Pre-pull the new image across all worker nodes
 ./image-pull.sh -i <new-image:tag> -b 3 -e <control-plane>
 
@@ -118,7 +187,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 ### Usage
 
 ```bash
-./image-cleanup.sh -i <image:tag> [-e <exclude>] [-n <node>]
+./image-cleanup.sh -i <image:tag> [-e <exclude>] [-n <node>] [--dry-run]
 ```
 
 ### Parameters
@@ -128,6 +197,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 | `-i` | Full image name and tag to KEEP (required) | — |
 | `-e` | Comma-separated list of nodes to exclude | — |
 | `-n` | Target a single specific node only | — |
+| `--dry-run` | Report what would be removed per node without removing anything | — |
 
 > `-n` and `-e` are mutually exclusive.
 
@@ -143,6 +213,12 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
+
+# Dry-run: see what would be removed without removing anything
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca \
+  --dry-run
 ```
 
 ### How It Works
@@ -158,6 +234,23 @@ pods (e.g. long-running user sessions that haven't restarted yet).
    reference — this is critical for actual blob GC and disk space recovery
 6. Collects logs from all pods and reports results
 7. Deletes the DaemonSet and ConfigMap on completion
+
+### Dry-Run Mode
+
+When `--dry-run` is passed, no DaemonSet is deployed and no images are removed.
+Instead:
+
+1. The in-use image scan still runs — in-use tags are detected and reported
+2. A temporary `alpine:latest` pod is launched per node to list images on that node
+3. For each image found matching the image name, the action is reported:
+   - `✅ Would keep:   <image-ref>` — matches the `-i` keep image
+   - `⚠️  Would skip:   <image-ref>` — in use by a running pod
+   - `🗑️  Would remove: <image-ref>` — old tag, would be deleted in a live run
+4. A summary is printed and a dry-run email notification is sent
+5. Log file is named `cleanup-dryrun-YYYYMMDD-HHMMSS.log`
+
+Recommended before every cleanup run, particularly on clusters with active user
+sessions, to confirm which images are protected by in-use detection.
 
 ### Image Protection Logic
 
@@ -197,19 +290,30 @@ pointing to that manifest are removed. This is why a `ctr images rm` of a named
 tag followed by a re-pull shows `already exists` for all layers — the data never
 actually left disk.
 
+### Email Notifications
+
+The email configuration block is identical to the one in `image-pull.sh` — see
+above for the full variable reference. The subject line format for
+`image-cleanup.sh`:
+
+- `✅ image-cleanup.sh complete | gpu-jupyter-latest | N node(s) cleaned`
+- `❌ image-cleanup.sh FAILED | gpu-jupyter-latest | N failed, N timed out`
+- `🔍 [DRY RUN] image-cleanup.sh | gpu-jupyter-latest | N node(s) checked`
+
 ---
 
 ## Log Files
 
-Both scripts write log files automatically:
+Both scripts write log files automatically to the directory they are run from:
 
-| Script | Log file pattern |
-|--------|-----------------|
-| `image-pull.sh` | `pull-results-YYYYMMDD-HHMMSS.log` |
-| `image-cleanup.sh` | `cleanup-results-YYYYMMDD-HHMMSS.log` |
+| Script | Live run log | Dry-run log |
+|--------|-------------|-------------|
+| `image-pull.sh` | `pull-results-YYYYMMDD-HHMMSS.log` | `pull-dryrun-YYYYMMDD-HHMMSS.log` |
+| `image-cleanup.sh` | `cleanup-results-YYYYMMDD-HHMMSS.log` | `cleanup-dryrun-YYYYMMDD-HHMMSS.log` |
 
 Pull logs have `ctr` progress lines and ANSI escape codes stripped (these are
 only shown on the terminal). Cleanup logs are a full copy of terminal output.
+Log file content is used as the body of the HTML email notification.
 
 ---
 
@@ -275,10 +379,6 @@ before proceeding. On a busy cluster this may not be enough. If you see the
 
 ## Potential Improvements
 
-### Dry-run mode
-Add a `-d` flag that reports what would be removed without actually removing
-anything. Useful for auditing before running on prod.
-
 ### Multi-image support
 Currently targets a single image name per run. Could accept multiple `-i` flags
 or a file listing images to keep, useful if multiple large images need rotation.
@@ -289,7 +389,7 @@ named tag being removed. A more thorough approach would also check for
 `sha256:`-prefixed refs in the `default` containerd namespace which these
 scripts do not currently touch.
 
-### Slack/email notification
+### Slack notification
 Post a summary to a Slack channel on completion, particularly useful for the
 in-use image report so admins can proactively reach out to affected users.
 

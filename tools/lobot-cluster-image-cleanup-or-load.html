@@ -1,0 +1,379 @@
+<h2><img class="alignnone wp-image-4487 size-full" src="http://newsocdocs.cs.queensu.ca/socdocs.wp/wp-content/uploads/2026/03/ChatGPT-Image-Mar-3-2026-05_56_15-PM.jpg" alt="" width="1536" height="1024" /></h2>
+<h2>Overview</h2>
+<p>Two bash scripts for managing large container images across a Kubernetes cluster running containerd. Designed for clusters where images are large (10GB+) and network bandwidth must be carefully managed during image operations.</p>
+<ul>
+<li><a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-pull.sh" target="_blank" rel="noopener"><code>image-pull.sh</code></a> — Pre-pulls images across nodes in controlled batches to avoid saturating the network during helm upgrades</li>
+<li><a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-cleanup.sh" target="_blank" rel="noopener"><code>image-cleanup.sh</code></a> — Removes old image tags from all nodes while protecting images in active use by running pods</li>
+</ul>
+<p>Both scripts support <code>--dry-run</code> mode for safe pre-flight checks, and send HTML email notifications on completion via Python smtplib.</p>
+<p>Both scripts are designed to run from the cluster control plane with <code>kubectl</code> access and write log files automatically alongside their output.</p>
+<hr />
+<h2>Prerequisites</h2>
+<ul>
+<li><code>kubectl</code> configured with cluster access</li>
+<li>Cluster nodes running containerd v2.x with <code>ctr</code> at <code>/usr/bin/ctr</code></li>
+<li>Nodes must allow privileged pods with <code>hostPID: true</code> in <code>kube-system</code></li>
+<li><code>alpine:latest</code> must be pullable on all nodes (used as the lightweight pod base)</li>
+<li><code>nsenter</code> available in alpine (used to access host containerd from within pods)</li>
+<li>Python 3 on the control plane (used for HTML email notifications via smtplib)</li>
+</ul>
+<hr />
+<h2>image-pull.sh</h2>
+<h3>Purpose</h3>
+<p>Pre-pulls a new image across cluster nodes in controlled batches before a helm upgrade. Without this, helm upgrades cause all nodes to pull simultaneously, saturating the network and causing pod scheduling delays.</p>
+<h3>Usage</h3>
+<pre><code>./image-pull.sh -i &lt;image:tag&gt; [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run]</code></pre>
+<h3>Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i</code></td>
+<td>Full image name and tag to pull (required)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-b</code></td>
+<td>Number of nodes pulling simultaneously</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td>Timeout in seconds per node</td>
+<td><code>1200</code></td>
+</tr>
+<tr>
+<td><code>-e</code></td>
+<td>Comma-separated list of nodes to exclude</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Target a single specific node only</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>Check image presence per node; report what would be pulled without pulling</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> <code>-n</code> and <code>-e</code> are mutually exclusive.</p>
+<h3>Examples</h3>
+<pre><code># Pull across all nodes in batches of 3, excluding control plane
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -b 3 \
+  -t 1200 \
+  -e lobot-dev.cs.queensu.ca
+
+# Pull on a single node only
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -n newcluster-gpunode3
+
+# Dry-run: check which nodes already have the image, without pulling
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -b 3 \
+  -e lobot-dev.cs.queensu.ca \
+  --dry-run</code></pre>
+<h3>How It Works</h3>
+<ol>
+<li>Resolves the node list, applying exclusions or targeting a single node</li>
+<li>Launches a batch of lightweight <code>alpine:latest</code> pods simultaneously, each pinned to a specific node via <code>nodeName</code></li>
+<li>Each pod uses <code>nsenter</code> to run <code>ctr images pull</code> directly against the host containerd socket, bypassing the pod image pull mechanism entirely</li>
+<li>Streams live <code>ctr</code> pull progress to the terminal while polling pod status silently in the background</li>
+<li>After each batch completes, moves to the next batch</li>
+<li>After all batches, retries any failed nodes one at a time</li>
+<li>Writes a clean log file (ANSI codes and <code>ctr</code> progress lines stripped) alongside the full terminal output</li>
+</ol>
+<h3>Dry-Run Mode</h3>
+<p>When <code>--dry-run</code> is passed, no pods are launched for actual pulling. Instead:</p>
+<ol>
+<li>A temporary <code>alpine:latest</code> pod is launched per node (with <code>--rm --wait=true</code>)</li>
+<li>The pod runs <code>ctr images ls | grep -c &lt;image&gt;</code> via <code>nsenter</code> to check presence</li>
+<li>Results are reported per node, grouped by batch:
+<ul>
+<li><code>✅ already present — pull would be skipped</code></li>
+<li><code>📥 not present — would pull: &lt;image-ref&gt;</code></li>
+</ul>
+</li>
+<li>A summary is printed and a dry-run email notification is sent</li>
+<li>Log file is named <code>pull-dryrun-YYYYMMDD-HHMMSS.log</code></li>
+</ol>
+<p>Useful for auditing which nodes still need a given image before committing to the full batch run — for example, after an interrupted pull.</p>
+<h3>Batch Sizing Guidelines</h3>
+<table>
+<thead>
+<tr>
+<th>Cluster size</th>
+<th>Recommended <code>-b</code></th>
+<th>Expected time per batch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2–5 nodes</td>
+<td>1–2</td>
+<td>5–10 min (18.7GB image)</td>
+</tr>
+<tr>
+<td>6–20 nodes</td>
+<td>3</td>
+<td>5–7 min</td>
+</tr>
+<tr>
+<td>20+ nodes</td>
+<td>3–5</td>
+<td>5–10 min</td>
+</tr>
+</tbody>
+</table>
+<p>On a 10G link with 2–3 Gbps usable, pulling a single 18.7GB image takes roughly 5–7 minutes. Batch size 3 means 3 simultaneous pulls sharing that bandwidth, so allow 10–15 min per batch on large images.</p>
+<h3>Email Notifications</h3>
+<p>Configure the block at the top of the script:</p>
+<pre><code>EMAIL_ENABLED=true
+SMTP_SERVER="innovate.cs.queensu.ca"
+SMTP_PORT=25
+SMTP_USE_TLS=false
+SMTP_USERNAME=""
+SMTP_PASSWORD=""
+FROM_EMAIL="lobot@cs.queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"</code></pre>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EMAIL_ENABLED</code></td>
+<td>Set to <code>false</code> to disable all notifications</td>
+</tr>
+<tr>
+<td><code>SMTP_SERVER</code></td>
+<td>Hostname of the SMTP relay</td>
+</tr>
+<tr>
+<td><code>SMTP_PORT</code></td>
+<td>SMTP port (<code>25</code> = plain, <code>587</code> = submission+TLS)</td>
+</tr>
+<tr>
+<td><code>SMTP_USE_TLS</code></td>
+<td>Set to <code>true</code> to enable STARTTLS</td>
+</tr>
+<tr>
+<td><code>SMTP_USERNAME</code> / <code>SMTP_PASSWORD</code></td>
+<td>Leave empty for unauthenticated relay</td>
+</tr>
+<tr>
+<td><code>FROM_EMAIL</code></td>
+<td>Sender address</td>
+</tr>
+<tr>
+<td><code>TO_EMAIL</code></td>
+<td>Recipient(s), comma-separated</td>
+</tr>
+</tbody>
+</table>
+<p>Email is sent via Python 3 <code>smtplib</code> on the control plane. The body is a dark-themed HTML page with monospace font and a colour-coded status banner (green for success, red for failure). Emoji in log output are colour-coded with inline spans. Email is sent on every run — live, failed, and dry-run.</p>
+<p>Subject line format:</p>
+<ul>
+<li><code>✅ image-pull.sh complete | gpu-jupyter-latest | N node(s) pulled</code></li>
+<li><code>❌ image-pull.sh FAILED | gpu-jupyter-latest | N node(s) failed</code></li>
+<li><code>🔍 [DRY RUN] image-pull.sh | gpu-jupyter-latest | N node(s) checked</code></li>
+</ul>
+<p><strong>Note:</strong> <code>curl</code> SMTP does not work on this system. Python <code>smtplib</code> is used exclusively. Python 3 must be available on the control plane.</p>
+<h3>Typical Workflow Before a Helm Upgrade</h3>
+<pre><code># 0. Dry-run to preview what will happen (recommended before every run)
+./image-pull.sh -i &lt;new-image:tag&gt; -b 3 -e &lt;control-plane&gt; --dry-run
+./image-cleanup.sh -i &lt;new-image:tag&gt; -e &lt;control-plane&gt; --dry-run
+
+# 1. Pre-pull the new image across all worker nodes
+./image-pull.sh -i &lt;new-image:tag&gt; -b 3 -e &lt;control-plane&gt;
+
+# 2. Run helm upgrade - nearly instant since image already cached everywhere
+helm upgrade ...
+
+# 3. Clean up old image tags after pods have migrated to new image
+./image-cleanup.sh -i &lt;new-image:tag&gt; -e &lt;control-plane&gt;</code></pre>
+<hr />
+<h2>image-cleanup.sh</h2>
+<h3>Purpose</h3>
+<p>Removes old tags of an image from all cluster nodes after a helm upgrade, freeing disk space. Automatically protects images currently in use by running pods (e.g. long-running user sessions that haven't restarted yet).</p>
+<h3>Usage</h3>
+<pre><code>./image-cleanup.sh -i &lt;image:tag&gt; [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run]</code></pre>
+<h3>Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i</code></td>
+<td>Full image name and tag to KEEP (required)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-e</code></td>
+<td>Comma-separated list of nodes to exclude</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Target a single specific node only</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td>Report what would be removed per node without removing anything</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> <code>-n</code> and <code>-e</code> are mutually exclusive.</p>
+<h3>Examples</h3>
+<pre><code># Clean all nodes except control plane
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca
+
+# Clean a single node
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -n newcluster-gpunode3
+
+# Dry-run: see what would be removed without removing anything
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca \
+  --dry-run</code></pre>
+<h3>How It Works</h3>
+<ol>
+<li>Scans all running pods across all namespaces and builds a per-node map of which image tags are currently in use</li>
+<li>Creates a Kubernetes ConfigMap encoding the in-use tag list per node</li>
+<li>Deploys a DaemonSet using <code>alpine:latest</code> (starts in seconds, no large pull) with <code>nodeAffinity</code> to target or exclude specific nodes</li>
+<li>Each pod uses <code>nsenter</code> to run <code>ctr images ls</code> and <code>ctr images rm</code> directly against the host containerd</li>
+<li>For each image tag removed, also removes the corresponding <code>sha256:</code> digest reference — this is critical for actual blob GC and disk space recovery</li>
+<li>Collects logs from all pods and reports results</li>
+<li>Deletes the DaemonSet and ConfigMap on completion</li>
+</ol>
+<h3>Dry-Run Mode</h3>
+<p>When <code>--dry-run</code> is passed, no DaemonSet is deployed and no images are removed. Instead:</p>
+<ol>
+<li>The in-use image scan still runs — in-use tags are detected and reported</li>
+<li>A temporary <code>alpine:latest</code> pod is launched per node to list images on that node</li>
+<li>For each image found matching the image name, the action is reported:
+<ul>
+<li><code>✅ Would keep:   &lt;image-ref&gt;</code> — matches the <code>-i</code> keep image</li>
+<li><code>⚠️  Would skip:   &lt;image-ref&gt;</code> — in use by a running pod</li>
+<li><code>🗑️  Would remove: &lt;image-ref&gt;</code> — old tag, would be deleted in a live run</li>
+</ul>
+</li>
+<li>A summary is printed and a dry-run email notification is sent</li>
+<li>Log file is named <code>cleanup-dryrun-YYYYMMDD-HHMMSS.log</code></li>
+</ol>
+<p>Recommended before every cleanup run, particularly on clusters with active user sessions, to confirm which images are protected by in-use detection.</p>
+<h3>Image Protection Logic</h3>
+<p>The script protects two categories of images from removal on each node:</p>
+<ul>
+<li><strong>Explicitly kept</strong>: the image tag passed via <code>-i</code></li>
+<li><strong>In-use images</strong>: any other tag of the same image currently referenced by a running pod on that node</li>
+</ul>
+<p>Protected images are identified by exact full reference string match, not by regex, to avoid mismatches on tags containing dots and hyphens. If in-use images are found they are reported in the summary with the pod namespace and name, enabling targeted user communication:</p>
+<pre><code> ⚠️  Images skipped because they are in use by running pods:
+  docker.io/queensschoolofcomputingdocker/gpu-jupyter-latest:...20260227
+    └─ node: newcluster-gpunode3
+    └─ pod:  jhub/jupyter-someuser</code></pre>
+<h3>Why Both Named Tag AND Digest Ref Must Be Removed</h3>
+<p>containerd stores images with two types of references:</p>
+<pre><code>docker.io/repo/image:tag          → named tag reference
+sha256:d96404f136cf...            → digest reference</code></pre>
+<p>Both point to the same manifest digest and underlying blobs. Removing only the named tag leaves the digest reference intact, which pins the blobs in containerd's content store. The blobs will not be freed until ALL references pointing to that manifest are removed. This is why a <code>ctr images rm</code> of a named tag followed by a re-pull shows <code>already exists</code> for all layers — the data never actually left disk.</p>
+<h3>Email Notifications</h3>
+<p>The email configuration block is identical to the one in <code>image-pull.sh</code> — see above for the full variable reference. The subject line format for <code>image-cleanup.sh</code>:</p>
+<ul>
+<li><code>✅ image-cleanup.sh complete | gpu-jupyter-latest | N node(s) cleaned</code></li>
+<li><code>❌ image-cleanup.sh FAILED | gpu-jupyter-latest | N failed, N timed out</code></li>
+<li><code>🔍 [DRY RUN] image-cleanup.sh | gpu-jupyter-latest | N node(s) checked</code></li>
+</ul>
+<hr />
+<h2>Log Files</h2>
+<p>Both scripts write log files automatically to the directory they are run from:</p>
+<table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Live run log</th>
+<th>Dry-run log</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image-pull.sh</code></td>
+<td><code>pull-results-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>pull-dryrun-YYYYMMDD-HHMMSS.log</code></td>
+</tr>
+<tr>
+<td><code>image-cleanup.sh</code></td>
+<td><code>cleanup-results-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>cleanup-dryrun-YYYYMMDD-HHMMSS.log</code></td>
+</tr>
+</tbody>
+</table>
+<p>Pull logs have <code>ctr</code> progress lines and ANSI escape codes stripped (these are only shown on the terminal). Cleanup logs are a full copy of terminal output. Log file content is used as the body of the HTML email notification.</p>
+<hr />
+<h2>Caveats</h2>
+<h3>Images in the <code>default</code> containerd namespace</h3>
+<p>containerd has multiple namespaces. Kubernetes uses <code>k8s.io</code>. If images were pulled manually outside of Kubernetes (e.g. <code>docker pull</code> or <code>ctr pull</code> without <code>--namespace k8s.io</code>), they land in the <code>default</code> namespace and are invisible to both <code>crictl</code> and these scripts. Check with:</p>
+<pre><code>sudo ctr --namespace default images ls | grep &lt;image-name&gt;</code></pre>
+<p>Remove manually if found:</p>
+<pre><code>sudo ctr --namespace default images rm &lt;image-ref&gt;</code></pre>
+<h3>crictl vs ctr</h3>
+<p><code>crictl</code> connects via the CRI socket and requires <code>/etc/crictl.yaml</code> to be configured. On nodes without this config file it falls back to probing multiple sockets and may silently fail or show no images. These scripts use <code>ctr</code> directly which is more reliable. Do not use <code>crictl images</code> output to verify cleanup results — use <code>ctr --namespace k8s.io images ls</code> instead.</p>
+<h3>Interrupted pulls leave ingest debris</h3>
+<p>If a pull is cancelled mid-stream (e.g. pod killed, network drop), containerd may leave partial data in:</p>
+<pre><code>/var/lib/containerd/io.containerd.content.v1.content/ingest/</code></pre>
+<p>This is usually cleaned up automatically on the next pull attempt. Check the size with:</p>
+<pre><code>sudo du -sh /var/lib/containerd/io.containerd.content.v1.content/ingest/</code></pre>
+<p>If it is large and no pull is in progress, it is safe to clear manually.</p>
+<h3>DaemonSet cleanup on script failure</h3>
+<p>If the script is interrupted (Ctrl-C, SSH disconnect) before STEP 5, the DaemonSet and ConfigMap will be left running. Clean up manually:</p>
+<pre><code>kubectl delete daemonset image-cleanup -n kube-system
+kubectl delete configmap image-cleanup-inuse -n kube-system
+kubectl get pods -n kube-system | grep image-pull | \
+  awk '{print $1}' | xargs kubectl delete pod -n kube-system --force --grace-period=0</code></pre>
+<h3>Pod scheduling timeout</h3>
+<p>The cleanup DaemonSet waits up to 120 seconds for all pods to reach <code>Ready</code> before proceeding. On a busy cluster this may not be enough. If you see the <code>WARNING: Not all pods became ready</code> message frequently, increase <code>DS_READY_TIMEOUT</code> at the top of the script.</p>
+<hr />
+<h2>Potential Improvements</h2>
+<h3>Multi-image support</h3>
+<p>Currently targets a single image name per run. Could accept multiple <code>-i</code> flags or a file listing images to keep, useful if multiple large images need rotation.</p>
+<h3>Automatic digest ref discovery</h3>
+<p>The script removes digest refs that share a manifest digest with the named tag being removed. A more thorough approach would also check for <code>sha256:</code>-prefixed refs in the <code>default</code> containerd namespace, which these scripts do not currently touch.</p>
+<h3>Slack notification</h3>
+<p>Post a summary to a Slack channel on completion, particularly useful for the in-use image report so admins can proactively reach out to affected users.</p>
+<h3>Scheduled execution</h3>
+<p>Wrap both scripts in a CronJob or systemd timer that automatically runs cleanup after each helm upgrade, using the new image tag extracted from the helm release.</p>
+<h3>Space reporting</h3>
+<p>Add before/after <code>du</code> of <code>/var/lib/containerd</code> to each node's log output so the summary shows exactly how much disk space was reclaimed per node.</p>
+<h3>Parallel log collection</h3>
+<p>The cleanup script currently collects logs from nodes sequentially in STEP 4. For large clusters (20+ nodes) this adds meaningful wall-clock time. Logs could be collected in parallel with background jobs and results assembled at the end.</p>
+
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
