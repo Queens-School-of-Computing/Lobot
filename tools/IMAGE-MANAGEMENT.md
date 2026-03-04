@@ -6,10 +6,8 @@ Two bash scripts for managing large container images across a Kubernetes cluster
 running containerd. Designed for clusters where images are large (10GB+) and
 network bandwidth must be carefully managed during image operations.
 
-- **`image-pull.sh`** — Pre-pulls images across nodes in controlled batches to
-  avoid saturating the network during helm upgrades
-- **`image-cleanup.sh`** — Removes old image tags from all nodes while protecting
-  images in active use by running pods
+- **[`image-pull.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-pull.sh)** — Pre-pulls images across nodes in controlled batches to avoid saturating the network during helm upgrades
+- **[`image-cleanup.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/image-cleanup.sh)** — Removes old image tags from all nodes while protecting images in active use by running pods
 
 Both scripts are designed to run from the cluster control plane with `kubectl`
 access and write log files automatically alongside their output.
