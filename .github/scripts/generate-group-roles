@@ -160,6 +160,10 @@ def get_generated_disclaimer():
             "### OR THE SOURCE WHICH TRIGGERS THIS WORKFLOW\n"
             "### TO CHANGE THIS FILE PERMANENTLY\n"
             "###\n"
+            "\n"
+            "# By convention, groups follow the format 'group-{name}-users'\n"
+            "# and system users (AKA accounts not owned by people), follow\n"
+            "# the format 'group-{name}\n"
             "\n")
 
 if __name__ == "__main__":
