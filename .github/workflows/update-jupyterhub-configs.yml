@@ -1,0 +1,53 @@
+name: Update JupyterHub configuration files
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - gpu-cluster-users-changed
+      - gpu-cluster-groups-changed
+
+jobs:
+  update_file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v5
+
+      - name: Write out payload
+        run: echo '${{ toJson(github.event.client_payload.data) }}' > members-payload.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - run: pip install -r ./.github/scripts/requirements.txt
+
+      - name: Update runtime_setting.yaml
+        run: ./.github/scripts/generate-runtime-config
+        env:
+          INPUT_FILE: ./members-payload.json
+          OUTPUT_FILE: ./runtime_setting.yaml
+
+      - name: Update group-roles.yaml
+        run: ./.github/scripts/generate-group-roles
+        env:
+          INPUT_FILE: ./members-payload.json
+          OUTPUT_FILE: ./group-roles.yaml
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.PR_BOT_TOKEN }}
+          title: 'chore: automated runtime_setting.yaml update'
+          commit-message: 'chore: automated configuration update'
+          body: "This pull request was triggered by a change in the \
+            \"Cluster Users\" data source. Please visually cross-reference \
+            that the change here matches the corresponding items there."
+          branch: update-jupyter-configs
+          add-paths: |
+            ./runtime_setting.yaml
+            ./group-roles.yaml
+          labels: infra,bot
+          team-reviewers: reviewers
+
