@@ -31,13 +31,12 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PR_BOT_TOKEN }}
-          title: 'chore: automated runtime_setting.yaml update'
+          title: 'chore: automated config update'
           commit-message: 'chore: automated runtime_setting.yaml update'
-          body: "This pull request was triggered by a change in \
-            [GPU Cluster Users](https://queensuca.sharepoint.com/teams/\
-            GROUP-QSCSystemsStaff/Lists/Users/Groups.aspx). Please visually \
-            cross-reference that the change here matches the corresponding items there."
-          branch: update-runtime-setting
+          body: "This pull request was triggered by a change in the \
+            \"Cluster Users\" data source. Please visually cross-reference \
+            that the change here matches the corresponding items there."
+          branch: update-jupyter-configs
           add-paths: ./runtime_setting.yaml
           labels: infra,bot
           team-reviewers: reviewers
