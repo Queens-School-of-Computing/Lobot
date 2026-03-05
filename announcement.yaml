@@ -1,2 +1,2 @@
 announcement_home: >
-  Mar 04 2026 - Image updated. If using old image, please stop and restart to get latest versions.
+  Mar 05 2026 - Config tweaked to enable idle pod culling. Pods that are idle for 72 hours will be powered off. 
