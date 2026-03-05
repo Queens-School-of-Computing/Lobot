@@ -17,7 +17,8 @@ def main():
     groups_payload = simplify_groups_payload(groups_payload)
     if users_payload is None or groups_payload is None:
         # Maybe one day will have a reason to run this script in "refresh existing"
-        raise NotImplementedError('Need a source payload to run this script')
+        print('Need a source payload to run this script -- quitting')
+        sys.exit(0)
 
     roles = transform_payload(users_payload, groups_payload)
     config = { 'roles': roles }
