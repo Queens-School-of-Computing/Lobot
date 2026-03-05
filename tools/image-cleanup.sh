@@ -179,6 +179,23 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 exec > >(tee -a $LOG_FILE) 2>&1
+SCRIPT_START=$(date +%s)
+NODE_TIMING=""
+
+# ==========================================
+# Helper: format seconds as Xm YYs or Xh YYm YYs
+# ==========================================
+format_elapsed() {
+  local SECS=$1
+  local H=$((SECS / 3600))
+  local M=$(( (SECS % 3600) / 60 ))
+  local S=$((SECS % 60))
+  if [ $H -gt 0 ]; then
+    printf "%dh %02dm %02ds" $H $M $S
+  else
+    printf "%dm %02ds" $M $S
+  fi
+}
 
 echo "=========================================="
 if [ "$DRY_RUN" = "true" ]; then
@@ -379,6 +396,9 @@ if [ "$DRY_RUN" = "true" ]; then
   echo " ⏭️  Excluded:   $EXCLUDED_COUNT"
   fi
   echo " No changes were made."
+  SCRIPT_END=$(date +%s)
+  TOTAL_ELAPSED=$((SCRIPT_END - SCRIPT_START))
+  echo " ⏱️  Total elapsed:  $(format_elapsed $TOTAL_ELAPSED)"
   echo "=========================================="
 
   rm -f $IN_USE_TMPFILE
@@ -644,8 +664,10 @@ for POD in $PODS; do
   echo "------------------------------------------"
   echo " Pod:    $POD"
   echo " Node:   $NODE"
+  echo " $(date)"
   echo "------------------------------------------"
   echo " Waiting for cleanup to complete..."
+  NODE_START=$(date +%s)
 
   ELAPSED=0
   STATUS=""
@@ -668,8 +690,11 @@ for POD in $PODS; do
   done
 
   if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "⚠️  TIMED OUT after ${TIMEOUT}s on node $NODE"
+    NODE_END=$(date +%s)
+    NODE_ELAPSED=$((NODE_END - NODE_START))
+    echo "⚠️  TIMED OUT after ${TIMEOUT}s on node $NODE ($(format_elapsed $NODE_ELAPSED))"
     TIMEOUT_COUNT=$((TIMEOUT_COUNT + 1))
+    NODE_TIMING="${NODE_TIMING}\n  ⏱️ $NODE — $(format_elapsed $NODE_ELAPSED) (timed out)"
     echo " --- Partial logs ---"
     kubectl logs -n $NAMESPACE $POD
     continue
@@ -677,11 +702,15 @@ for POD in $PODS; do
 
   echo " Status: $STATUS"
   kubectl logs -n $NAMESPACE $POD
+  NODE_END=$(date +%s)
+  NODE_ELAPSED=$((NODE_END - NODE_START))
 
   if [ "$STATUS" = "Succeeded" ]; then
     SUCCESS=$((SUCCESS + 1))
+    NODE_TIMING="${NODE_TIMING}\n  ✅ $NODE — $(format_elapsed $NODE_ELAPSED)"
   else
     FAILED=$((FAILED + 1))
+    NODE_TIMING="${NODE_TIMING}\n  ❌ $NODE — $(format_elapsed $NODE_ELAPSED) (failed)"
   fi
 done
 
@@ -715,6 +744,9 @@ fi
 echo " ✅ Succeeded:   $SUCCESS"
 echo " ❌ Failed:      $FAILED"
 echo " ⚠️  Timed out:  $TIMEOUT_COUNT"
+SCRIPT_END=$(date +%s)
+TOTAL_ELAPSED=$((SCRIPT_END - SCRIPT_START))
+echo " ⏱️  Total elapsed: $(format_elapsed $TOTAL_ELAPSED)"
 
 INUSE_FOUND=false
 while IFS='|' read -r NODE NS POD IMAGES; do
@@ -740,6 +772,11 @@ done < <(kubectl get pods --all-namespaces \
   -o jsonpath='{range .items[*]}{.spec.nodeName}{"|"}{.metadata.namespace}{"|"}{.metadata.name}{"|"}{range .status.containerStatuses[*]}{.image}{" "}{end}{"\n"}{end}')
 
 echo "=========================================="
+if [ -n "$NODE_TIMING" ]; then
+echo " Node timing:"
+printf "$NODE_TIMING\n"
+echo "=========================================="
+fi
 
 # Flush log before emailing
 sleep 2

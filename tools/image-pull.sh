@@ -211,6 +211,8 @@ fi
 # Capture raw output to temp file - clean log generated at end
 RAW_TMPFILE=$(mktemp)
 exec > >(tee "$RAW_TMPFILE") 2>&1
+SCRIPT_START=$(date +%s)
+NODE_TIMING=""
 
 echo "=========================================="
 if [ "$DRY_RUN" = "true" ]; then
@@ -369,11 +371,29 @@ if [ "$DRY_RUN" = "true" ]; then
   echo " ⏭️  Excluded:  $EXCLUDED_COUNT"
   fi
   echo " No changes were made."
+  SCRIPT_END=$(date +%s)
+  TOTAL_ELAPSED=$((SCRIPT_END - SCRIPT_START))
+  echo " ⏱️  Total elapsed:  $(format_elapsed $TOTAL_ELAPSED)"
   echo "=========================================="
 
   finalize_and_email "🔍 [DRY RUN] image-pull.sh | $IMAGE_SHORT | $TOTAL_NODES node(s) checked" "success"
   exit 0
 fi
+
+# ==========================================
+# Helper: format seconds as Xm YYs or Xh YYm YYs
+# ==========================================
+format_elapsed() {
+  local SECS=$1
+  local H=$((SECS / 3600))
+  local M=$(( (SECS % 3600) / 60 ))
+  local S=$((SECS % 60))
+  if [ $H -gt 0 ]; then
+    printf "%dh %02dm %02ds" $H $M $S
+  else
+    printf "%dm %02ds" $M $S
+  fi
+}
 
 # ==========================================
 # Helper: pull image on a single node
@@ -513,16 +533,22 @@ while [ $i -lt $TOTAL ]; do
     echo ""
     echo "------------------------------------------"
     echo " Node: $NODE"
+    echo " $(date)"
     echo "------------------------------------------"
+    NODE_START=$(date +%s)
     stream_and_wait $POD $NODE
     RESULT=$?
+    NODE_END=$(date +%s)
+    NODE_ELAPSED=$((NODE_END - NODE_START))
     cleanup_pod $POD
 
     if [ $RESULT -ne 0 ]; then
-      echo "  ⚠️  $NODE failed — adding to retry list"
+      echo "  ⚠️  $NODE failed — adding to retry list ($(format_elapsed $NODE_ELAPSED))"
       FAILED_NODES="$FAILED_NODES $NODE"
+      NODE_TIMING="${NODE_TIMING}\n  ❌ $NODE — $(format_elapsed $NODE_ELAPSED) (failed)"
     else
-      echo "  ✅ $NODE complete"
+      echo "  ✅ $NODE complete ($(format_elapsed $NODE_ELAPSED))"
+      NODE_TIMING="${NODE_TIMING}\n  ✅ $NODE — $(format_elapsed $NODE_ELAPSED)"
     fi
   done
 
@@ -547,19 +573,25 @@ if [ -n "$FAILED_NODES" ]; then
     echo ""
     echo "------------------------------------------"
     echo " Node: $NODE (retry)"
+    echo " $(date)"
     echo "------------------------------------------"
     echo "  🔄 Retrying $NODE..."
     POD=$(pull_on_node $NODE)
+    NODE_START=$(date +%s)
     stream_and_wait $POD $NODE
     RESULT=$?
+    NODE_END=$(date +%s)
+    NODE_ELAPSED=$((NODE_END - NODE_START))
     cleanup_pod $POD
 
     if [ $RESULT -eq 0 ]; then
-      echo "  ✅ $NODE retry succeeded"
+      echo "  ✅ $NODE retry succeeded ($(format_elapsed $NODE_ELAPSED))"
       RETRY_SUCCESS=$((RETRY_SUCCESS + 1))
+      NODE_TIMING="${NODE_TIMING}\n  ✅ $NODE — $(format_elapsed $NODE_ELAPSED) (retry)"
     else
-      echo "  ❌ $NODE retry failed"
+      echo "  ❌ $NODE retry failed ($(format_elapsed $NODE_ELAPSED))"
       RETRY_FAILED=$((RETRY_FAILED + 1))
+      NODE_TIMING="${NODE_TIMING}\n  ❌ $NODE — $(format_elapsed $NODE_ELAPSED) (retry failed)"
     fi
   done
 fi
@@ -569,6 +601,8 @@ fi
 # ==========================================
 FAILED_COUNT=$(echo $FAILED_NODES | wc -w)
 INITIAL_SUCCESS=$((TOTAL - FAILED_COUNT))
+SCRIPT_END=$(date +%s)
+TOTAL_ELAPSED=$((SCRIPT_END - SCRIPT_START))
 
 echo ""
 echo "=========================================="
@@ -587,7 +621,13 @@ echo " ⚠️  Initial failures:  $FAILED_COUNT"
 echo " ✅ Retry succeeded:   $RETRY_SUCCESS"
 echo " ❌ Retry failed:      $RETRY_FAILED"
 fi
+echo " ⏱️  Total elapsed:     $(format_elapsed $TOTAL_ELAPSED)"
 echo "=========================================="
+if [ -n "$NODE_TIMING" ]; then
+echo " Node timing:"
+printf "$NODE_TIMING\n"
+echo "=========================================="
+fi
 
 if [ $RETRY_FAILED -gt 0 ]; then
   echo " ⚠️  Some nodes failed even after retry - review logs above"
