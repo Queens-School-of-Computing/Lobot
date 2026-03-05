@@ -97,9 +97,12 @@ def transform_payload(users_payload, groups_payload):
             'name': group_name,
             'user': group['Owner'],
             'members': groups.get(group_name),
-            # TODO Skip key entirely if empty
-            'scopes': parse_permissions(group.get('Permissions', [])),
         }
+
+        permissions = parse_permissions(group.get('Permissions'))
+        if permissions:
+            role['scopes'] = permissions
+
         roles.append(role)
 
     return roles
