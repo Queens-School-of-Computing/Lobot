@@ -21,7 +21,7 @@ jobs:
           python-version: 3.12
       - run: pip install -r ./.github/scripts/requirements.txt
 
-      - name: Update runtime_setting.yaml
+      - name: Update group-roles.yaml
         run: ./.github/scripts/generate-group-roles
         env:
           INPUT_FILE: ./members-payload.json
@@ -31,14 +31,13 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PR_BOT_TOKEN }}
-          title: 'chore: automated runtime_setting.yaml update'
+          title: 'chore: automated config update'
           commit-message: 'chore: automated group-roles.yaml update'
           body: "This pull request was triggered by a change in the \
             \"Cluster Users\" data source. Please visually cross-reference \
             that the change here matches the corresponding items there."
           branch: update-jupyter-configs
           add-paths: |
-            ./runtime_setting.yaml
             ./group-roles.yaml
           labels: infra,bot
           team-reviewers: reviewers
