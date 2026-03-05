@@ -92,7 +92,7 @@ def transform_payload(users_payload, groups_payload):
 
     roles = []
     for group in groups_payload:
-        group_name = group['Name']
+        group_name = parse_group_name(group['Name'])
         role = {
             'name': group_name,
             'user': group['Owner'],
