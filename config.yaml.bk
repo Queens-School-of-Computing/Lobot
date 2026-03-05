@@ -75,8 +75,8 @@ hub:
   config:
     GitHubOAuthenticator:
       auto_login: true
-      client_id: xxx
-      client_secret: xxx
+      client_id: Ov23liSXaRsUjTZ3pFFx
+      client_secret: fe3fe993bb397384223be5f917b4cad399ac95a3
       oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
       allowed_organizations:
         - Queens-School-of-Computing
@@ -123,7 +123,7 @@ hub:
       c.JupyterHub.services += [
           {
               "name": "group-manager",
-              "api_token": "xxx",  
+              "api_token": "0b89a6515e50685246c6b731873cfc748be322345a94e5c5b7cdceb5753ae6e9",  
           }
       ]
     10-group-roles-from-yaml: |

@@ -214,6 +214,21 @@ exec > >(tee "$RAW_TMPFILE") 2>&1
 SCRIPT_START=$(date +%s)
 NODE_TIMING=""
 
+# ==========================================
+# Helper: format seconds as Xm YYs or Xh YYm YYs
+# ==========================================
+format_elapsed() {
+  local SECS=$1
+  local H=$((SECS / 3600))
+  local M=$(( (SECS % 3600) / 60 ))
+  local S=$((SECS % 60))
+  if [ $H -gt 0 ]; then
+    printf "%dh %02dm %02ds" $H $M $S
+  else
+    printf "%dm %02ds" $M $S
+  fi
+}
+
 echo "=========================================="
 if [ "$DRY_RUN" = "true" ]; then
 echo " Image Pull - DRY RUN (no changes will be made)"
@@ -379,21 +394,6 @@ if [ "$DRY_RUN" = "true" ]; then
   finalize_and_email "🔍 [DRY RUN] image-pull.sh | $IMAGE_SHORT | $TOTAL_NODES node(s) checked" "success"
   exit 0
 fi
-
-# ==========================================
-# Helper: format seconds as Xm YYs or Xh YYm YYs
-# ==========================================
-format_elapsed() {
-  local SECS=$1
-  local H=$((SECS / 3600))
-  local M=$(( (SECS % 3600) / 60 ))
-  local S=$((SECS % 60))
-  if [ $H -gt 0 ]; then
-    printf "%dh %02dm %02ds" $H $M $S
-  else
-    printf "%dm %02ds" $M $S
-  fi
-}
 
 # ==========================================
 # Helper: pull image on a single node
