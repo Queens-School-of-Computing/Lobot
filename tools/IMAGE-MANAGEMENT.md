@@ -46,7 +46,7 @@ saturating the network and causing pod scheduling delays.
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-i` | Full image name and tag to pull (required) | — |
+| `-i` | Full image name and tag to pull (required, repeatable) | — |
 | `-b` | Number of nodes pulling simultaneously | `3` |
 | `-t` | Timeout in seconds per node | `1200` |
 | `-e` | Comma-separated list of nodes to exclude | — |
@@ -58,11 +58,18 @@ saturating the network and causing pod scheduling delays.
 ### Examples
 
 ```bash
-# Pull across all nodes in batches of 3, excluding control plane
+# Pull a single new image across all nodes in batches of 3, excluding control plane
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -b 3 \
   -t 1200 \
+  -e lobot-dev.cs.queensu.ca
+
+# Pull two images (new + previous) in the same run
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
+  -b 3 \
   -e lobot-dev.cs.queensu.ca
 
 # Pull on a single node only
@@ -81,16 +88,57 @@ saturating the network and causing pod scheduling delays.
 ### How It Works
 
 1. Resolves the node list, applying exclusions or targeting a single node
-2. Launches a batch of lightweight `alpine:latest` pods simultaneously, each
+2. Runs a pre-flight readiness check — skips NotReady nodes and auto-excludes
+   control-plane nodes (see [Node Pre-Flight Checks](#image-pull-preflight) below)
+3. Launches a batch of lightweight `alpine:latest` pods simultaneously, each
    pinned to a specific node via `nodeName`
-3. Each pod uses `nsenter` to run `ctr images pull` directly against the host
+4. Each pod uses `nsenter` to run `ctr images pull` directly against the host
    containerd socket, bypassing the pod image pull mechanism entirely
-4. Streams live `ctr` pull progress to the terminal while polling pod status
+5. Streams live `ctr` pull progress to the terminal while polling pod status
    silently in the background
-5. After each batch completes, moves to the next batch
-6. After all batches, retries any failed nodes one at a time
-7. Writes a clean log file (ANSI codes and `ctr` progress lines stripped)
+6. After each batch completes, moves to the next batch
+7. After all batches, retries any failed nodes one at a time
+8. Writes a clean log file (ANSI codes and `ctr` progress lines stripped)
    alongside the full terminal output
+
+### Node Pre-Flight Checks {#image-pull-preflight}
+
+Before launching any pods, the script checks every node in the target list:
+
+- **NotReady nodes** — nodes that are offline or not yet joined are skipped
+  automatically. A `⚠️ NotReady, skipping` line is printed per skipped node
+  and the offline count is shown in the summary.
+- **Control-plane nodes** — nodes carrying the
+  `node-role.kubernetes.io/control-plane` label are auto-excluded by default.
+  This prevents scheduling pull pods on the control plane, where user workload
+  taints (`NoSchedule`) would cause the pod to be repeatedly killed and
+  restarted, breaking pod-name tracking and crashing the script. A
+  `⏭️ control-plane, auto-excluded` line is printed per excluded node.
+  To explicitly target a control-plane node, use `-n <node>`.
+
+If no Ready worker nodes remain after pre-flight, the script exits immediately.
+
+### Space Reporting
+
+Each node's pod logs a before/after disk snapshot via `nsenter` into the host
+filesystem:
+
+```
+=== Disk space before pull ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       916G  412G  457G  48% /var/lib/containerd
+412G    /var/lib/containerd
+=== Pulling ... ===
+[pull progress]
+=== Disk space after pull ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       916G  431G  438G  50% /var/lib/containerd
+431G    /var/lib/containerd
+```
+
+The `df -h` line shows filesystem size, total used, and available space. The
+`du -sh` line shows total space consumed by `/var/lib/containerd` specifically,
+making it easy to see how much the pull added.
 
 ### Dry-Run Mode
 
@@ -161,17 +209,18 @@ Subject line format:
 
 ```bash
 # 0. Dry-run to preview what will happen (recommended before every run)
-./image-pull.sh -i <new-image:tag> -b 3 -e <control-plane> --dry-run
-./image-cleanup.sh -i <new-image:tag> -e <control-plane> --dry-run
+#    Control-plane nodes are auto-excluded; no need to pass -e for them
+./image-pull.sh -i <new-image:tag> -b 3 --dry-run
+./image-cleanup.sh -i <new-image:tag> --dry-run
 
 # 1. Pre-pull the new image across all worker nodes
-./image-pull.sh -i <new-image:tag> -b 3 -e <control-plane>
+./image-pull.sh -i <new-image:tag> -b 3
 
 # 2. Run helm upgrade - nearly instant since image already cached everywhere
 helm upgrade ...
 
 # 3. Clean up old image tags after pods have migrated to new image
-./image-cleanup.sh -i <new-image:tag> -e <control-plane>
+./image-cleanup.sh -i <new-image:tag>
 ```
 
 ---
@@ -194,7 +243,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-i` | Full image name and tag to KEEP (required) | — |
+| `-i` | Full image name and tag to KEEP (required, repeatable) | — |
 | `-e` | Comma-separated list of nodes to exclude | — |
 | `-n` | Target a single specific node only | — |
 | `--dry-run` | Report what would be removed per node without removing anything | — |
@@ -204,9 +253,15 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 ### Examples
 
 ```bash
-# Clean all nodes except control plane
+# Keep only the new image; remove all other old tags
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca
+
+# Keep both new and previous image; remove everything else
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
   -e lobot-dev.cs.queensu.ca
 
 # Clean a single node
@@ -217,6 +272,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 # Dry-run: see what would be removed without removing anything
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
   -e lobot-dev.cs.queensu.ca \
   --dry-run
 ```
@@ -225,15 +281,66 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 
 1. Scans all running pods across all namespaces and builds a per-node map of
    which image tags are currently in use
-2. Creates a Kubernetes ConfigMap encoding the in-use tag list per node
-3. Deploys a DaemonSet using `alpine:latest` (starts in seconds, no large pull)
-   with `nodeAffinity` to target or exclude specific nodes
-4. Each pod uses `nsenter` to run `ctr images ls` and `ctr images rm` directly
+2. Runs a pre-flight readiness check — skips NotReady nodes and auto-excludes
+   control-plane nodes (see [Node Pre-Flight Checks](#image-cleanup-preflight)
+   below)
+3. Creates a Kubernetes ConfigMap encoding the in-use tag list per node
+4. Deploys a DaemonSet using `alpine:latest` (starts in seconds, no large pull)
+   with `nodeAffinity` to target or exclude specific nodes (and offline/
+   control-plane nodes are always excluded from the DaemonSet affinity)
+5. Each pod uses `nsenter` to run `ctr images ls` and `ctr images rm` directly
    against the host containerd
-5. For each image tag removed, also removes the corresponding `sha256:` digest
+6. For each image tag removed, also removes the corresponding `sha256:` digest
    reference — this is critical for actual blob GC and disk space recovery
-6. Collects logs from all pods and reports results
-7. Deletes the DaemonSet and ConfigMap on completion
+7. Collects logs from all pods and reports results
+8. Deletes the DaemonSet and ConfigMap on completion
+
+### Node Pre-Flight Checks {#image-cleanup-preflight}
+
+Before generating the DaemonSet, the script checks every node in the target list:
+
+- **NotReady nodes** — nodes that are offline or not yet joined are skipped
+  automatically. A `⚠️ NotReady, skipping` line is printed per skipped node
+  and the offline count is shown in the summary.
+- **Control-plane nodes** — nodes carrying the
+  `node-role.kubernetes.io/control-plane` label are auto-excluded by default.
+  This prevents the DaemonSet from scheduling cleanup pods on the control
+  plane, where user workload taints (`NoSchedule`) would cause restart loops
+  that generate untrackable pod names. A `⏭️ control-plane, auto-excluded`
+  line is printed per excluded node. To explicitly target a control-plane
+  node, use `-n <node>`.
+
+Offline and control-plane nodes are also added to the DaemonSet's `NotIn`
+affinity so they are never scheduled even if the Kubernetes scheduler would
+otherwise attempt it.
+
+If no Ready worker nodes remain after pre-flight, the script exits immediately.
+
+### Space Reporting
+
+Each node's pod logs a before/after disk snapshot via `nsenter` into the host
+filesystem:
+
+```
+=== Disk space before cleanup ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       916G  431G  438G  50% /var/lib/containerd
+431G    /var/lib/containerd
+=== Images before cleanup ===
+[image list]
+=== Removing unused old tags ===
+[removal output]
+=== Images after cleanup ===
+[image list]
+=== Disk space after cleanup ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       916G  412G  457G  48% /var/lib/containerd
+412G    /var/lib/containerd
+```
+
+The `df -h` line shows filesystem-level used/available space. The `du -sh` line
+shows total space consumed by `/var/lib/containerd`. Comparing before and after
+shows exactly how much disk was reclaimed per node.
 
 ### Dry-Run Mode
 
@@ -356,15 +463,54 @@ This is usually cleaned up automatically on the next pull attempt. Check size
 with `sudo du -sh /var/lib/containerd/io.containerd.content.v1.content/ingest/`
 — if it's large and no pull is in progress, it's safe to clear manually.
 
-### DaemonSet cleanup on script failure
+### Manual cleanup after a cancelled run
 
-If the script is interrupted (Ctrl-C, SSH disconnect) before STEP 5, the
-DaemonSet and ConfigMap will be left running. Clean up manually:
+If either script is interrupted (Ctrl-C, SSH disconnect, crash) before it
+finishes, Kubernetes resources may be left behind. Use the commands below to
+clean them up.
+
+#### image-pull.sh — cancelled during a live run
+
+Each node gets a pod named `image-pull-<node>-<timestamp>` in `kube-system`.
+List and force-delete any that remain:
+
+```bash
+kubectl get pods -n kube-system | grep ^image-pull-
+kubectl get pods -n kube-system | grep ^image-pull- | \
+  awk '{print $1}' | xargs kubectl delete pod -n kube-system --force --grace-period=0
+```
+
+#### image-pull.sh — cancelled during a dry run
+
+Dry-run check pods are named `dry-run-check-<timestamp>` and use `--rm`, so
+they normally self-delete. If any remain:
+
+```bash
+kubectl get pods -n kube-system | grep ^dry-run-check-
+kubectl get pods -n kube-system | grep ^dry-run-check- | \
+  awk '{print $1}' | xargs kubectl delete pod -n kube-system --force --grace-period=0
+```
+
+#### image-cleanup.sh — cancelled during a live run
+
+If interrupted before STEP 5, the DaemonSet, ConfigMap, and a local yaml file
+will be left behind:
 
 ```bash
 kubectl delete daemonset image-cleanup -n kube-system
 kubectl delete configmap image-cleanup-inuse -n kube-system
-kubectl get pods -n kube-system | grep image-pull | \
+rm -f image-cleanup-ds.yaml
+```
+
+#### image-cleanup.sh — cancelled during a dry run
+
+Dry-run check pods are named `dry-run-check-<node>-<timestamp>` in
+`kube-system`. They are deleted at the end of each node's check, but if
+interrupted mid-loop:
+
+```bash
+kubectl get pods -n kube-system | grep ^dry-run-check-
+kubectl get pods -n kube-system | grep ^dry-run-check- | \
   awk '{print $1}' | xargs kubectl delete pod -n kube-system --force --grace-period=0
 ```
 
@@ -379,10 +525,6 @@ before proceeding. On a busy cluster this may not be enough. If you see the
 
 ## Potential Improvements
 
-### Multi-image support
-Currently targets a single image name per run. Could accept multiple `-i` flags
-or a file listing images to keep, useful if multiple large images need rotation.
-
 ### Automatic digest ref discovery
 The script currently removes digest refs that share a manifest digest with the
 named tag being removed. A more thorough approach would also check for
@@ -396,10 +538,6 @@ in-use image report so admins can proactively reach out to affected users.
 ### Scheduled execution
 Wrap both scripts in a CronJob or systemd timer that automatically runs cleanup
 after each helm upgrade, using the new image tag extracted from the helm release.
-
-### Space reporting
-Add before/after `du` of `/var/lib/containerd` to each node's log output so
-the summary shows exactly how much disk space was reclaimed per node.
 
 ### Parallel log collection
 The cleanup script currently collects logs from nodes sequentially in STEP 4.

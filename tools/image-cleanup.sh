@@ -124,9 +124,9 @@ BODYEOF
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-e <exclude_nodes>] [-n <node>] [--dry-run]"
+  echo "Usage: $0 -i <image:tag> [-i <image:tag> ...] [-e <exclude_nodes>] [-n <node>] [--dry-run]"
   echo ""
-  echo "  -i        Full image name and tag to KEEP (all other tags will be removed)"
+  echo "  -i        Full image name and tag to KEEP (repeatable; all other tags will be removed)"
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
   echo "  --dry-run Report what would be removed without actually removing anything"
@@ -140,6 +140,7 @@ usage() {
 EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
+KEEP_IMAGES=()
 
 ARGS=()
 for arg in "$@"; do
@@ -151,15 +152,15 @@ done
 
 while getopts ":i:e:n:" opt "${ARGS[@]}"; do
   case $opt in
-    i) KEEP_IMAGE="$OPTARG" ;;
+    i) KEEP_IMAGES+=("$OPTARG") ;;
     e) EXCLUDE_NODES="$OPTARG" ;;
     n) TARGET_NODE="$OPTARG" ;;
     *) usage ;;
   esac
 done
 
-if [ -z "$KEEP_IMAGE" ]; then
-  echo "❌ ERROR: Image name is required!"
+if [ ${#KEEP_IMAGES[@]} -eq 0 ]; then
+  echo "❌ ERROR: At least one image (-i) is required!"
   usage
 fi
 
@@ -168,10 +169,15 @@ if [ -n "$TARGET_NODE" ] && [ -n "$EXCLUDE_NODES" ]; then
   usage
 fi
 
-IMAGE_NAME=$(echo $KEEP_IMAGE | cut -d: -f1)
-IMAGE_TAG=$(echo $KEEP_IMAGE | cut -d: -f2)
-IMAGE_SHORT=$(basename $IMAGE_NAME)
-KEEP_IMAGE_FULL="docker.io/${IMAGE_NAME}:${IMAGE_TAG}"
+IMAGE_SHORT=$(basename $(echo ${KEEP_IMAGES[0]} | cut -d: -f1))
+
+KEEP_IMAGES_FULL=""
+for IMG in "${KEEP_IMAGES[@]}"; do
+  IMAGE_NAME=$(echo $IMG | cut -d: -f1)
+  IMAGE_TAG=$(echo $IMG | cut -d: -f2)
+  KEEP_IMAGES_FULL="$KEEP_IMAGES_FULL docker.io/${IMAGE_NAME}:${IMAGE_TAG}"
+done
+KEEP_IMAGES_FULL=$(echo $KEEP_IMAGES_FULL | xargs)
 
 LOG_FILE="cleanup-results-$(date +%Y%m%d-%H%M%S).log"
 if [ "$DRY_RUN" = "true" ]; then
@@ -205,8 +211,10 @@ echo " Image Cleanup - Full Run"
 fi
 echo " $(date)"
 echo "=========================================="
-echo " Keeping:   $KEEP_IMAGE_FULL"
-echo " Removing:  Unused old tags of $IMAGE_SHORT"
+for FULL_IMG in $KEEP_IMAGES_FULL; do
+echo " Keeping:   $FULL_IMG"
+done
+echo " Removing:  Unused old tags of $IMAGE_SHORT (except above)"
 echo " Log file:  $LOG_FILE"
 if [ "$DRY_RUN" = "true" ]; then
 echo " Mode:      🔍 DRY RUN - no images will be removed"
@@ -265,11 +273,46 @@ if [ $TOTAL_NODES -eq 0 ]; then
   exit 1
 fi
 
+# ==========================================
+# Pre-flight: skip NotReady and control-plane nodes
+# ==========================================
+OFFLINE_NODES=""
+CONTROL_PLANE_NODES=""
+READY_NODES=""
+for NODE in $NODES; do
+  READY=$(kubectl get node $NODE -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+  IS_CP=$(kubectl get node $NODE -o jsonpath='{.metadata.labels}' 2>/dev/null | grep -c 'control-plane')
+  if [ "$READY" != "True" ]; then
+    echo "  ⚠️  $NODE — NotReady, skipping"
+    OFFLINE_NODES="$OFFLINE_NODES $NODE"
+  elif [ "$IS_CP" -gt 0 ] && [ "$NODE" != "$TARGET_NODE" ]; then
+    echo "  ⏭️  $NODE — control-plane, auto-excluded (use -n to target explicitly)"
+    CONTROL_PLANE_NODES="$CONTROL_PLANE_NODES $NODE"
+  else
+    READY_NODES="$READY_NODES $NODE"
+  fi
+done
+NODES=$(echo $READY_NODES | xargs)
+OFFLINE_COUNT=$(echo $OFFLINE_NODES | wc -w | tr -d ' ')
+CP_COUNT=$(echo $CONTROL_PLANE_NODES | wc -w | tr -d ' ')
+TOTAL_NODES=$(echo "$NODES" | wc -w)
+
+if [ $TOTAL_NODES -eq 0 ]; then
+  echo "❌ ERROR: No Ready worker nodes remaining!"
+  exit 1
+fi
+
 echo " Total nodes in cluster: $(echo "$ALL_NODES" | wc -l)"
 if [ -n "$TARGET_NODE" ]; then
 echo " Mode:                   Single node"
 else
 echo " Excluded nodes:         $EXCLUDED_COUNT"
+fi
+if [ "$CP_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⏭️  Control-plane (skipped): $CP_COUNT"
+fi
+if [ "$OFFLINE_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⚠️  Offline (skipped):   $OFFLINE_COUNT"
 fi
 echo " Nodes to clean:         $TOTAL_NODES"
 
@@ -361,7 +404,11 @@ if [ "$DRY_RUN" = "true" ]; then
       --quiet 2>/dev/null | while read IMAGE_REF; do
         [ -z "$IMAGE_REF" ] && continue
 
-        if [ "$IMAGE_REF" = "$KEEP_IMAGE_FULL" ]; then
+        SHOULD_KEEP=false
+        for KEEP_IMG in $KEEP_IMAGES_FULL; do
+          [ "$IMAGE_REF" = "$KEEP_IMG" ] && SHOULD_KEEP=true && break
+        done
+        if [ "$SHOULD_KEEP" = "true" ]; then
           echo "  ✅ Would keep:   $IMAGE_REF"
           continue
         fi
@@ -388,12 +435,20 @@ if [ "$DRY_RUN" = "true" ]; then
   echo "=========================================="
   echo " DRY RUN SUMMARY - $(date)"
   echo "=========================================="
-  echo " Image kept:    $KEEP_IMAGE_FULL"
+  for FULL_IMG in $KEEP_IMAGES_FULL; do
+  echo " Image kept:    $FULL_IMG"
+  done
   echo " Total nodes:   $TOTAL_NODES"
   if [ -n "$TARGET_NODE" ]; then
   echo " Mode:          Single node"
   else
   echo " ⏭️  Excluded:   $EXCLUDED_COUNT"
+  fi
+  if [ "$CP_COUNT" -gt 0 ] 2>/dev/null; then
+  echo " ⏭️  Control-plane (skipped): $CP_COUNT"
+  fi
+  if [ "$OFFLINE_COUNT" -gt 0 ] 2>/dev/null; then
+  echo " ⚠️  Offline (skipped): $OFFLINE_COUNT"
   fi
   echo " No changes were made."
   SCRIPT_END=$(date +%s)
@@ -471,7 +526,9 @@ if [ -n "$TARGET_NODE" ]; then
   echo "                operator: In"
   echo "                values:"
   echo "                - \"$TARGET_NODE\""
-elif [ -n "$EXCLUDE_NODES" ]; then
+else
+  COMBINED_EXCL=$(echo "$EXCLUDE_NODES $OFFLINE_NODES $CONTROL_PLANE_NODES" | tr ',' ' ' | xargs)
+  if [ -n "$COMBINED_EXCL" ]; then
   echo "      affinity:"
   echo "        nodeAffinity:"
   echo "          requiredDuringSchedulingIgnoredDuringExecution:"
@@ -480,9 +537,10 @@ elif [ -n "$EXCLUDE_NODES" ]; then
   echo "              - key: kubernetes.io/hostname"
   echo "                operator: NotIn"
   echo "                values:"
-  for EXCL in $(echo $EXCLUDE_NODES | tr ',' ' '); do
+  for EXCL in $COMBINED_EXCL; do
     echo "                - \"$EXCL\""
   done
+  fi
 fi
 
 cat <<DSEOF2
@@ -499,7 +557,7 @@ cat <<DSEOF2
         - |
           echo "=== Node: \$NODE_NAME ==="
 
-          KEEP_IMAGE_FULL="${KEEP_IMAGE_FULL}"
+          KEEP_IMAGES_FULL="${KEEP_IMAGES_FULL}"
 
           INUSE_TAGS=""
           ENCODED=\$(cat /etc/image-cleanup-inuse/\$NODE_NAME 2>/dev/null)
@@ -510,6 +568,10 @@ cat <<DSEOF2
               echo "  ⚠️  \$TAG is in use by a running pod - skipping"
             done
           fi
+
+          echo "=== Disk space before cleanup ==="
+          nsenter --mount=/proc/1/ns/mnt -- df -h /var/lib/containerd
+          nsenter --mount=/proc/1/ns/mnt -- du -sh /var/lib/containerd
 
           echo "=== Images before cleanup ==="
           nsenter --mount=/proc/1/ns/mnt -- \
@@ -522,7 +584,11 @@ cat <<DSEOF2
             awk '{print \$1}' | \
             while read IMAGE_REF; do
 
-              if [ "\$IMAGE_REF" = "\$KEEP_IMAGE_FULL" ]; then
+              SHOULD_KEEP=false
+              for KEEP_IMG in \$KEEP_IMAGES_FULL; do
+                [ "\$IMAGE_REF" = "\$KEEP_IMG" ] && SHOULD_KEEP=true && break
+              done
+              if [ "\$SHOULD_KEEP" = "true" ]; then
                 echo "  Keeping: \$IMAGE_REF"
                 continue
               fi
@@ -551,10 +617,17 @@ cat <<DSEOF2
                   grep "\$MANIFEST_DIGEST" | \
                   awk '{print \$1}' | \
                   while read DIGEST_REF; do
-                    KEEP_DIGEST=\$(nsenter --mount=/proc/1/ns/mnt -- \
-                      /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | \
-                      grep "^\$KEEP_IMAGE_FULL " | awk '{print \$3}')
-                    if [ "\$MANIFEST_DIGEST" = "\$KEEP_DIGEST" ]; then
+                    DIGEST_MATCHES_KEEP=false
+                    for KIMG in \$KEEP_IMAGES_FULL; do
+                      KEEP_DIGEST=\$(nsenter --mount=/proc/1/ns/mnt -- \
+                        /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | \
+                        grep "^\$KIMG " | awk '{print \$3}')
+                      if [ "\$MANIFEST_DIGEST" = "\$KEEP_DIGEST" ]; then
+                        DIGEST_MATCHES_KEEP=true
+                        break
+                      fi
+                    done
+                    if [ "\$DIGEST_MATCHES_KEEP" = "true" ]; then
                       echo "  Keeping digest ref: \$DIGEST_REF (belongs to keep image)"
                       continue
                     fi
@@ -568,6 +641,10 @@ cat <<DSEOF2
           echo "=== Images after cleanup ==="
           nsenter --mount=/proc/1/ns/mnt -- \
             /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep "${IMAGE_SHORT}"
+
+          echo "=== Disk space after cleanup ==="
+          nsenter --mount=/proc/1/ns/mnt -- df -h /var/lib/containerd
+          nsenter --mount=/proc/1/ns/mnt -- du -sh /var/lib/containerd
 
           echo "=== Cleanup complete on \$NODE_NAME ==="
           sleep 3600
@@ -734,12 +811,20 @@ echo ""
 echo "=========================================="
 echo " SUMMARY - $(date)"
 echo "=========================================="
-echo " Image kept:     $KEEP_IMAGE_FULL"
+for FULL_IMG in $KEEP_IMAGES_FULL; do
+echo " Image kept:     $FULL_IMG"
+done
 echo " Total nodes:    $TOTAL"
 if [ -n "$TARGET_NODE" ]; then
 echo " Mode:           Single node"
 else
 echo " ⏭️  Excluded:    $EXCLUDED_COUNT"
+fi
+if [ "$CP_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⏭️  Control-plane (skipped): $CP_COUNT"
+fi
+if [ "$OFFLINE_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⚠️  Offline (skipped): $OFFLINE_COUNT"
 fi
 echo " ✅ Succeeded:   $SUCCESS"
 echo " ❌ Failed:      $FAILED"
@@ -757,7 +842,11 @@ while IFS='|' read -r NODE NS POD IMAGES; do
   [ "$IS_EXCLUDED" = "true" ] && continue
   if [ -n "$TARGET_NODE" ] && [ "$NODE" != "$TARGET_NODE" ]; then continue; fi
   for IMG in $IMAGES; do
-    if echo "$IMG" | grep -q "$IMAGE_SHORT" && [ "$IMG" != "$KEEP_IMAGE_FULL" ]; then
+    IS_KEPT=false
+    for FULL_IMG in $KEEP_IMAGES_FULL; do
+      [ "$IMG" = "$FULL_IMG" ] && IS_KEPT=true && break
+    done
+    if echo "$IMG" | grep -q "$IMAGE_SHORT" && [ "$IS_KEPT" = "false" ]; then
       if [ "$INUSE_FOUND" = "false" ]; then
         echo ""
         echo " ⚠️  Images skipped because they are in use by running pods:"

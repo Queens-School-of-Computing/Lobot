@@ -144,9 +144,9 @@ finalize_and_email() {
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]"
+  echo "Usage: $0 -i <image:tag> [-i <image:tag> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]"
   echo ""
-  echo "  -i        Full image name and tag to pull (required)"
+  echo "  -i        Full image name and tag to pull (required, repeatable)"
   echo "  -b        Number of nodes pulling simultaneously (default: 3)"
   echo "  -t        Timeout in seconds per node (default: 1200)"
   echo "  -e        Comma-separated list of nodes to exclude"
@@ -164,6 +164,7 @@ TIMEOUT=1200
 EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
+PULL_IMAGES=()
 
 ARGS=()
 for arg in "$@"; do
@@ -175,7 +176,7 @@ done
 
 while getopts ":i:b:t:e:n:" opt "${ARGS[@]}"; do
   case $opt in
-    i) PULL_IMAGE="$OPTARG" ;;
+    i) PULL_IMAGES+=("$OPTARG") ;;
     b) BATCH_SIZE="$OPTARG" ;;
     t) TIMEOUT="$OPTARG" ;;
     e) EXCLUDE_NODES="$OPTARG" ;;
@@ -184,8 +185,8 @@ while getopts ":i:b:t:e:n:" opt "${ARGS[@]}"; do
   esac
 done
 
-if [ -z "$PULL_IMAGE" ]; then
-  echo "❌ ERROR: Image name is required!"
+if [ ${#PULL_IMAGES[@]} -eq 0 ]; then
+  echo "❌ ERROR: At least one image (-i) is required!"
   usage
 fi
 
@@ -194,14 +195,17 @@ if [ -n "$TARGET_NODE" ] && [ -n "$EXCLUDE_NODES" ]; then
   usage
 fi
 
-IMAGE_SHORT=$(basename $(echo $PULL_IMAGE | cut -d: -f1))
-IMAGE_TAG=$(echo $PULL_IMAGE | cut -d: -f2)
+IMAGE_SHORT=$(basename $(echo ${PULL_IMAGES[0]} | cut -d: -f1))
 
-if echo "$PULL_IMAGE" | grep -qv "^docker.io/"; then
-  CTR_IMAGE="docker.io/$PULL_IMAGE"
-else
-  CTR_IMAGE="$PULL_IMAGE"
-fi
+CTR_IMAGES=()
+for IMG in "${PULL_IMAGES[@]}"; do
+  if echo "$IMG" | grep -qv "^docker.io/"; then
+    CTR_IMAGES+=("docker.io/$IMG")
+  else
+    CTR_IMAGES+=("$IMG")
+  fi
+done
+CTR_IMAGES_STR="${CTR_IMAGES[*]}"
 
 LOG_FILE="pull-results-$(date +%Y%m%d-%H%M%S).log"
 if [ "$DRY_RUN" = "true" ]; then
@@ -237,8 +241,15 @@ echo " Image Pull - Staggered Batch Run"
 fi
 echo " $(date)"
 echo "=========================================="
-echo " Image:      $PULL_IMAGE"
-echo " ctr image:  $CTR_IMAGE"
+if [ ${#PULL_IMAGES[@]} -eq 1 ]; then
+echo " Image:      ${PULL_IMAGES[0]}"
+echo " ctr image:  ${CTR_IMAGES[0]}"
+else
+echo " Images (${#PULL_IMAGES[@]}):"
+for IMG in "${PULL_IMAGES[@]}"; do
+echo "   $IMG"
+done
+fi
 if [ -n "$TARGET_NODE" ]; then
 echo " Target:     $TARGET_NODE (single node mode)"
 else
@@ -301,11 +312,46 @@ if [ $TOTAL_NODES -eq 0 ]; then
   exit 1
 fi
 
+# ==========================================
+# Pre-flight: skip NotReady and control-plane nodes
+# ==========================================
+OFFLINE_NODES=""
+CONTROL_PLANE_NODES=""
+READY_NODES=""
+for NODE in $NODES; do
+  READY=$(kubectl get node $NODE -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+  IS_CP=$(kubectl get node $NODE -o jsonpath='{.metadata.labels}' 2>/dev/null | grep -c 'control-plane')
+  if [ "$READY" != "True" ]; then
+    echo "  ⚠️  $NODE — NotReady, skipping"
+    OFFLINE_NODES="$OFFLINE_NODES $NODE"
+  elif [ "$IS_CP" -gt 0 ] && [ "$NODE" != "$TARGET_NODE" ]; then
+    echo "  ⏭️  $NODE — control-plane, auto-excluded (use -n to target explicitly)"
+    CONTROL_PLANE_NODES="$CONTROL_PLANE_NODES $NODE"
+  else
+    READY_NODES="$READY_NODES $NODE"
+  fi
+done
+NODES=$(echo $READY_NODES | xargs)
+OFFLINE_COUNT=$(echo $OFFLINE_NODES | wc -w | tr -d ' ')
+CP_COUNT=$(echo $CONTROL_PLANE_NODES | wc -w | tr -d ' ')
+TOTAL_NODES=$(echo "$NODES" | wc -w)
+
+if [ $TOTAL_NODES -eq 0 ]; then
+  echo "❌ ERROR: No Ready worker nodes remaining!"
+  exit 1
+fi
+
 echo " Total nodes in cluster: $(echo "$ALL_NODES" | wc -l)"
 if [ -n "$TARGET_NODE" ]; then
 echo " Mode:                   Single node"
 else
 echo " Excluded nodes:         $EXCLUDED_COUNT"
+fi
+if [ "$CP_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⏭️  Control-plane:       $CP_COUNT"
+fi
+if [ "$OFFLINE_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⚠️  Offline (skipped):   $OFFLINE_COUNT"
 fi
 echo " Nodes to pull:          $TOTAL_NODES"
 echo " Total batches:          $(( (TOTAL_NODES + BATCH_SIZE - 1) / BATCH_SIZE ))"
@@ -338,7 +384,7 @@ if [ "$DRY_RUN" = "true" ]; then
       NODE=${NODE_ARRAY[$j]}
       echo "  🔍 Checking $NODE..."
 
-      EXISTS=$(kubectl run dry-run-check-$(date +%s) \
+      CHECK_OUTPUT=$(kubectl run dry-run-check-$(date +%s) \
         -n $NAMESPACE \
         --image=alpine:latest \
         --restart=Never \
@@ -352,22 +398,24 @@ if [ "$DRY_RUN" = "true" ]; then
               \"name\": \"check\",
               \"image\": \"alpine:latest\",
               \"command\": [\"/bin/sh\", \"-c\",
-                \"nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep -c '$CTR_IMAGE' || echo 0\"
+                \"for IMG in \$CTR_IMAGES ; do COUNT=\$(nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep -c \$IMG || echo 0) ; if [ \$COUNT -gt 0 ] ; then echo PRESENT:\$IMG ; else echo MISSING:\$IMG ; fi ; done\"
               ],
-              \"securityContext\": {\"privileged\": true, \"runAsUser\": 0}
+              \"securityContext\": {\"privileged\": true, \"runAsUser\": 0},
+              \"env\": [{\"name\": \"CTR_IMAGES\", \"value\": \"$CTR_IMAGES_STR\"}]
             }],
             \"restartPolicy\": \"Never\"
           }
         }" \
         --wait=true \
         -i \
-        --quiet 2>/dev/null | tr -d '[:space:]')
+        --quiet 2>/dev/null)
 
-      if [ "$EXISTS" -gt "0" ] 2>/dev/null; then
-        echo "  ✅ $NODE — image already present, pull would be skipped"
-      else
-        echo "  📥 $NODE — image NOT present, would pull: $CTR_IMAGE"
-      fi
+      while IFS= read -r LINE; do
+        case "$LINE" in
+          PRESENT:*) echo "  ✅ $NODE — ${LINE#PRESENT:} already present, pull would be skipped" ;;
+          MISSING:*) echo "  📥 $NODE — image NOT present, would pull: ${LINE#MISSING:}" ;;
+        esac
+      done <<< "$CHECK_OUTPUT"
     done
 
     i=$BATCH_END
@@ -377,7 +425,14 @@ if [ "$DRY_RUN" = "true" ]; then
   echo "=========================================="
   echo " DRY RUN SUMMARY - $(date)"
   echo "=========================================="
-  echo " Image:        $PULL_IMAGE"
+  if [ ${#PULL_IMAGES[@]} -eq 1 ]; then
+  echo " Image:        ${PULL_IMAGES[0]}"
+  else
+  echo " Images (${#PULL_IMAGES[@]}):"
+  for IMG in "${PULL_IMAGES[@]}"; do
+  echo "   $IMG"
+  done
+  fi
   echo " Total nodes:  $TOTAL_NODES"
   echo " Batch size:   $BATCH_SIZE"
   if [ -n "$TARGET_NODE" ]; then
@@ -402,6 +457,7 @@ pull_on_node() {
   local NODE=$1
   local POD_NAME="image-pull-$(echo $NODE | tr '.' '-' | tr '[:upper:]' '[:lower:]')-$(date +%s)"
   POD_NAME=$(echo $POD_NAME | cut -c1-63)
+  local CTR_IMAGES_STR="${CTR_IMAGES[*]}"
 
   kubectl run $POD_NAME \
     -n $NAMESPACE \
@@ -416,10 +472,13 @@ pull_on_node() {
           \"name\": \"pull\",
           \"image\": \"alpine:latest\",
           \"command\": [\"/bin/sh\", \"-c\",
-            \"echo === Pulling $CTR_IMAGE on \$NODE_NAME === && nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images pull $CTR_IMAGE && echo === Pull complete on \$NODE_NAME === || echo === Pull FAILED on \$NODE_NAME ===\"
+            \"echo === Node: \$NODE_NAME === ; echo === Disk space before pull === ; nsenter --mount=/proc/1/ns/mnt -- df -h /var/lib/containerd ; nsenter --mount=/proc/1/ns/mnt -- du -sh /var/lib/containerd ; OVERALL_RC=0 ; for IMG in \$CTR_IMAGES ; do echo === Pulling \$IMG === ; nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images pull \$IMG ; [ \$? -ne 0 ] && OVERALL_RC=1 ; done ; echo === Disk space after pull === ; nsenter --mount=/proc/1/ns/mnt -- df -h /var/lib/containerd ; nsenter --mount=/proc/1/ns/mnt -- du -sh /var/lib/containerd ; if [ \$OVERALL_RC -eq 0 ] ; then echo === Pull complete on \$NODE_NAME === ; else echo === Pull FAILED on \$NODE_NAME === ; fi\"
           ],
           \"securityContext\": {\"privileged\": true, \"runAsUser\": 0, \"runAsGroup\": 0},
-          \"env\": [{\"name\": \"NODE_NAME\", \"valueFrom\": {\"fieldRef\": {\"fieldPath\": \"spec.nodeName\"}}}]
+          \"env\": [
+            {\"name\": \"NODE_NAME\", \"valueFrom\": {\"fieldRef\": {\"fieldPath\": \"spec.nodeName\"}}},
+            {\"name\": \"CTR_IMAGES\", \"value\": \"$CTR_IMAGES_STR\"}
+          ]
         }],
         \"restartPolicy\": \"Never\"
       }
@@ -608,12 +667,22 @@ echo ""
 echo "=========================================="
 echo " SUMMARY - $(date)"
 echo "=========================================="
-echo " Image:                $PULL_IMAGE"
+if [ ${#PULL_IMAGES[@]} -eq 1 ]; then
+echo " Image:                ${PULL_IMAGES[0]}"
+else
+echo " Images (${#PULL_IMAGES[@]}):"
+for IMG in "${PULL_IMAGES[@]}"; do
+echo "   $IMG"
+done
+fi
 echo " Total nodes:          $TOTAL"
 if [ -n "$TARGET_NODE" ]; then
 echo " Mode:                 Single node"
 else
 echo " ⏭️  Excluded:          $EXCLUDED_COUNT"
+fi
+if [ "$OFFLINE_COUNT" -gt 0 ] 2>/dev/null; then
+echo " ⚠️  Offline (skipped): $OFFLINE_COUNT"
 fi
 echo " ✅ Succeeded:         $INITIAL_SUCCESS"
 if [ -n "$FAILED_NODES" ]; then
