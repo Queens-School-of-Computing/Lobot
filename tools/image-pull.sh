@@ -144,17 +144,18 @@ finalize_and_email() {
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-i <image:tag> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]"
+  echo "Usage: $0 -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run]"
   echo ""
-  echo "  -i        Full image name and tag to pull (required, repeatable)"
+  echo "  -i        Image name and optional tag to pull (required, repeatable)"
   echo "  -b        Number of nodes pulling simultaneously (default: 3)"
   echo "  -t        Timeout in seconds per node (default: 1200)"
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
+  echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
   echo "  --dry-run Report what would be pulled without actually pulling"
   echo ""
   echo "Examples:"
-  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -b 3 -e lobot-dev.cs.queensu.ca"
+  echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest --latest -b 3"
   echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -n newcluster-gpunode3 --dry-run"
   exit 1
 }
@@ -164,12 +165,14 @@ TIMEOUT=1200
 EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
+LATEST_MODE=false
 PULL_IMAGES=()
 
 ARGS=()
 for arg in "$@"; do
   case $arg in
     --dry-run) DRY_RUN=true ;;
+    --latest)  LATEST_MODE=true ;;
     *) ARGS+=("$arg") ;;
   esac
 done
@@ -194,18 +197,6 @@ if [ -n "$TARGET_NODE" ] && [ -n "$EXCLUDE_NODES" ]; then
   echo "❌ ERROR: Cannot use -n and -e together!"
   usage
 fi
-
-IMAGE_SHORT=$(basename $(echo ${PULL_IMAGES[0]} | cut -d: -f1))
-
-CTR_IMAGES=()
-for IMG in "${PULL_IMAGES[@]}"; do
-  if echo "$IMG" | grep -qv "^docker.io/"; then
-    CTR_IMAGES+=("docker.io/$IMG")
-  else
-    CTR_IMAGES+=("$IMG")
-  fi
-done
-CTR_IMAGES_STR="${CTR_IMAGES[*]}"
 
 LOG_FILE="pull-results-$(date +%Y%m%d-%H%M%S).log"
 if [ "$DRY_RUN" = "true" ]; then
@@ -232,6 +223,63 @@ format_elapsed() {
     printf "%dm %02ds" $M $S
   fi
 }
+
+# ==========================================
+# Helper: resolve latest tag from Docker Hub
+# ==========================================
+resolve_latest_tag() {
+  local IMAGE_NAME=$1
+  python3 - "$IMAGE_NAME" <<'PYEOF'
+import json, sys, urllib.request
+image = sys.argv[1]
+url = "https://hub.docker.com/v2/repositories/{}/tags/?ordering=last_updated&page_size=1".format(image)
+try:
+    with urllib.request.urlopen(url, timeout=15) as r:
+        data = json.load(r)
+    if data.get("results"):
+        print(data["results"][0]["name"])
+    else:
+        print("ERROR: no tags found for {}".format(image), file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print("ERROR: {}".format(e), file=sys.stderr)
+    sys.exit(1)
+PYEOF
+}
+
+# ==========================================
+# Resolve latest tags from Docker Hub (--latest)
+# ==========================================
+if [ "$LATEST_MODE" = "true" ]; then
+  echo "🔍 Resolving latest tags from Docker Hub..."
+  RESOLVED_IMAGES=()
+  for IMG in "${PULL_IMAGES[@]}"; do
+    IMG_NAME=$(echo "$IMG" | cut -d: -f1)
+    printf "   %-60s → " "$IMG_NAME"
+    TAG=$(resolve_latest_tag "$IMG_NAME")
+    if [ $? -ne 0 ]; then
+      echo "❌ failed"
+      echo "❌ ERROR: Could not resolve latest tag for $IMG_NAME"
+      exit 1
+    fi
+    echo "$TAG"
+    RESOLVED_IMAGES+=("${IMG_NAME}:${TAG}")
+  done
+  PULL_IMAGES=("${RESOLVED_IMAGES[@]}")
+  echo ""
+fi
+
+IMAGE_SHORT=$(basename $(echo ${PULL_IMAGES[0]} | cut -d: -f1))
+
+CTR_IMAGES=()
+for IMG in "${PULL_IMAGES[@]}"; do
+  if echo "$IMG" | grep -qv "^docker.io/"; then
+    CTR_IMAGES+=("docker.io/$IMG")
+  else
+    CTR_IMAGES+=("$IMG")
+  fi
+done
+CTR_IMAGES_STR="${CTR_IMAGES[*]}"
 
 echo "=========================================="
 if [ "$DRY_RUN" = "true" ]; then

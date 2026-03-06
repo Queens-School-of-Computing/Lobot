@@ -39,18 +39,19 @@ saturating the network and causing pod scheduling delays.
 ### Usage
 
 ```bash
-./image-pull.sh -i <image:tag> [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--dry-run]
+./image-pull.sh -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run]
 ```
 
 ### Parameters
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-i` | Full image name and tag to pull (required, repeatable) | — |
+| `-i` | Image name and optional tag to pull (required, repeatable) | — |
 | `-b` | Number of nodes pulling simultaneously | `3` |
 | `-t` | Timeout in seconds per node | `1200` |
 | `-e` | Comma-separated list of nodes to exclude | — |
 | `-n` | Target a single specific node only | — |
+| `--latest` | Resolve the most recently pushed tag from Docker Hub for each `-i` image | — |
 | `--dry-run` | Check image presence per node; report what would be pulled without pulling | — |
 
 > `-n` and `-e` are mutually exclusive.
@@ -58,47 +59,59 @@ saturating the network and causing pod scheduling delays.
 ### Examples
 
 ```bash
-# Pull a single new image across all nodes in batches of 3, excluding control plane
+# Pull the most recently pushed image (auto-resolves tag from Docker Hub)
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest \
+  --latest \
+  -b 3
+
+# Pull a specific tagged image across all worker nodes in batches of 3
+# (control-plane is auto-excluded)
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -b 3 \
-  -t 1200 \
-  -e lobot-dev.cs.queensu.ca
+  -b 3
 
 # Pull two images (new + previous) in the same run
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -b 3 \
-  -e lobot-dev.cs.queensu.ca
+  -b 3
 
 # Pull on a single node only
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
 
-# Dry-run: check which nodes already have the image, without pulling
+# Exclude a specific worker node (e.g. a node under maintenance)
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -b 3 \
-  -e lobot-dev.cs.queensu.ca \
+  -e lobot-dev.cs.queensu.ca
+
+# Dry-run: resolve latest tag and check which nodes already have it, without pulling
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest \
+  --latest \
+  -b 3 \
   --dry-run
 ```
 
 ### How It Works
 
-1. Resolves the node list, applying exclusions or targeting a single node
-2. Runs a pre-flight readiness check — skips NotReady nodes and auto-excludes
+1. If `--latest` is passed, queries the Docker Hub API for the most recently
+   pushed tag of each `-i` image and resolves it before any other work begins
+2. Resolves the node list, applying exclusions or targeting a single node
+3. Runs a pre-flight readiness check — skips NotReady nodes and auto-excludes
    control-plane nodes (see [Node Pre-Flight Checks](#image-pull-preflight) below)
-3. Launches a batch of lightweight `alpine:latest` pods simultaneously, each
+4. Launches a batch of lightweight `alpine:latest` pods simultaneously, each
    pinned to a specific node via `nodeName`
-4. Each pod uses `nsenter` to run `ctr images pull` directly against the host
+5. Each pod uses `nsenter` to run `ctr images pull` directly against the host
    containerd socket, bypassing the pod image pull mechanism entirely
-5. Streams live `ctr` pull progress to the terminal while polling pod status
+6. Streams live `ctr` pull progress to the terminal while polling pod status
    silently in the background
-6. After each batch completes, moves to the next batch
-7. After all batches, retries any failed nodes one at a time
-8. Writes a clean log file (ANSI codes and `ctr` progress lines stripped)
+7. After each batch completes, moves to the next batch
+8. After all batches, retries any failed nodes one at a time
+9. Writes a clean log file (ANSI codes and `ctr` progress lines stripped)
    alongside the full terminal output
 
 ### Node Pre-Flight Checks {#image-pull-preflight}
@@ -254,26 +267,29 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 
 ```bash
 # Keep only the new image; remove all other old tags
+# (control-plane is auto-excluded)
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -e lobot-dev.cs.queensu.ca
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
 
 # Keep both new and previous image; remove everything else
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -e lobot-dev.cs.queensu.ca
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210
 
 # Clean a single node
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
 
+# Exclude a specific worker node (e.g. a node under maintenance)
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca
+
 # Dry-run: see what would be removed without removing anything
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -e lobot-dev.cs.queensu.ca \
   --dry-run
 ```
 

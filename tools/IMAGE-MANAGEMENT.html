@@ -22,7 +22,7 @@
 <h3>Purpose</h3>
 <p>Pre-pulls a new image across cluster nodes in controlled batches before a helm upgrade. Without this, helm upgrades cause all nodes to pull simultaneously, saturating the network and causing pod scheduling delays.</p>
 <h3>Usage</h3>
-<pre><code>./image-pull.sh -i &lt;image:tag&gt; [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run]</code></pre>
+<pre><code>./image-pull.sh -i &lt;image[:tag]&gt; [-i &lt;image[:tag]&gt; ...] [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--latest] [--dry-run]</code></pre>
 <h3>Parameters</h3>
 <table>
 <thead>
@@ -35,7 +35,7 @@
 <tbody>
 <tr>
 <td><code>-i</code></td>
-<td>Full image name and tag to pull (required, repeatable)</td>
+<td>Image name and optional tag to pull (required, repeatable)</td>
 <td>—</td>
 </tr>
 <tr>
@@ -59,6 +59,11 @@
 <td>—</td>
 </tr>
 <tr>
+<td><code>--latest</code></td>
+<td>Resolve the most recently pushed tag from Docker Hub for each <code>-i</code> image</td>
+<td>—</td>
+</tr>
+<tr>
 <td><code>--dry-run</code></td>
 <td>Check image presence per node; report what would be pulled without pulling</td>
 <td>—</td>
@@ -67,33 +72,44 @@
 </table>
 <p><strong>Note:</strong> <code>-n</code> and <code>-e</code> are mutually exclusive.</p>
 <h3>Examples</h3>
-<pre><code># Pull a single new image across all nodes in batches of 3, excluding control plane
+<pre><code># Pull the most recently pushed image (auto-resolves tag from Docker Hub)
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest \
+  --latest \
+  -b 3
+
+# Pull a specific tagged image across all worker nodes in batches of 3
+# (control-plane is auto-excluded)
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -b 3 \
-  -t 1200 \
-  -e lobot.cs.queensu.ca
+  -b 3
 
 # Pull two images (new + previous) in the same run
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -b 3 \
-  -e lobot.cs.queensu.ca
+  -b 3
 
 # Pull on a single node only
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
 
-# Dry-run: check which nodes already have the image, without pulling
+# Exclude a specific worker node (e.g. a node under maintenance)
 ./image-pull.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -b 3 \
-  -e lobot.cs.queensu.ca \
+  -e lobot-dev.cs.queensu.ca
+
+# Dry-run: resolve latest tag and check which nodes already have it, without pulling
+./image-pull.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest \
+  --latest \
+  -b 3 \
   --dry-run</code></pre>
 <h3>How It Works</h3>
 <ol>
+<li>If <code>--latest</code> is passed, queries the Docker Hub API for the most recently pushed tag of each <code>-i</code> image and resolves it before any other work begins</li>
 <li>Resolves the node list, applying exclusions or targeting a single node</li>
 <li>Runs a pre-flight readiness check — skips NotReady nodes and auto-excludes control-plane nodes (see <em>Node Pre-Flight Checks</em> below)</li>
 <li>Launches a batch of lightweight <code>alpine:latest</code> pods simultaneously, each pinned to a specific node via <code>nodeName</code></li>
@@ -277,26 +293,29 @@ helm upgrade ...
 <p><strong>Note:</strong> <code>-n</code> and <code>-e</code> are mutually exclusive.</p>
 <h3>Examples</h3>
 <pre><code># Keep only the new image; remove all other old tags
+# (control-plane is auto-excluded)
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -e lobot.cs.queensu.ca
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
 
 # Keep both new and previous image; remove everything else
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -e lobot.cs.queensu.ca
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210
 
 # Clean a single node
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -n newcluster-gpunode3
 
+# Exclude a specific worker node (e.g. a node under maintenance)
+./image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -e lobot-dev.cs.queensu.ca
+
 # Dry-run: see what would be removed without removing anything
 ./image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
-  -e lobot.cs.queensu.ca \
   --dry-run</code></pre>
 <h3>How It Works</h3>
 <ol>
