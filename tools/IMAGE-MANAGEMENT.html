@@ -22,7 +22,7 @@
 <h3>Purpose</h3>
 <p>Pre-pulls a new image across cluster nodes in controlled batches before a helm upgrade. Without this, helm upgrades cause all nodes to pull simultaneously, saturating the network and causing pod scheduling delays.</p>
 <h3>Usage</h3>
-<pre><code>./image-pull.sh -i &lt;image[:tag]&gt; [-i &lt;image[:tag]&gt; ...] [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--latest] [--dry-run]</code></pre>
+<pre><code>./image-pull.sh -i &lt;image[:tag]&gt; [-i &lt;image[:tag]&gt; ...] [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--latest] [--dry-run] [--yes]</code></pre>
 <h3>Parameters</h3>
 <table>
 <thead>
@@ -66,6 +66,11 @@
 <tr>
 <td><code>--dry-run</code></td>
 <td>Check image presence per node; report what would be pulled without pulling</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td>Skip the confirmation prompt before pulling</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -143,17 +148,22 @@ Filesystem      Size  Used Avail Use% Mounted on
 <p>When <code>--dry-run</code> is passed, no pods are launched for actual pulling. Instead:</p>
 <ol>
 <li>A temporary <code>alpine:latest</code> pod is launched per node (with <code>--rm --wait=true</code>)</li>
-<li>The pod runs <code>ctr images ls | grep -c &lt;image&gt;</code> via <code>nsenter</code> to check presence</li>
-<li>Results are reported per node, grouped by batch:
+<li>The pod reports current disk usage via <code>nsenter</code> (<code>df -h</code> + <code>du -sh /var/lib/containerd</code>)</li>
+<li>The pod checks image presence via <code>ctr images ls</code>; results are reported per node:
 <ul>
 <li><code>✅ already present — pull would be skipped</code></li>
-<li><code>📥 not present — would pull: &lt;image-ref&gt;</code></li>
+<li><code>📥 not present — would pull: &lt;image-ref&gt;  X.X GB compressed (~Y–Z GB on disk est.)</code></li>
 </ul>
 </li>
+<li>Image size estimates (compressed from Docker Hub + estimated uncompressed range) are shown at the top of the dry-run section and annotated on each missing image</li>
 <li>A summary is printed and a dry-run email notification is sent</li>
 <li>Log file is named <code>pull-dryrun-YYYYMMDD-HHMMSS.log</code></li>
 </ol>
-<p>Useful for auditing which nodes still need a given image before committing to the full batch run — for example, after an interrupted pull.</p>
+<p>Useful for checking which nodes still need an image and whether there is sufficient disk space before committing to the full pull.</p>
+<h3>Confirmation Prompt</h3>
+<p>Before launching any pods, the script prompts:</p>
+<pre><code> Proceed with pull on N node(s)? [y/N]</code></pre>
+<p>Pass <code>--yes</code> to skip the prompt for scripted or automated runs.</p>
 <h3>Batch Sizing Guidelines</h3>
 <table>
 <thead>
@@ -257,7 +267,7 @@ helm upgrade ...
 <h3>Purpose</h3>
 <p>Removes old tags of an image from all cluster nodes after a helm upgrade, freeing disk space. Automatically protects images currently in use by running pods (e.g. long-running user sessions that haven't restarted yet).</p>
 <h3>Usage</h3>
-<pre><code>./image-cleanup.sh -i &lt;image:tag&gt; [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run]</code></pre>
+<pre><code>./image-cleanup.sh -i &lt;image:tag&gt; [-i &lt;image:tag&gt; ...] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run] [--yes]</code></pre>
 <h3>Parameters</h3>
 <table>
 <thead>
@@ -286,6 +296,11 @@ helm upgrade ...
 <tr>
 <td><code>--dry-run</code></td>
 <td>Report what would be removed per node without removing anything</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td>Skip the confirmation prompt before removing images</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -369,6 +384,10 @@ Filesystem      Size  Used Avail Use% Mounted on
 <li>Log file is named <code>cleanup-dryrun-YYYYMMDD-HHMMSS.log</code></li>
 </ol>
 <p>Recommended before every cleanup run, particularly on clusters with active user sessions, to confirm which images are protected by in-use detection.</p>
+<h3>Confirmation Prompt</h3>
+<p>Before deploying the DaemonSet, the script prompts:</p>
+<pre><code> Proceed with cleanup on N node(s)? [y/N]</code></pre>
+<p>Pass <code>--yes</code> to skip the prompt for scripted or automated runs.</p>
 <h3>Image Protection Logic</h3>
 <p>The script protects two categories of images from removal on each node:</p>
 <ul>

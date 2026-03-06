@@ -39,7 +39,7 @@ saturating the network and causing pod scheduling delays.
 ### Usage
 
 ```bash
-./image-pull.sh -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run]
+./image-pull.sh -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run] [--yes]
 ```
 
 ### Parameters
@@ -53,6 +53,7 @@ saturating the network and causing pod scheduling delays.
 | `-n` | Target a single specific node only | — |
 | `--latest` | Resolve the most recently pushed tag from Docker Hub for each `-i` image | — |
 | `--dry-run` | Check image presence per node; report what would be pulled without pulling | — |
+| `--yes` | Skip the confirmation prompt before pulling | — |
 
 > `-n` and `-e` are mutually exclusive.
 
@@ -158,15 +159,27 @@ making it easy to see how much the pull added.
 When `--dry-run` is passed, no pods are launched for actual pulling. Instead:
 
 1. A temporary `alpine:latest` pod is launched per node (with `--rm --wait=true`)
-2. The pod runs `ctr images ls | grep -c <image>` via `nsenter` to check presence
-3. Results are reported per node, grouped by batch:
+2. The pod reports current disk usage via `nsenter` (`df -h` + `du -sh /var/lib/containerd`)
+3. The pod checks image presence via `ctr images ls`; results are reported per node:
    - `✅ already present — pull would be skipped`
-   - `📥 not present — would pull: <image-ref>`
-4. A summary is printed and a dry-run email notification is sent
-5. Log file is named `pull-dryrun-YYYYMMDD-HHMMSS.log`
+   - `📥 not present — would pull: <image-ref>  X.X GB compressed (~Y–Z GB on disk est.)`
+4. Image size estimates (compressed from Docker Hub + estimated uncompressed range) are
+   shown at the top of the dry-run section and annotated on each missing image
+5. A summary is printed and a dry-run email notification is sent
+6. Log file is named `pull-dryrun-YYYYMMDD-HHMMSS.log`
 
-Useful for auditing which nodes still need a given image before committing to
-the full batch run — for example, after an interrupted pull.
+Useful for checking which nodes still need an image and whether there is sufficient
+disk space before committing to the full pull.
+
+### Confirmation Prompt
+
+Before launching any pods, the script prompts:
+
+```
+ Proceed with pull on N node(s)? [y/N]
+```
+
+Pass `--yes` to skip the prompt for scripted or automated runs.
 
 ### Batch Sizing Guidelines
 
@@ -249,7 +262,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 ### Usage
 
 ```bash
-./image-cleanup.sh -i <image:tag> [-e <exclude>] [-n <node>] [--dry-run]
+./image-cleanup.sh -i <image:tag> [-i <image:tag> ...] [-e <exclude>] [-n <node>] [--dry-run] [--yes]
 ```
 
 ### Parameters
@@ -260,6 +273,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 | `-e` | Comma-separated list of nodes to exclude | — |
 | `-n` | Target a single specific node only | — |
 | `--dry-run` | Report what would be removed per node without removing anything | — |
+| `--yes` | Skip the confirmation prompt before removing images | — |
 
 > `-n` and `-e` are mutually exclusive.
 
@@ -374,6 +388,16 @@ Instead:
 
 Recommended before every cleanup run, particularly on clusters with active user
 sessions, to confirm which images are protected by in-use detection.
+
+### Confirmation Prompt
+
+Before deploying the DaemonSet, the script prompts:
+
+```
+ Proceed with cleanup on N node(s)? [y/N]
+```
+
+Pass `--yes` to skip the prompt for scripted or automated runs.
 
 ### Image Protection Logic
 

@@ -13,7 +13,8 @@ SMTP_USE_TLS=false
 SMTP_USERNAME=""
 SMTP_PASSWORD=""
 FROM_EMAIL="lobot@cs.queensu.ca"
-TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+#TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca"
 
 # ==========================================
 # Email helper - reads body from temp file
@@ -152,7 +153,9 @@ usage() {
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
   echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
+  echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
   echo "  --dry-run Report what would be pulled without actually pulling"
+  echo "  --yes     Skip the confirmation prompt before pulling"
   echo ""
   echo "Examples:"
   echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest --latest -b 3"
@@ -167,6 +170,7 @@ EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
 LATEST_MODE=false
+AUTO_YES=false
 PULL_IMAGES=()
 
 ARGS=()
@@ -174,6 +178,7 @@ for arg in "$@"; do
   case $arg in
     --dry-run) DRY_RUN=true ;;
     --latest)  LATEST_MODE=true ;;
+    --yes)     AUTO_YES=true ;;
     *) ARGS+=("$arg") ;;
   esac
 done
@@ -226,22 +231,33 @@ format_elapsed() {
 }
 
 # ==========================================
-# Helper: resolve latest tag from Docker Hub
+# Helper: fetch tag + compressed size from Docker Hub
+# Pass "repo/image" for latest, "repo/image:tag" for a specific tag
+# Outputs two lines: TAG:<tag>  SIZE:<bytes>
 # ==========================================
-resolve_latest_tag() {
-  local IMAGE_NAME=$1
-  python3 - "$IMAGE_NAME" <<'PYEOF'
+fetch_image_info() {
+  local IMAGE=$1
+  python3 - "$IMAGE" <<'PYEOF'
 import json, sys, urllib.request
 image = sys.argv[1]
-url = "https://hub.docker.com/v2/repositories/{}/tags/?ordering=last_updated&page_size=1".format(image)
 try:
-    with urllib.request.urlopen(url, timeout=15) as r:
-        data = json.load(r)
-    if data.get("results"):
-        print(data["results"][0]["name"])
+    if ':' in image:
+        name, tag = image.rsplit(':', 1)
+        url = "https://hub.docker.com/v2/repositories/{}/tags/{}/".format(name, tag)
+        with urllib.request.urlopen(url, timeout=15) as r:
+            data = json.load(r)
+        print("TAG:{}".format(data.get("name", tag)))
+        print("SIZE:{}".format(data.get("full_size", 0)))
     else:
-        print("ERROR: no tags found for {}".format(image), file=sys.stderr)
-        sys.exit(1)
+        url = "https://hub.docker.com/v2/repositories/{}/tags/?ordering=last_updated&page_size=1".format(image)
+        with urllib.request.urlopen(url, timeout=15) as r:
+            data = json.load(r)
+        if not data.get("results"):
+            print("ERROR: no tags found for {}".format(image), file=sys.stderr)
+            sys.exit(1)
+        result = data["results"][0]
+        print("TAG:{}".format(result["name"]))
+        print("SIZE:{}".format(result.get("full_size", 0)))
 except Exception as e:
     print("ERROR: {}".format(e), file=sys.stderr)
     sys.exit(1)
@@ -249,22 +265,52 @@ PYEOF
 }
 
 # ==========================================
+# Helper: format compressed bytes + uncompressed estimate
+# ==========================================
+format_size_info() {
+  local BYTES=$1
+  python3 -c "
+b = int('$BYTES') if '$BYTES' else 0
+gb = b / 1073741824
+print('{:.1f} GB compressed  (~{:.0f}–{:.0f} GB on disk est.)'.format(gb, gb*2, gb*2.5))
+"
+}
+
+# ==========================================
+# Helper: look up IMAGE_SIZES by CTR_IMAGE reference
+# ==========================================
+get_size_for_image() {
+  local TARGET=$1
+  for idx in "${!CTR_IMAGES[@]}"; do
+    if [ "${CTR_IMAGES[$idx]}" = "$TARGET" ]; then
+      echo "${IMAGE_SIZES[$idx]}"
+      return
+    fi
+  done
+  echo "0"
+}
+
+# ==========================================
 # Resolve latest tags from Docker Hub (--latest)
 # ==========================================
+IMAGE_SIZES=()
 if [ "$LATEST_MODE" = "true" ]; then
   echo "🔍 Resolving latest tags from Docker Hub..."
   RESOLVED_IMAGES=()
   for IMG in "${PULL_IMAGES[@]}"; do
     IMG_NAME=$(echo "$IMG" | cut -d: -f1)
     printf "   %-60s → " "$IMG_NAME"
-    TAG=$(resolve_latest_tag "$IMG_NAME")
+    INFO=$(fetch_image_info "$IMG_NAME")
     if [ $? -ne 0 ]; then
       echo "❌ failed"
       echo "❌ ERROR: Could not resolve latest tag for $IMG_NAME"
       exit 1
     fi
+    TAG=$(echo "$INFO" | grep '^TAG:' | cut -d: -f2-)
+    SIZE=$(echo "$INFO" | grep '^SIZE:' | cut -d: -f2-)
     echo "$TAG"
     RESOLVED_IMAGES+=("${IMG_NAME}:${TAG}")
+    IMAGE_SIZES+=("${SIZE:-0}")
   done
   PULL_IMAGES=("${RESOLVED_IMAGES[@]}")
   echo ""
@@ -281,6 +327,17 @@ for IMG in "${PULL_IMAGES[@]}"; do
   fi
 done
 CTR_IMAGES_STR="${CTR_IMAGES[*]}"
+
+# ==========================================
+# Fetch compressed sizes for explicit tags
+# ==========================================
+if [ "$LATEST_MODE" != "true" ]; then
+  for IMG in "${PULL_IMAGES[@]}"; do
+    INFO=$(fetch_image_info "$IMG" 2>/dev/null)
+    SIZE=$(echo "$INFO" | grep '^SIZE:' | cut -d: -f2-)
+    IMAGE_SIZES+=("${SIZE:-0}")
+  done
+fi
 
 echo "=========================================="
 if [ "$DRY_RUN" = "true" ]; then
@@ -416,6 +473,19 @@ if [ "$DRY_RUN" = "true" ]; then
   echo " DRY RUN: Checking image status per node"
   echo "=========================================="
 
+  echo " Image size estimates (from Docker Hub):"
+  TOTAL_COMPRESSED=0
+  for idx in "${!CTR_IMAGES[@]}"; do
+    echo "   ${CTR_IMAGES[$idx]}"
+    echo "     $(format_size_info "${IMAGE_SIZES[$idx]:-0}")"
+    TOTAL_COMPRESSED=$((TOTAL_COMPRESSED + ${IMAGE_SIZES[$idx]:-0}))
+  done
+  if [ ${#CTR_IMAGES[@]} -gt 1 ]; then
+    echo "   ─────────────────────────────────────────"
+    echo "   Total: $(format_size_info "$TOTAL_COMPRESSED")"
+  fi
+  echo ""
+
   NODE_ARRAY=($NODES)
   TOTAL=${#NODE_ARRAY[@]}
   BATCH_NUM=0
@@ -448,7 +518,7 @@ if [ "$DRY_RUN" = "true" ]; then
               \"name\": \"check\",
               \"image\": \"alpine:latest\",
               \"command\": [\"/bin/sh\", \"-c\",
-                \"for IMG in \$CTR_IMAGES ; do COUNT=\$(nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep -c \$IMG || echo 0) ; if [ \$COUNT -gt 0 ] ; then echo PRESENT:\$IMG ; else echo MISSING:\$IMG ; fi ; done\"
+                \"DF_LINE=\$(nsenter --mount=/proc/1/ns/mnt -- df -h /var/lib/containerd 2>/dev/null | tail -1) ; DU_LINE=\$(nsenter --mount=/proc/1/ns/mnt -- du -sh /var/lib/containerd 2>/dev/null) ; echo SPACE_DF:\$DF_LINE ; echo SPACE_DU:\$DU_LINE ; for IMG in \$CTR_IMAGES ; do COUNT=\$(nsenter --mount=/proc/1/ns/mnt -- /usr/bin/ctr --namespace k8s.io images ls 2>/dev/null | grep -c \$IMG || echo 0) ; if [ \$COUNT -gt 0 ] ; then echo PRESENT:\$IMG ; else echo MISSING:\$IMG ; fi ; done\"
               ],
               \"securityContext\": {\"privileged\": true, \"runAsUser\": 0},
               \"env\": [{\"name\": \"CTR_IMAGES\", \"value\": \"$CTR_IMAGES_STR\"}]
@@ -462,8 +532,15 @@ if [ "$DRY_RUN" = "true" ]; then
 
       while IFS= read -r LINE; do
         case "$LINE" in
-          PRESENT:*) echo "  ✅ $NODE — ${LINE#PRESENT:} already present, pull would be skipped" ;;
-          MISSING:*) echo "  📥 $NODE — image NOT present, would pull: ${LINE#MISSING:}" ;;
+          SPACE_DF:*) echo "  💾 disk:          ${LINE#SPACE_DF:}" ;;
+          SPACE_DU:*) echo "  💾 containerd:    ${LINE#SPACE_DU:}" ;;
+          PRESENT:*)  echo "  ✅ already present — pull would be skipped: ${LINE#PRESENT:}" ;;
+          MISSING:*)
+            IMG_REF="${LINE#MISSING:}"
+            SIZE_BYTES=$(get_size_for_image "$IMG_REF")
+            echo "  📥 NOT present — would pull: $IMG_REF"
+            echo "       $(format_size_info "$SIZE_BYTES")"
+            ;;
         esac
       done <<< "$CHECK_OUTPUT"
     done
@@ -607,6 +684,19 @@ cleanup_pod() {
   kubectl delete pod -n $NAMESPACE $POD --ignore-not-found=true --wait=false > /dev/null 2>&1
   echo "  🧹 Cleaned up pod $POD"
 }
+
+# ==========================================
+# Confirmation prompt
+# ==========================================
+if [ "$AUTO_YES" != "true" ]; then
+  echo ""
+  printf " Proceed with pull on $TOTAL_NODES node(s)? [y/N] "
+  read -r CONFIRM
+  if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo " Aborted."
+    exit 0
+  fi
+fi
 
 # ==========================================
 # MAIN: Batch pull loop

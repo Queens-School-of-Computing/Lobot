@@ -17,7 +17,8 @@ SMTP_USE_TLS=false
 SMTP_USERNAME=""
 SMTP_PASSWORD=""
 FROM_EMAIL="lobot@cs.queensu.ca"
-TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+#TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca"
 
 # ==========================================
 # Email helper - reads body from temp file
@@ -124,12 +125,13 @@ BODYEOF
 # Parameter handling
 # ==========================================
 usage() {
-  echo "Usage: $0 -i <image:tag> [-i <image:tag> ...] [-e <exclude_nodes>] [-n <node>] [--dry-run]"
+  echo "Usage: $0 -i <image:tag> [-i <image:tag> ...] [-e <exclude_nodes>] [-n <node>] [--dry-run] [--yes]"
   echo ""
   echo "  -i        Full image name and tag to KEEP (repeatable; all other tags will be removed)"
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
   echo "  --dry-run Report what would be removed without actually removing anything"
+  echo "  --yes     Skip the confirmation prompt before removing images"
   echo ""
   echo "Examples:"
   echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -e lobot-dev.cs.queensu.ca"
@@ -141,12 +143,14 @@ INVOCATION="$0 $*"
 EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
+AUTO_YES=false
 KEEP_IMAGES=()
 
 ARGS=()
 for arg in "$@"; do
   case $arg in
     --dry-run) DRY_RUN=true ;;
+    --yes)     AUTO_YES=true ;;
     *) ARGS+=("$arg") ;;
   esac
 done
@@ -468,6 +472,19 @@ if [ "$DRY_RUN" = "true" ]; then
   send_email "🔍 [DRY RUN] image-cleanup.sh | $IMAGE_SHORT | $TOTAL_NODES node(s) checked" "$BODY_TMPFILE"
 
   exit 0
+fi
+
+# ==========================================
+# Confirmation prompt
+# ==========================================
+if [ "$AUTO_YES" != "true" ]; then
+  echo ""
+  printf " Proceed with cleanup on $TOTAL_NODES node(s)? [y/N] "
+  read -r CONFIRM
+  if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo " Aborted."
+    exit 0
+  fi
 fi
 
 # ==========================================
