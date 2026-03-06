@@ -1,16 +1,16 @@
 roles:
-  - name: group-lobot-users
-    user: group-lobot
-    members:
-      - jm-janzen
-      - wiegerthefarmer
-      - aaronvisser
-    scopes:
-      - access:servers!user={user}
-      - servers!user={user}
-      - read:users!user={user}
+- name: group-lobot-users
+  user: group-lobot
+  members:
+  - jm-janzen
+  - wiegerthefarmer
+  - aaronvisser
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
 
-  - name: group-wiegerthefarmer-users
-    user: wiegerthefarmer
-    members:
-      - aaronvisser
+- name: group-wiegerthefarmer-users
+  user: wiegerthefarmer
+  members:
+  - aaronvisser
