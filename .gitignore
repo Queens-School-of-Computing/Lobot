@@ -3,3 +3,6 @@
 
 # python virtual env
 .venv
+
+# Local session memory file
+tools/LOBOT-MEMORY.md

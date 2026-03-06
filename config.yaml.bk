@@ -16,12 +16,15 @@ proxy:
       http: 30080
       https: 30443
 
-# cull timeout determines how long a user has to be inactive before the pod is killed
-# this might be new and better in determining if its actually idle! https://z2jh.jupyter.org/en/stable/jupyterhub/customizing/user-management.html#culling-user-pods
 cull:
-  timeout: 259200 
-#cull:
-#  enabled: false
+  enabled: true
+  timeout: 259200      # 72 hours of inactivity idle
+  every: 300           # check every 5 min
+  concurrency: 5
+  maxAge: 0
+  removeNamedServers: true
+  users: false
+  adminUsers: false
 
 singleuser:
   #profileList:
@@ -40,7 +43,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
-    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260223
+    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
   extraEnv:
     #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
     #GRANT_SUDO: "yes"
@@ -72,8 +75,8 @@ hub:
   config:
     GitHubOAuthenticator:
       auto_login: true
-      client_id: xxx
-      client_secret: xxx
+      client_id: Ov23liSXaRsUjTZ3pFFx
+      client_secret: fe3fe993bb397384223be5f917b4cad399ac95a3
       oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
       allowed_organizations:
         - Queens-School-of-Computing
@@ -117,10 +120,10 @@ hub:
   extraConfig:
     05-services: |
       # Define the group-manager service with its API token
-      c.JupyterHub.services = [
+      c.JupyterHub.services += [
           {
               "name": "group-manager",
-              "api_token": "xxx",  
+              "api_token": "0b89a6515e50685246c6b731873cfc748be322345a94e5c5b7cdceb5753ae6e9",  
           }
       ]
     10-group-roles-from-yaml: |
@@ -191,7 +194,7 @@ hub:
           print(f"collab-users-from-roles: collaboration users = {sorted(_COLLAB_USERS)}")
           return roles
 
-      c.JupyterHub.load_roles = _load_group_roles_and_service_role()
+      c.JupyterHub.load_roles += _load_group_roles_and_service_role()
     15-group-servers-template-vars: |
       import urllib.request, yaml
 
@@ -295,7 +298,7 @@ hub:
       
       # Enable debug-logging of the single-user server
       c.LocalProcessSpawner.debug = False
-    
+      c.JupyterHub.api_page_default_limit = 200
     custom_options_form: |
       def options_from_form(formdata):
         options = {}

@@ -1,2 +1,2 @@
 announcement_home: >
-  Feb 24 2026 - Updates complete. Latest image now available. Past images hidden, contact help@cs.queensu.ca if required.
+  Mar 05 2026 - Config tweaked to enable idle pod culling. Pods that are idle for 72 hours will be powered off. 
