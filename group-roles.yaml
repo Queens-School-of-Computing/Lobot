@@ -10,6 +10,31 @@ roles:
   - servers!user={user}
   - read:users!user={user}
 
+- name: group-csai801g14-users
+  user: group-csai801g14
+  members:
+  - mahmoudalyosify
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+
+- name: group-csai801g24-users
+  members:
+  - hanaessam
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+
+- name: group-csai801g37-users
+  members:
+  - marwanahmedaly
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+  
 - name: group-wiegerthefarmer-users
   user: wiegerthefarmer
   members:
