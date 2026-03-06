@@ -137,6 +137,7 @@ usage() {
   exit 1
 }
 
+INVOCATION="$0 $*"
 EXCLUDE_NODES=""
 TARGET_NODE=""
 DRY_RUN=false
@@ -216,6 +217,7 @@ echo " Keeping:   $FULL_IMG"
 done
 echo " Removing:  Unused old tags of $IMAGE_SHORT (except above)"
 echo " Log file:  $LOG_FILE"
+echo " Invoked:   $INVOCATION"
 if [ "$DRY_RUN" = "true" ]; then
 echo " Mode:      🔍 DRY RUN - no images will be removed"
 fi

@@ -160,6 +160,7 @@ usage() {
   exit 1
 }
 
+INVOCATION="$0 $*"
 BATCH_SIZE=3
 TIMEOUT=1200
 EXCLUDE_NODES=""
@@ -305,6 +306,7 @@ echo " Batch size: $BATCH_SIZE nodes at a time"
 fi
 echo " Timeout:    ${TIMEOUT}s per node"
 echo " Log file:   $LOG_FILE"
+echo " Invoked:    $INVOCATION"
 if [ "$DRY_RUN" = "true" ]; then
 echo " Mode:       🔍 DRY RUN - no pods will be launched"
 fi
