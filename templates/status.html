@@ -162,7 +162,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const savedLab = localStorage.getItem('selectedLab') || '';
     var selectedLab = urlParams.get('lab') || savedLab;
-    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
     var allData = {};
 
     // Injected server-side: array of allowed lab keys, or null for admins (sees all)
