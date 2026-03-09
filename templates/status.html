@@ -1,0 +1,355 @@
+{% extends "page.html" %}
+
+{% block title %}Resource Status | Lobot{% endblock %}
+
+{% block stylesheet %}
+  {{ super() }}
+  <style>
+    .status-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .lab-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
+    }
+
+    .resource-bar {
+        margin-bottom: 15px;
+    }
+
+    .resource-label {
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .progress {
+        height: 24px;
+        border-radius: 4px;
+        background-color: #dee2e6;
+    }
+
+    .user-allocation {
+        background: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-left: 4px solid #007bff;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .notice {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 10px;
+        margin-top: 15px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #856404;
+    }
+
+    .last-updated {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 10px;
+    }
+
+    .lab-selector {
+        margin-bottom: 20px;
+    }
+
+    .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .lab-overview-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
+        cursor: pointer;
+        transition: box-shadow 0.3s, transform 0.2s;
+    }
+
+    .lab-overview-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+    }
+
+    .lab-overview-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .quick-stat {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .stat-available {
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    /* ── Dark mode ── */
+    [data-bs-theme="dark"] .lab-card,
+    [data-bs-theme="dark"] .lab-overview-card {
+        background: #2d2d2d;
+        border-color: #404040;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    [data-bs-theme="dark"] .progress {
+        background-color: #404040;
+    }
+
+    [data-bs-theme="dark"] .user-allocation {
+        background: #383838;
+    }
+
+    [data-bs-theme="dark"] .notice {
+        background: #3d3d1a;
+        color: #ffd54f;
+    }
+
+    [data-bs-theme="dark"] .last-updated {
+        color: #9ca3af;
+    }
+  </style>
+{% endblock stylesheet %}
+
+{% block main %}
+<div class="status-container">
+    <div class="lab-selector">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="labSelect" class="form-label">Select Resource:</label>
+                <select class="form-select" id="labSelect">
+                    <option value="">-- All Resources Overview --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="overview-container" style="display: none;"></div>
+    <div id="detail-container" style="display: none;"></div>
+</div>
+{% endblock main %}
+
+{% block script %}
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const savedLab = localStorage.getItem('selectedLab') || '';
+    var selectedLab = urlParams.get('lab') || savedLab;
+    var url_status = 'https://lobot-dev.cs.queensu.ca/allocationstatus/current.json';
+    var allData = {};
+
+    // Injected server-side: array of allowed lab keys, or null for admins (sees all)
+    var allowedLabs = {{ allowed_labs_json | safe }};
+
+    function filterData(data) {
+        if (allowedLabs === null) return data;
+        var filtered = {};
+        allowedLabs.forEach(function(lab) {
+            if (data[lab]) filtered[lab] = data[lab];
+        });
+        return filtered;
+    }
+
+    function getColorClass(percentage) {
+        if (percentage >= 75) return 'bg-danger';
+        if (percentage >= 50) return 'bg-warning';
+        return 'bg-success';
+    }
+
+    function parseResource(details, resource) {
+        const match = details.match(new RegExp(resource + ': (\\d+) of (\\d+)'));
+        if (match) {
+            return { available: parseInt(match[1]), total: parseInt(match[2]) };
+        }
+        return { available: 0, total: 0 };
+    }
+
+    function renderProgressBar(available, total, label) {
+        const percentage = total > 0 ? ((total - available) / total * 100) : 0;
+        const colorClass = getColorClass(percentage);
+        return `
+            <div class="resource-bar">
+                <div class="resource-label">
+                    <span>${label}</span>
+                    <span>${available} / ${total}</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar ${colorClass}" role="progressbar" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderLabDetail(labName, labData) {
+        const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+        const memData = parseResource(labData.summary_details, 'MEMORY GB');
+        const gpuData = parseResource(labData.summary_details, 'GPU');
+
+        const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+        const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+        const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+        const displayTitle = labData.summary_title.split(' available resources')[0];
+
+        let html = `
+            <div class="lab-card">
+                <h3>${displayTitle}</h3>
+                <div style="margin: 20px 0;">
+                    <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                        <span>CPU:</span>
+                        <span class="stat-available">${cpuData.available}/${cpuData.total} Cores (${cpuPercentage}% used)</span>
+                    </div>
+                    <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                        <span>Memory:</span>
+                        <span class="stat-available">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                    </div>
+                    <div class="quick-stat" style="font-size: 16px; margin-bottom: 10px;">
+                        <span>GPU:</span>
+                        <span class="stat-available">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                    </div>
+                </div>
+
+                <h5 style="margin-top: 20px; margin-bottom: 15px;">User Allocations</h5>
+        `;
+
+        $.each(labData.usage, function(index, value) {
+            if (!value.includes('NOTICE')) {
+                const match = value.match(/^([a-zA-Z0-9_-]+)\s*==/);
+                let displayValue = value;
+                if (match) {
+                    const username = match[1];
+                    displayValue = value.replace(username, `<a href="https://github.com/${username}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: none;">${username}</a>`);
+                }
+                html += `<div class="user-allocation">${displayValue}</div>`;
+            }
+        });
+
+        const noticeItem = labData.usage.find(item => item.includes('NOTICE'));
+        if (noticeItem) {
+            html += `<div class="notice">${noticeItem}</div>`;
+        }
+
+        html += `<div class="last-updated">Last updated: ${labData.time}</div>`;
+        html += `</div>`;
+
+        return html;
+    }
+
+    function renderLabOverview(labName, labData) {
+        const cpuData = parseResource(labData.summary_details, 'CPU Cores');
+        const memData = parseResource(labData.summary_details, 'MEMORY GB');
+        const gpuData = parseResource(labData.summary_details, 'GPU');
+
+        const cpuPercentage = cpuData.total > 0 ? ((cpuData.total - cpuData.available) / cpuData.total * 100).toFixed(0) : 0;
+        const memPercentage = memData.total > 0 ? ((memData.total - memData.available) / memData.total * 100).toFixed(0) : 0;
+        const gpuPercentage = gpuData.total > 0 ? ((gpuData.total - gpuData.available) / gpuData.total * 100).toFixed(0) : 0;
+
+        const displayTitle = labData.summary_title.split(' available resources')[0];
+
+        return `
+            <div class="lab-overview-card" onclick="selectLab('${labName}')">
+                <div class="lab-overview-title">${displayTitle}</div>
+                <div class="quick-stat">
+                    <span>CPU:</span>
+                    <span class="stat-available">${cpuData.available}/${cpuData.total} (${cpuPercentage}% used)</span>
+                </div>
+                <div class="quick-stat">
+                    <span>Memory:</span>
+                    <span class="stat-available">${memData.available}/${memData.total} GB (${memPercentage}% used)</span>
+                </div>
+                <div class="quick-stat">
+                    <span>GPU:</span>
+                    <span class="stat-available">${gpuData.available}/${gpuData.total} (${gpuPercentage}% used)</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function selectLab(labName) {
+        selectedLab = labName;
+        localStorage.setItem('selectedLab', selectedLab);
+        $('#labSelect').val(labName).change();
+    }
+
+    function updateDisplay(data) {
+        allData = data;
+        var visible = filterData(data);
+
+        if ($('#labSelect option').length === 1) {
+            // If saved lab is no longer accessible, reset to overview
+            if (selectedLab && !visible[selectedLab]) {
+                selectedLab = '';
+                localStorage.removeItem('selectedLab');
+            }
+            Object.keys(visible).sort().forEach(lab => {
+                const displayName = visible[lab].summary_title.split(' available resources')[0];
+                $('#labSelect').append(`<option value="${lab}">${displayName}</option>`);
+            });
+            $('#labSelect').val(selectedLab);
+        }
+
+        if (selectedLab === '' || selectedLab === null) {
+            $('#overview-container').show();
+            $('#detail-container').hide();
+
+            let overviewHtml = '<div class="overview-grid">';
+            Object.keys(visible).sort().forEach(labName => {
+                overviewHtml += renderLabOverview(labName, visible[labName]);
+            });
+            overviewHtml += '</div>';
+
+            $('#overview-container').html(overviewHtml);
+        } else {
+            if (visible[selectedLab]) {
+                $('#detail-container').html(renderLabDetail(selectedLab, visible[selectedLab]));
+                $('#detail-container').show();
+                $('#overview-container').hide();
+            }
+        }
+    }
+
+    function fetchLabStatus() {
+        $.getJSON(url_status, function(data) {
+            if (data) {
+                updateDisplay(data);
+            }
+        });
+    }
+
+    $('#labSelect').on('change', function() {
+        selectedLab = $(this).val();
+        localStorage.setItem('selectedLab', selectedLab);
+        updateDisplay(allData);
+    });
+
+    fetchLabStatus();
+    setInterval(fetchLabStatus, 5000);
+</script>
+{% endblock script %}

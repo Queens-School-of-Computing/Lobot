@@ -281,9 +281,41 @@ hub:
       class StatusPageHandler(BaseHandler):
           @tornado.web.authenticated
           async def get(self):
-              with open('/etc/jupyterhub/custom/status/status.html', 'r') as f:
-                  self.set_header('Content-Type', 'text/html')
-                  self.finish(f.read())
+              import urllib.request, yaml, json
+              RUNTIME_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/runtime_setting.yaml"
+              user = self.current_user
+              allowed_labs_json = 'null'  # null = admin, sees all
+              if not user.admin:
+                  try:
+                      username = user.name.strip().lower()
+                      self.log.info(f'[status-page] username={username}')
+                      nodeaccess = (yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=3).read().decode('utf-8')) or {}).get('nodeaccess', {})
+                      self.log.info(f'[status-page] nodeaccess keys={list(nodeaccess.keys())}')
+
+                      def labs_for_user(uname):
+                          return [lab for lab, users in nodeaccess.items()
+                                  if uname in [u.strip().lower() for u in (users or [])]]
+
+                      allowed = set(labs_for_user(username))
+                      self.log.info(f'[status-page] direct labs={allowed}')
+
+                      # Also include labs for group servers the user is a member of.
+                      # group_servers_by_user is already in memory from 15-group-servers-template-vars.
+                      group_servers_by_user = self.template_namespace.get('group_servers_by_user', {})
+                      self.log.info(f'[status-page] group_servers_by_user entry for {username}={group_servers_by_user.get(username)}')
+                      for group in group_servers_by_user.get(username, []):
+                          owner = (group.get('owner') or '').strip().lower()
+                          group_labs = labs_for_user(owner)
+                          self.log.info(f'[status-page] group owner={owner} labs={group_labs}')
+                          if owner:
+                              allowed.update(group_labs)
+
+                      self.log.info(f'[status-page] final allowed={sorted(allowed)}')
+                      allowed_labs_json = json.dumps(sorted(allowed))
+                  except Exception as e:
+                      self.log.error(f'[status-page] Failed to build allowed labs: {e}')
+              html = await self.render_template('status.html', allowed_labs_json=allowed_labs_json)
+              self.finish(html)
 
       c.JupyterHub.extra_handlers = [
           (r'/status', StatusPageHandler),
