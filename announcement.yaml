@@ -1,2 +1,2 @@
 announcement_home: >
-  Mar 05 2026 - Config tweaked to enable idle pod culling. Pods that are idle for 72 hours will be powered off. 
+  Mar 09 2026 - Resource Status tab is now live! This provides real-time insights into the current state of your cluster resources. Happy Computing! 
