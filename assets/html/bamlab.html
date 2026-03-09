@@ -1,6 +1,6 @@
   <script>    
     var lab = 'bamlab';
-    var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+    var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{    
     if(data){{
       $('#label-summary').text(data[lab].summary_title);

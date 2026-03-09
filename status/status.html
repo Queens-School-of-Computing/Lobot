@@ -175,7 +175,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const savedLab = localStorage.getItem('selectedLab') || '';
         var selectedLab = urlParams.get('lab') || savedLab;
-        var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+        var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
         var allData = {};
 
         function getColorClass(percentage) {

@@ -27,8 +27,13 @@ EXTRA_ARGS=("$@")
 TOKEN=$(kubectl get secret group-manager-token -n jhub \
   -o jsonpath='{.data.JUPYTERHUB_API_TOKEN}' | base64 -d)
 
-# 3. URL to your group-roles.yaml
-GROUP_ROLES_URL="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+# 3. URL to your group-roles.yaml — branch depends on prod vs dev cluster
+FQDN=$(hostname -f)
+if [[ "$FQDN" == *"lobot-dev"* ]]; then
+  GROUP_ROLES_URL="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev/group-roles.yaml"
+else
+  GROUP_ROLES_URL="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+fi
 
 echo "[sync_groups] Using API_URL=$API_URL"
 
@@ -37,6 +42,7 @@ echo "[sync_groups] Running ensure_group_users.py ${EXTRA_ARGS[*]}"
 python3 ensure_group_users.py \
   --api-url "$API_URL" \
   --token "$TOKEN" \
+  --group-roles-url "$GROUP_ROLES_URL" \
   "${EXTRA_ARGS[@]}"
 
 # 5. Sync group membership (if script exists)

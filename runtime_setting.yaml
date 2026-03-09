@@ -143,7 +143,7 @@ nodeaccess:
 from_data_bamlab: |2
     <script>
       var lab = 'bamlab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -221,7 +221,7 @@ from_data_bamlab: |2
 from_data_devlab: |2
     <script>
       var lab = 'devlab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -291,7 +291,7 @@ from_data_devlab: |2
 from_data_digilab: |2
     <script>
       var lab = 'digilab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -362,7 +362,7 @@ from_data_digilab: |2
 from_data_edemsmithbusiness: |2
     <script>
       var lab = 'edemsmithbusiness';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -439,7 +439,7 @@ from_data_edemsmithbusiness: |2
 from_data_gandslab: |2
     <script>
       var lab = 'gandslab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -516,7 +516,7 @@ from_data_gandslab: |2
 from_data_lobot_a16: |2
     <script>
       var lab = 'lobot_a16';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -585,7 +585,7 @@ from_data_lobot_a16: |2
 from_data_lobot_a40: |2
     <script>
       var lab = 'lobot_a40';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -656,7 +656,7 @@ from_data_lobot_a40: |2
 from_data_lobot_a5000: |2
     <script>
       var lab = 'lobot_a5000';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -729,7 +729,7 @@ from_data_lobot_a5000: |2
 from_data_lobot_problackwell: |2
     <script>
       var lab = 'lobot_problackwell';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -803,7 +803,7 @@ from_data_lobot_problackwell: |2
 from_data_miblab: |2
     <script>
       var lab = 'miblab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -884,7 +884,7 @@ from_data_miblab: |2
 from_data_mulab: |2
     <script>
       var lab = 'mulab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -962,7 +962,7 @@ from_data_mulab: |2
 from_data_riselab: |2
     <script>
       var lab = 'riselab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
@@ -1044,7 +1044,7 @@ from_data_riselab: |2
 from_data_winemocollab: |2
     <script>
       var lab = 'winemocollab';
-      var url_status = 'https://lobot.cs.queensu.ca/allocationstatus/current.json';
+      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);

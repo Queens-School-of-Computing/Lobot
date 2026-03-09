@@ -314,7 +314,8 @@ hub:
                       allowed_labs_json = json.dumps(sorted(allowed))
                   except Exception as e:
                       self.log.error(f'[status-page] Failed to build allowed labs: {e}')
-              html = await self.render_template('status.html', allowed_labs_json=allowed_labs_json)
+              status_url = f"https://{self.request.host}/allocationstatus/current.json"
+              html = await self.render_template('status.html', allowed_labs_json=allowed_labs_json, status_url=status_url)
               self.finish(html)
 
       c.JupyterHub.extra_handlers = [
