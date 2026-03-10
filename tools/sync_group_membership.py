@@ -43,6 +43,23 @@ def ensure_group(api_url: str, token: str, name: str, verbose: bool = False) -> 
         r.raise_for_status()
 
 
+def ensure_user(api_url: str, token: str, name: str, verbose: bool = False) -> None:
+    headers = {"Authorization": f"token {token}"}
+    url = f"{api_url}/users/{name}"
+    vprint(verbose, f"[HTTP] GET {url}")
+    r = requests.get(url, headers=headers, timeout=10)
+    vprint(verbose, f"[HTTP] {r.status_code} {url}")
+    if r.status_code == 200:
+        return
+    if r.status_code != 404:
+        r.raise_for_status()
+    vprint(verbose, f"[ACTION] Creating user {name}")
+    r = requests.post(url, headers=headers, timeout=10)
+    vprint(verbose, f"[HTTP] {r.status_code} {url}")
+    if r.status_code not in (201, 409):
+        r.raise_for_status()
+
+
 def add_users_to_group(api_url: str, token: str, name: str, users: List[str], verbose: bool = False) -> None:
     if not users:
         return
@@ -125,6 +142,8 @@ def sync_membership(
         else:
             if to_add:
                 print(f"[ACTION] Adding to {group_name}: {to_add}")
+                for u in to_add:
+                    ensure_user(api_url, token, u, verbose=verbose)
                 add_users_to_group(api_url, token, group_name, to_add, verbose=verbose)
             if to_remove:
                 print(f"[ACTION] Removing from {group_name}: {to_remove}")
