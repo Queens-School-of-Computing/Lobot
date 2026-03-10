@@ -130,8 +130,8 @@ nodeaccess:
   - maxhao56
   - mekaelwasti
   - s-sheikhaei
+  - smwqueens
   - sophiaty
-  - smwQueens
   - tim-sanko
   winemocollab:
   - chenxu8774
@@ -344,8 +344,8 @@ from_data_digilab: |2
                   <option value="16G" select="selected">16G RAM</option>
                   <option value="32G">32G RAM</option>
                   <option value="64G">64G RAM</option>
-                  <option value="96G">96G RAM</option> 
-                  <option value="128G">128G RAM</option> 
+                  <option value="96G">96G RAM</option>
+                  <option value="128G">128G RAM</option>
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated. Choose minimum, only choose >32G if authorized.</small>
               </div>
