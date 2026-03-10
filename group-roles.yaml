@@ -15,6 +15,7 @@ roles:
   user: group-csai801g14
   members:
   - mahmoudalyosify
+  - mirnaembaby
   scopes:
   - access:servers!user={user}
   - servers!user={user}
