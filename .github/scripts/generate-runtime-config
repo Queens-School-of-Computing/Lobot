@@ -41,7 +41,13 @@ def read_payload(path, root_property):
     try:
         content = Path(path).read_text()
         print('Payload:', content)
-        return json.loads(content)[root_property]
+        payload = json.loads(content)
+
+        if payload is None:
+            return None
+
+        return payload[root_property]
+
     except FileNotFoundError as e:
         print(f"No payload file found at '{path}' -- quitting")
         sys.exit(1)
