@@ -443,6 +443,13 @@ hub:
     pre_spawn_hook: |
       async def my_pre_spawn_hook(spwnr):
         import urllib.request, yaml
+        from tornado.web import HTTPError
+
+        class SpawnError(HTTPError):
+          def __init__(self, message):
+            super().__init__(400, message)
+            self.jupyterhub_message = message
+
         RUNTIME_URL = "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/runtime_setting.yaml"
         if spwnr.user.name in _COLLAB_USERS:
           spwnr.log.info(f"(DISABLED) Enabling RTC for collaboration user {spwnr.user.name}")
@@ -456,47 +463,47 @@ hub:
 
         # --- Server-side validation (non-admins only) ---
         # TODO: re-enable once generate-runtime-config is updated to include limits
-        # if not spwnr.user.admin:
-        #   try:
-        #     data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
-        #   except Exception as e:
-        #     spwnr.log.error(f'[pre_spawn_hook] Failed to load runtime settings: {e}')
-        #     raise RuntimeError('Could not validate resource request. Please try again.')
-        #
-        #   # 1. Validate user has access to the submitted lab (prevents lab-switching)
-        #   nodeaccess = data.get('nodeaccess', {})
-        #   lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
-        #   if username not in lab_users:
-        #     spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
-        #     raise RuntimeError(f'You do not have access to {lab}.')
-        #
-        #   # 2. Validate resource limits against runtime_setting.yaml limits section
-        #   limits = (data.get('limits') or {}).get(lab)
-        #   if limits:
-        #     def parse_mem_gb(s):
-        #       s = str(s).upper()
-        #       if s.endswith('G'): return float(s[:-1])
-        #       if s.endswith('M'): return float(s[:-1]) / 1024
-        #       return float(s)
-        #
-        #     req_gpu = int(options['gpu_limit'][0])
-        #     if req_gpu < 0: req_gpu = 0
-        #     max_gpu = int(limits.get('max_gpu', 0))
-        #     if req_gpu > max_gpu:
-        #       spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu} GPUs, max={max_gpu}')
-        #       raise RuntimeError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
-        #
-        #     req_cpu = float(options['cpu_limit'][0])
-        #     max_cpu = float(limits.get('max_cpu', 0))
-        #     if max_cpu > 0 and req_cpu > max_cpu:
-        #       spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_cpu} CPUs, max={max_cpu}')
-        #       raise RuntimeError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
-        #
-        #     req_mem_gb = parse_mem_gb(options['mem_limit'][0])
-        #     max_mem_gb = float(limits.get('max_mem_gb', 0))
-        #     if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
-        #       spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
-        #       raise RuntimeError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+        if not spwnr.user.admin:
+          try:
+            data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
+          except Exception as e:
+            spwnr.log.error(f'[pre_spawn_hook] Failed to load runtime settings: {e}')
+            raise SpawnError('Could not validate resource request. Please try again.')
+
+          # 1. Validate user has access to the submitted lab (prevents lab-switching)
+          nodeaccess = data.get('nodeaccess', {})
+          lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
+          if username not in lab_users:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
+            raise SpawnError(f'You do not have access to {lab}.')
+
+          # 2. Validate resource limits against runtime_setting.yaml limits section
+          limits = (data.get('limits') or {}).get(lab)
+          if limits:
+            def parse_mem_gb(s):
+              s = str(s).upper()
+              if s.endswith('G'): return float(s[:-1])
+              if s.endswith('M'): return float(s[:-1]) / 1024
+              return float(s)
+
+            req_gpu = int(options['gpu_limit'][0])
+            if req_gpu < 0: req_gpu = 0
+            max_gpu = int(limits.get('max_gpu', 0))
+            if req_gpu > max_gpu:
+              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu} GPUs, max={max_gpu}')
+              raise SpawnError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
+
+            req_cpu = float(options['cpu_limit'][0])
+            max_cpu = float(limits.get('max_cpu', 0))
+            if max_cpu > 0 and req_cpu > max_cpu:
+              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_cpu} CPUs, max={max_cpu}')
+              raise SpawnError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
+
+            req_mem_gb = parse_mem_gb(options['mem_limit'][0])
+            max_mem_gb = float(limits.get('max_mem_gb', 0))
+            if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
+              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
+              raise SpawnError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
         # --- End validation ---
 
         spwnr.image = options['image'][0]

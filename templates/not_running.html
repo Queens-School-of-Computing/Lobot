@@ -1,4 +1,7 @@
 {% extends "page.html" %}
+{% if announcement_spawn is string %}
+  {% set announcement = announcement_spawn %}
+{% endif %}
 {% block main %}
   <div class="container">
     <div class="row">
@@ -19,7 +22,7 @@
               {% if failed_html_message %}
               </p>
               <p>{{ failed_html_message | safe }}</p>
-              <p>{% elif failed_message %}</p>
+              <p>{% elif failed_message and failed_message not in ('error', 'Bad Request') %}</p>
               <p>{{ failed_message }}</p>
               <p>
               {% endif %}

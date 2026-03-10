@@ -1,4 +1,7 @@
 {% extends "page.html" %}
+{% if announcement_spawn is string %}
+  {% set announcement = announcement_spawn %}
+{% endif %}
 {% block main %}
   <div class="container">
     <div class="row">
@@ -18,11 +21,17 @@
           </div>
         </div>
         <p id="progress-message"></p>
+        <div id="spawn-error-box" style="display:none; margin-top: 20px;">
+          <div class="alert alert-danger" role="alert">
+            <strong>Spawn failed:</strong> <span id="spawn-error-message"></span>
+          </div>
+          <a role="button" class="btn btn-primary" href="{{ spawn_url }}">Relaunch Server</a>
+        </div>
       </div>
     </div>
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <details id="progress-details">
+        <details id="progress-details" open>
           <summary>Event log</summary>
           <div id="progress-log"></div>
         </details>
@@ -72,19 +81,21 @@
           );
         }
 
-        if (evt.ready) {
-          evtSource.close();
-          // reload the current page
-          // which should result in a redirect to the running server
-          window.location.reload();
-        }
-
         if (evt.failed) {
           evtSource.close();
           // turn progress bar red
           progressBar.addClass('progress-bar-danger');
+          // show prominent failure message
+          var failMsg = (evt.html_message || evt.message || progressMessage.html() || 'An unknown error occurred.');
+          $("#spawn-error-message").html(failMsg).show();
+          $("#spawn-error-box").show();
           // open event log for debugging
           $('#progress-details').prop('open', true);
+        } else if (evt.ready) {
+          evtSource.close();
+          // reload the current page
+          // which should result in a redirect to the running server
+          window.location.reload();
         }
       };
 
