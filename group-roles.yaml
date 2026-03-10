@@ -36,7 +36,7 @@ roles:
   - servers!user={user}
   - read:users!user={user}
 - name: group-oldmekaelwasti-users
-  user: MekaelWasti
+  user: mekaelwasti
   members:
   - wiegerthefarmer
   - smwqueens
