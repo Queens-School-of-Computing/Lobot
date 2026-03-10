@@ -165,6 +165,7 @@
             </div>
         </div>
 
+        <div id="fetch-error" class="alert alert-danger" style="display: none;"></div>
         <div id="overview-container" style="display: none;"></div>
         <div id="detail-container" style="display: none;"></div>
     </div>
@@ -341,8 +342,11 @@
         function fetchLabStatus() {
             $.getJSON(url_status, function(data) {
                 if (data) {
+                    $('#fetch-error').hide();
                     updateDisplay(data);
                 }
+            }).fail(function(jqXHR) {
+                $('#fetch-error').text(`Failed to load status data (HTTP ${jqXHR.status}). Check that resource_collector is running.`).show();
             });
         }
 
