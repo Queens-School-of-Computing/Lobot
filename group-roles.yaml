@@ -35,3 +35,12 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-oldmekaelwasti-users
+  user: MekaelWasti
+  members:
+  - wiegerthefarmer
+  - smwqueens
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
