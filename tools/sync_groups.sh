@@ -18,7 +18,8 @@ Arguments:
   --dry-run          Preview changes without modifying anything
   --verbose          Log each HTTP request and response code
 
-GROUP_ROLES_URL can be read from /opt/Lobot/config-env.yaml before running:
+Both variables can be set from the control plane environment before running:
+  export API_URL="https://\$(hostname -f)/hub/api"
   export GROUP_ROLES_URL=\$(python3 -c "import yaml; print(yaml.safe_load(open('/opt/Lobot/config-env.yaml'))['hub']['extraEnv']['LOBOT_GROUP_ROLES_URL'])")
   ./sync_groups.sh
 

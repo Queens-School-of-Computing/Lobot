@@ -260,10 +260,10 @@ automatically.
 `sync_groups.sh` uses the `GROUP_ROLES_URL` environment variable if set,
 otherwise falls back to the `newcluster` branch default.
 
-The easiest way to pick up the correct URL for the current environment is to
-read it from `/opt/Lobot/config-env.yaml` (written by `apply-config.sh`):
+The easiest way to pick up both URLs from the control plane environment:
 
 ```bash
+export API_URL="https://$(hostname -f)/hub/api"
 export GROUP_ROLES_URL=$(python3 -c "import yaml; print(yaml.safe_load(open('/opt/Lobot/config-env.yaml'))['hub']['extraEnv']['LOBOT_GROUP_ROLES_URL'])")
 ./sync_groups.sh
 ```
