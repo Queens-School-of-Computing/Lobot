@@ -18,7 +18,7 @@ BACKUP_DIR="/opt/Lobot/previousconfig"
 TMPFILE=$(mktemp /tmp/config_template.XXXXXX.yaml)
 
 # ── Detect cluster ────────────────────────────────────────────────────────────
-FQDN=$(hostname -f)
+FQDN=$(hostname)
 if [[ "$FQDN" == *"lobot-dev"* ]]; then
     CLUSTER="dev"
     CONFIG_BK_ENV="config-dev.yaml.bk"
