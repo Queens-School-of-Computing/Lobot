@@ -45,3 +45,12 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-devtesting-users
+  user: group-devtesting
+  members:
+  - wiegerthefarmer
+  - aaronvisser
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
