@@ -610,7 +610,14 @@ server {
         alias /opt/Lobot/assets;
     }
 
-    error_page 404 500 502 503 504 /50x.html;
+    # Hub down (upgrade/restart) → friendly maintenance page
+    error_page 502 503 504 /maintenance.html;
+    location = /maintenance.html {
+        root /opt/Lobot/assets;
+        internal;
+    }
+
+    error_page 404 500 /50x.html;
     location = /50x.html {
         root /var/www/html;
         internal;
