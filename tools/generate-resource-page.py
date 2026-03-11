@@ -123,14 +123,36 @@ def get_hardware_info():
     }
 
 
+CONFIG_YAML_BK_URL = (
+    'https://raw.githubusercontent.com/'
+    'Queens-School-of-Computing/Lobot/newcluster/config.yaml.bk'
+)
+
+
 def get_current_image():
+    import yaml
+
+    # 1. Try local config-env.yaml (control plane or if repo is cloned on node)
     try:
-        import yaml
         cfg = yaml.safe_load(CONFIG_ENV.read_text())
         tag = cfg['singleuser']['image']['tag']
         return tag, tag
     except Exception:
-        return 'latest', 'latest'
+        pass
+
+    # 2. Fall back to config.yaml.bk from GitHub
+    try:
+        from urllib.request import urlopen
+        raw = urlopen(CONFIG_YAML_BK_URL, timeout=5).read().decode()
+        cfg = yaml.safe_load(raw)
+        tag = cfg['singleuser']['image']['tag']
+        print(f"  (image tag read from GitHub config.yaml.bk)")
+        return tag, tag
+    except Exception:
+        pass
+
+    print("WARNING: could not determine image tag — defaulting to 'latest'")
+    return 'latest', 'latest'
 
 
 def render_html(lab, info, image_tag, image_label):

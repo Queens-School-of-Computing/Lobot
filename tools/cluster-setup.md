@@ -515,8 +515,8 @@ This writes `<labname>.html` in the current directory. Copy it to `assets/html/`
 repo, commit, and push. The `generate-runtime-config` workflow will pick up the new limits
 automatically on the next run.
 
-> **Note:** The image tag is read from `/opt/Lobot/config-env.yaml` if present on the node;
-> otherwise it defaults to `latest` and should be updated manually before committing.
+> **Note:** The image tag is read from `/opt/Lobot/config-env.yaml` if present, falling back
+> to `config.yaml.bk` fetched directly from GitHub. No manual update should be needed.
 
 ### Resource collector (cluster status page)
 

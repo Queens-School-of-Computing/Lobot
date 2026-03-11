@@ -349,7 +349,7 @@ cd /opt/Lobot/tools
 curl -O https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/tools/generate-resource-page.py
 python3 generate-resource-page.py --lab &lt;labname&gt;</code></pre>
 <p>This writes <code>&lt;labname&gt;.html</code> in the current directory. Copy it to <code>assets/html/</code> in the repo, commit, and push. The <code>generate-runtime-config</code> workflow will pick up the new limits automatically on the next run.</p>
-<blockquote><p>The image tag is read from <code>/opt/Lobot/config-env.yaml</code> if present on the node; otherwise it defaults to <code>latest</code> and should be updated manually before committing.</p></blockquote>
+<blockquote><p>The image tag is read from <code>/opt/Lobot/config-env.yaml</code> if present, falling back to <code>config.yaml.bk</code> fetched directly from GitHub. No manual update should be needed.</p></blockquote>
 <h3>Resource collector (cluster status page)</h3>
 <p>The resource collector publishes live CPU/GPU/memory availability to <code>/allocationstatus</code> (served by nginx). It requires the <code>kubectl-view-allocations</code> binary.</p>
 <pre><code># Install Python dependency
