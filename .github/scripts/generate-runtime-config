@@ -2,6 +2,7 @@
 
 import os
 import json
+import re
 import sys
 import yaml
 
@@ -131,28 +132,37 @@ def sort_resources(resources):
 
 def get_limits():
     """
-    Per-lab resource maximums. These are the highest values offered in each
-    lab's spawn form and are used by pre_spawn_hook to reject tampered submissions.
-    max_cpu is float (cores), max_mem_gb is int (GB), max_gpu is int.
+    Derive per-lab resource maximums from the highest option value in each
+    lab's spawn form HTML (assets/html/<lab>.html). Used by pre_spawn_hook
+    to reject tampered submissions.
     """
+    limits = {}
+    html_dir = Path('./assets/html')
+    for html_file in sorted(html_dir.glob('*.html')):
+        limits[html_file.stem] = _parse_limits(html_file.read_text())
+    return limits
+
+
+def _parse_limits(html):
+    """Extract max cpu/gpu/mem values from a spawn form HTML fragment."""
+    # Strip comments so commented-out options are ignored
+    html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
+
+    def select_max(name, cast, exclude=None):
+        m = re.search(rf'<select[^>]+name="{name}"[^>]*>(.*?)</select>', html, re.DOTALL)
+        if not m:
+            return None
+        values = [cast(v) for v in re.findall(r'<option[^>]+value="([^"]*)"', m.group(1))]
+        values = [v for v in values if exclude is None or v not in exclude]
+        return max(values) if values else None
+
     return {
-        'bamlab':            {'max_gpu': 4, 'max_cpu': 32.0, 'max_mem_gb': 512},
-        'devlab':            {'max_gpu': 1, 'max_cpu': 999.0, 'max_mem_gb': 96},
-        'digilab':           {'max_gpu': 4, 'max_cpu': 8.0,  'max_mem_gb': 128},
-        'edemsmithbusiness': {'max_gpu': 4, 'max_cpu': 32.0, 'max_mem_gb': 512},
-        'gandslab':          {'max_gpu': 2, 'max_cpu': 32.0, 'max_mem_gb': 192},
-        'lobot_a16':         {'max_gpu': 4, 'max_cpu': 8.0,  'max_mem_gb': 64},
-        'lobot_a40':         {'max_gpu': 2, 'max_cpu': 16.0, 'max_mem_gb': 256},
-        'lobot_a5000':       {'max_gpu': 1, 'max_cpu': 32.0, 'max_mem_gb': 256},
-        'lobot_problackwell':{'max_gpu': 2, 'max_cpu': 64.0, 'max_mem_gb': 384},
-        'miblab':            {'max_gpu': 4, 'max_cpu': 64.0, 'max_mem_gb': 512},
-        'mulab':             {'max_gpu': 6, 'max_cpu': 64.0, 'max_mem_gb': 512},
-        'riselab':           {'max_gpu': 7, 'max_cpu': 64.0, 'max_mem_gb': 512},
-        'winemocollab':      {'max_gpu': 4, 'max_cpu': 24.0, 'max_mem_gb': 512},
+        'max_cpu':    select_max('cpu_limit', float),
+        'max_gpu':    select_max('gpu_limit', int, exclude={-1}),
+        'max_mem_gb': select_max('mem_limit', lambda v: int(v.rstrip('G'))),
     }
 
 
-# FIXME Eventually get actual resources and build page HTML programmatically
 def get_resource_pages(resource_names):
     pages = {}
     for name in resource_names:
