@@ -515,8 +515,16 @@ wget https://github.com/davidB/kubectl-view-allocations/releases/latest/download
   -O /opt/Lobot/kubectl-view-allocations
 chmod +x /opt/Lobot/kubectl-view-allocations
 
-# Run (use a screen or systemd service)
-python3 /opt/Lobot/resource_collector-withmail.py
+# Install and start as a systemd service
+sudo cp /opt/Lobot/tools/resource-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now resource-collector
+
+# Verify it's running
+sudo systemctl status resource-collector
+
+# Follow logs
+sudo journalctl -u resource-collector -f
 ```
 
 ---
