@@ -6,13 +6,14 @@
 # Usage: sudo bash /opt/Lobot/tools/apply-config.sh
 #
 # Run on:
-#   prod:  lobot.cs.queensu.ca    -> pulls config.yaml.bk
-#   dev:   lobot-dev.cs.queensu.ca -> pulls config.yaml.dev.bk
+#   prod:  lobot.cs.queensu.ca    -> config.yaml.bk + config-prod.yaml.bk
+#   dev:   lobot-dev.cs.queensu.ca -> config.yaml.bk + config-dev.yaml.bk
 
 set -euo pipefail
 
 LOCAL_CONFIG="/opt/Lobot/config.yaml"
 OUTPUT="/opt/Lobot/config.yaml"
+OUTPUT_ENV="/opt/Lobot/config-env.yaml"
 BACKUP_DIR="/opt/Lobot/previousconfig"
 TMPFILE=$(mktemp /tmp/config_template.XXXXXX.yaml)
 
@@ -20,15 +21,17 @@ TMPFILE=$(mktemp /tmp/config_template.XXXXXX.yaml)
 FQDN=$(hostname -f)
 if [[ "$FQDN" == *"lobot-dev"* ]]; then
     CLUSTER="dev"
-    CONFIG_BK="config.yaml.dev.bk"
-    REPO_RAW="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster-dev"
+    CONFIG_BK_ENV="config-dev.yaml.bk"
 else
     CLUSTER="prod"
-    CONFIG_BK="config.yaml.bk"
-    REPO_RAW="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster"
+    CONFIG_BK_ENV="config-prod.yaml.bk"
 fi
+CONFIG_BK="config.yaml.bk"
+REPO_RAW="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster"
+
 echo "[apply-config] Cluster:  $CLUSTER"
-echo "[apply-config] Template: $CONFIG_BK"
+echo "[apply-config] Base template:     $CONFIG_BK"
+echo "[apply-config] Env override:      $CONFIG_BK_ENV"
 
 # ── Check local config exists ─────────────────────────────────────────────────
 if [[ ! -f "$LOCAL_CONFIG" ]]; then
@@ -66,10 +69,10 @@ PROXY_TOKEN=$(extract 'secretToken'     'secretToken:\s*"([^"]*)"')
 
 echo "[apply-config] Secrets extracted."
 
-# ── Pull template from GitHub ─────────────────────────────────────────────────
+# ── Pull base template from GitHub ───────────────────────────────────────────
 echo "[apply-config] Fetching $REPO_RAW/$CONFIG_BK ..."
 curl -fsSL "$REPO_RAW/$CONFIG_BK" -o "$TMPFILE"
-echo "[apply-config] Template downloaded."
+echo "[apply-config] Base template downloaded."
 
 # ── Substitute placeholders ───────────────────────────────────────────────────
 echo "[apply-config] Applying secrets..."
@@ -88,8 +91,13 @@ with open('$OUTPUT', 'w') as f:
     f.write(content)
 EOF
 
+# ── Pull env override from GitHub ─────────────────────────────────────────────
+echo "[apply-config] Fetching $REPO_RAW/$CONFIG_BK_ENV ..."
+curl -fsSL "$REPO_RAW/$CONFIG_BK_ENV" -o "$OUTPUT_ENV"
+echo "[apply-config] Env override written to $OUTPUT_ENV"
+
 rm -f "$TMPFILE"
 echo "[apply-config] Done. Config written to $OUTPUT"
 echo ""
 echo "Review, then apply with:"
-echo "  cd /opt/Lobot && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail \$RELEASE jupyterhub/jupyterhub --namespace \$NAMESPACE --version=4.0.0-beta.2 --values config.yaml --timeout=60m"
+echo "  cd /opt/Lobot && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail \$RELEASE jupyterhub/jupyterhub --namespace \$NAMESPACE --version=4.0.0-beta.2 --values config.yaml --values config-env.yaml --timeout=60m"

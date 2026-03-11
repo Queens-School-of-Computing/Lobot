@@ -29,7 +29,7 @@ send_email() {
   fi
 
   python3 <<PYEOF
-import smtplib
+import smtplib, socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -46,7 +46,7 @@ with open("${BODY_FILE}", "r") as f:
 
 msg = MIMEMultipart("alternative")
 msg["Subject"] = """${SUBJECT}"""
-msg["From"]    = f"Lobot Cluster <{from_email}>"
+msg["From"]    = f"{socket.getfqdn()} <{from_email}>"
 msg["To"]      = ", ".join(to_emails)
 msg.attach(MIMEText(body, "html"))
 

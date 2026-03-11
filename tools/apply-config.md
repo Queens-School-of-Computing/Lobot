@@ -5,11 +5,36 @@
 A single bash script for updating the JupyterHub `config.yaml` on the control
 plane without manually copying secrets between files.
 
-- **[`apply-config.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/apply-config.sh)** — Pulls the latest config template from GitHub, extracts secrets from the existing local `config.yaml`, substitutes them into the template, and writes a new `config.yaml` ready for `helm upgrade`
+- **[`apply-config.sh`](https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/apply-config.sh)** — Pulls the latest config templates from GitHub, extracts secrets from the existing local `config.yaml`, substitutes them into the base template, and writes both `config.yaml` and `config-env.yaml` ready for `helm upgrade`
 
 The script auto-detects whether it is running on the prod or dev cluster and
-selects the correct template file and GitHub branch automatically. The
-existing `config.yaml` is always backed up before being overwritten.
+selects the correct environment override file automatically. The existing
+`config.yaml` is always backed up before being overwritten.
+
+---
+
+## Config File Structure
+
+The configuration is split into two files:
+
+| File | Purpose |
+|------|---------|
+| `config.yaml.bk` | Shared base config for all environments |
+| `config-prod.yaml.bk` | Prod-specific overrides (URLs, image tag, env vars) |
+| `config-dev.yaml.bk` | Dev-specific overrides (URLs, image tag, env vars) |
+
+Environment-specific values are passed to the hub via `hub.extraEnv` and read
+in Python extraConfig blocks using `os.environ.get(...)`. This means there is
+only one config file to maintain for most changes.
+
+### Environment Variables Set by the Override Files
+
+| Variable | Purpose |
+|----------|---------|
+| `LOBOT_RUNTIME_URL` | URL for `runtime_setting.yaml` |
+| `LOBOT_ANNOUNCEMENT_URL` | URL for `announcement.yaml` |
+| `LOBOT_GROUP_ROLES_URL` | URL for `group-roles.yaml` |
+| `LOBOT_ANNOUNCEMENT_KEY` | Key to read from announcement YAML (`announcement_prod` or `announcement_dev`) |
 
 ---
 
@@ -46,10 +71,8 @@ automatic.
 ### How It Works
 
 1. **Detects the cluster** from `hostname -f`:
-   - hostname contains `lobot-dev` → `dev` cluster, uses `config.yaml.dev.bk`
-     from the `newcluster-dev` branch
-   - otherwise → `prod` cluster, uses `config.yaml.bk` from the `newcluster`
-     branch
+   - hostname contains `lobot-dev` → `dev` cluster, uses `config-dev.yaml.bk`
+   - otherwise → `prod` cluster, uses `config-prod.yaml.bk`
 2. **Backs up** the existing `/opt/Lobot/config.yaml` to
    `/opt/Lobot/previousconfig/config_<cluster>_<YYYYMMDD_HHMMSS>.yaml`
 3. **Extracts secrets** from the existing `config.yaml` using Python regex:
@@ -57,16 +80,16 @@ automatic.
    - `client_secret`
    - `api_token`
    - `secretToken` (proxy token)
-4. **Downloads** the appropriate template (`.bk` file) from the GitHub raw
-   URL via `curl`
-5. **Substitutes** `xxx` placeholders in the template with the extracted
-   secret values using Python regex replacement
-6. **Writes** the result to `/opt/Lobot/config.yaml`
+4. **Downloads** `config.yaml.bk` (shared base) from the GitHub raw URL via `curl`
+5. **Substitutes** `xxx` placeholders in the base template with the extracted
+   secret values using Python regex replacement; writes result to `config.yaml`
+6. **Downloads** the environment override file (`config-prod.yaml.bk` or
+   `config-dev.yaml.bk`) and writes it to `config-env.yaml`
 7. **Prints** the `helm upgrade` command to run next
 
 ### Secret Placeholders
 
-The template files use `xxx` as a placeholder for each secret. The script
+The base template uses `xxx` as a placeholder for each secret. The script
 matches and replaces using the following patterns:
 
 | Secret | Template placeholder | Extraction pattern |
@@ -81,10 +104,10 @@ matches and replaces using the following patterns:
 
 ### Cluster / Template Selection
 
-| Hostname (`hostname -f`) | Cluster | Template file | GitHub branch |
-|--------------------------|---------|---------------|---------------|
-| contains `lobot-dev` | dev | `config.yaml.dev.bk` | `newcluster-dev` |
-| anything else | prod | `config.yaml.bk` | `newcluster` |
+| Hostname (`hostname -f`) | Cluster | Base template | Env override |
+|--------------------------|---------|---------------|--------------|
+| contains `lobot-dev` | dev | `config.yaml.bk` | `config-dev.yaml.bk` |
+| anything else | prod | `config.yaml.bk` | `config-prod.yaml.bk` |
 
 ### Backup Files
 
@@ -99,17 +122,20 @@ automatically deleted. The directory is created if it does not exist.
 
 ```
 [apply-config] Cluster:  prod
-[apply-config] Template: config.yaml.bk
+[apply-config] Base template:     config.yaml.bk
+[apply-config] Env override:      config-prod.yaml.bk
 [apply-config] Backed up existing config to /opt/Lobot/previousconfig/config_prod_20260309_143022.yaml
 [apply-config] Extracting secrets from /opt/Lobot/config.yaml...
 [apply-config] Secrets extracted.
 [apply-config] Fetching https://raw.githubusercontent.com/.../config.yaml.bk ...
-[apply-config] Template downloaded.
+[apply-config] Base template downloaded.
 [apply-config] Applying secrets...
+[apply-config] Fetching https://raw.githubusercontent.com/.../config-prod.yaml.bk ...
+[apply-config] Env override written to /opt/Lobot/config-env.yaml
 [apply-config] Done. Config written to /opt/Lobot/config.yaml
 
 Review, then apply with:
-  cd /opt/Lobot && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail $RELEASE jupyterhub/jupyterhub --namespace $NAMESPACE --version=4.0.0-beta.2 --values config.yaml --timeout=60m
+  cd /opt/Lobot && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail $RELEASE jupyterhub/jupyterhub --namespace $NAMESPACE --version=4.0.0-beta.2 --values config.yaml --values config-env.yaml --timeout=60m
 ```
 
 ---
@@ -117,7 +143,8 @@ Review, then apply with:
 ## Typical Workflow
 
 ```bash
-# 0. Make changes to config.yaml.bk (and config.yaml.dev.bk) in the repo and push to GitHub
+# 0. Make changes to config.yaml.bk (and/or config-prod.yaml.bk / config-dev.yaml.bk)
+#    in the repo and push to GitHub
 
 # 1. SSH to the control plane
 ssh lobot.cs.queensu.ca   # or lobot-dev.cs.queensu.ca for dev
@@ -133,26 +160,12 @@ grep -n 'xxx' /opt/Lobot/config.yaml
 cd /opt/Lobot
 RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail $RELEASE \
   jupyterhub/jupyterhub --namespace $NAMESPACE \
-  --version=4.0.0-beta.2 --values config.yaml --timeout=60m
+  --version=4.0.0-beta.2 --values config.yaml --values config-env.yaml --timeout=60m
 ```
 
 ---
 
 ## Caveats
-
-### Config template files must stay in sync
-
-There are two template files maintained in parallel:
-
-| File | Cluster | Branch |
-|------|---------|--------|
-| `config.yaml.bk` | prod | `newcluster` |
-| `config.yaml.dev.bk` | dev | `newcluster-dev` |
-
-Any change to `config.yaml.bk` must be reflected in `config.yaml.dev.bk`
-(and vice versa), with only the environment-specific values differing
-(callback URLs, branch references, etc.). Both files must use `xxx` as the
-placeholder for all four secret values.
 
 ### Existing config.yaml must exist
 
@@ -170,6 +183,12 @@ grep -n 'xxx' /opt/Lobot/config.yaml
 
 If any remain, a secret extraction pattern did not match the existing config.
 Inspect the config manually to find the discrepancy.
+
+### Both --values files are required for helm upgrade
+
+The `helm upgrade` command must always include both `--values config.yaml` and
+`--values config-env.yaml`. Running with only `config.yaml` will leave the hub
+without the environment-specific URLs and image tag set in the override.
 
 ### Backup directory grows over time
 

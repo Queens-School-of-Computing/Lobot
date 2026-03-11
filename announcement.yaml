@@ -1,2 +1,6 @@
 announcement_home: >
   Mar 09 2026 - Resource Status tab is now live! This provides real-time insights into the current state of your cluster resources. Happy Computing! 
+announcement_prod: >
+  Mar 11 2026 - Resource Status tab is now live! This provides real-time insights into the current state of your cluster resources. Happy Computing! 
+announcement_dev: >
+  Mar 11 2026 - newcluster-dev github branch is no longer used.

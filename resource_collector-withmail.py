@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import signal
 import atexit
+import socket
 
 output_folder = 'resource_collector_data'
 output_file = '/opt/Lobot/resource_collector_data/current.json'
@@ -28,7 +29,7 @@ SMTP_PORT = 25  # 587 for TLS, 465 for SSL, 25 for local
 SMTP_USE_TLS = False  # Set to True if using port 587
 SMTP_USERNAME = None  # Set if authentication is required
 SMTP_PASSWORD = None  # Set if authentication is required
-FROM_EMAIL = 'lobot_dev-error@cs.queensu.ca'
+FROM_EMAIL = f"{socket.getfqdn().split('.')[0]}-error@cs.queensu.ca"
 TO_EMAIL = 'aaron@cs.queensu.ca'  # Change this to your email address
 
 logger = logging.getLogger(__name__)

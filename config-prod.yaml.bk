@@ -1,0 +1,14 @@
+# Production environment overrides for config.yaml.bk
+# Deploy with: helm upgrade ... -f config.yaml.bk -f config-prod.yaml.bk
+singleuser:
+  image:
+    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
+hub:
+  config:
+    GitHubOAuthenticator:
+      oauth_callback_url: http://lobot.cs.queensu.ca/hub/oauth_callback
+  extraEnv:
+    LOBOT_RUNTIME_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/runtime_setting.yaml"
+    LOBOT_ANNOUNCEMENT_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/announcement.yaml"
+    LOBOT_GROUP_ROLES_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
+    LOBOT_ANNOUNCEMENT_KEY: "announcement_prod"
