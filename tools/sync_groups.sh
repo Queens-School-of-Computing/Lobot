@@ -19,7 +19,7 @@ Arguments:
   --verbose          Log each HTTP request and response code
 
 Both variables can be set from the control plane environment before running:
-  export API_URL="https://\$(hostname -f)/hub/api"
+  export API_URL="https://\$(hostname)/hub/api"
   export GROUP_ROLES_URL=\$(python3 -c "import yaml; print(yaml.safe_load(open('/opt/Lobot/config-env.yaml'))['hub']['extraEnv']['LOBOT_GROUP_ROLES_URL'])")
   ./sync_groups.sh
 
@@ -37,17 +37,12 @@ fi
 
 DEFAULT_GROUP_ROLES_URL="https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
 
-# 1. Get API_URL from $1 or $API_URL env
-API_URL_ARG="$1"
-API_URL="${API_URL_ARG:-${API_URL:-https://lobot.cs.queensu.ca/hub/api}}"
-
-if [ -z "$API_URL" ]; then
-  echo "Usage: $0 <api-url> [<group-roles-url>] [extra args]" >&2
-  exit 1
-fi
-
-if [ -n "$API_URL_ARG" ]; then
+# 1. Get API_URL from $1 (if not a flag) or $API_URL env or default
+if [[ "${1:-}" != --* && -n "${1:-}" ]]; then
+  API_URL="$1"
   shift
+else
+  API_URL="${API_URL:-https://lobot.cs.queensu.ca/hub/api}"
 fi
 
 # 2. Get GROUP_ROLES_URL from $1 (if not a flag) or $GROUP_ROLES_URL env or default
