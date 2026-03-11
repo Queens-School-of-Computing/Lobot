@@ -500,6 +500,24 @@ cd /opt/Lobot/tools
 
 See [IMAGE-MANAGEMENT.md](IMAGE-MANAGEMENT.md) for full documentation.
 
+### Generate the spawn form for the new node
+
+Each lab/node needs a spawn form HTML file in `assets/html/<labname>.html`. Run this
+script **directly on the new node** to auto-detect CPU, RAM, and GPU and generate the file.
+
+```bash
+# Download and run on the new node
+curl -O https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/tools/generate-resource-page.py
+python3 generate-resource-page.py --lab <labname>
+```
+
+This writes `<labname>.html` in the current directory. Copy it to `assets/html/` in the
+repo, commit, and push. The `generate-runtime-config` workflow will pick up the new limits
+automatically on the next run.
+
+> **Note:** The image tag is read from `/opt/Lobot/config-env.yaml` if present on the node;
+> otherwise it defaults to `latest` and should be updated manually before committing.
+
 ### Resource collector (cluster status page)
 
 The resource collector publishes live CPU/GPU/memory availability to `/allocationstatus`
