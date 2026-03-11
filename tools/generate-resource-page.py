@@ -23,7 +23,7 @@ import re
 from pathlib import Path
 
 CONFIG_ENV  = Path('/opt/Lobot/config-env.yaml')
-ASSETS_HTML = Path('/opt/Lobot/assets/html')
+ASSETS_HTML = Path('.')
 IMAGE_REPO  = 'queensschoolofcomputingdocker/gpu-jupyter-latest'
 
 CPU_STEPS    = [2, 4, 8, 10, 16, 24, 32, 48, 64, 96, 128]
@@ -66,6 +66,14 @@ def main():
     print(f"  GPU:  {gpu_str}")
 
 
+def _round_gpu_mem(mib):
+    """Round raw MiB to the nearest standard GPU VRAM size in GB.
+    e.g. 15356 MiB → 16G, 81920 MiB → 80G, 49152 MiB → 48G."""
+    common = [4, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96]
+    gb = mib / 1024
+    return min(common, key=lambda x: abs(x - gb))
+
+
 def get_hardware_info():
     # --- CPU ---
     cpuinfo = Path('/proc/cpuinfo').read_text()
@@ -90,7 +98,7 @@ def get_hardware_info():
             name, mem = smi[0].split(',', 1)
             gpu_model = name.strip().removeprefix('NVIDIA ').strip()
             mem_mib   = int(re.search(r'\d+', mem).group())
-            gpu_mem_gb = round(mem_mib / 1024)
+            gpu_mem_gb = _round_gpu_mem(mem_mib)
     except (FileNotFoundError, subprocess.CalledProcessError):
         pass  # No GPU or nvidia-smi not available
 
