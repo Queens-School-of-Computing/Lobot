@@ -821,8 +821,6 @@ kubectl delete -f $DAEMONSET_FILE > /dev/null 2>&1
 kubectl delete configmap image-cleanup-inuse -n kube-system > /dev/null 2>&1
 echo "✅ DaemonSet and ConfigMap deleted successfully"
 
-rm -f $IN_USE_TMPFILE
-
 # ==========================================
 # SUMMARY
 # ==========================================
@@ -876,8 +874,9 @@ while IFS='|' read -r NODE NS POD IMAGES; do
       echo "    └─ pod:  $NS/$POD"
     fi
   done
-done < <(kubectl get pods --all-namespaces \
-  -o jsonpath='{range .items[*]}{.spec.nodeName}{"|"}{.metadata.namespace}{"|"}{.metadata.name}{"|"}{range .status.containerStatuses[*]}{.image}{" "}{end}{"\n"}{end}')
+done < "$IN_USE_TMPFILE"
+
+rm -f $IN_USE_TMPFILE
 
 echo "=========================================="
 if [ -n "$NODE_TIMING" ]; then

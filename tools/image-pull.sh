@@ -153,7 +153,6 @@ usage() {
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
   echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
-  echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
   echo "  --dry-run Report what would be pulled without actually pulling"
   echo "  --yes     Skip the confirmation prompt before pulling"
   echo ""
