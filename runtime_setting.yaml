@@ -147,56 +147,56 @@ nodeaccess:
   - zhihaod
 limits:
   bamlab:
-    max_gpu: 4
     max_cpu: 32.0
+    max_gpu: 4
     max_mem_gb: 512
   devlab:
-    max_gpu: 1
     max_cpu: 999.0
+    max_gpu: 1
     max_mem_gb: 96
   digilab:
-    max_gpu: 4
     max_cpu: 8.0
+    max_gpu: 1
     max_mem_gb: 128
   edemsmithbusiness:
-    max_gpu: 4
     max_cpu: 32.0
+    max_gpu: 4
     max_mem_gb: 512
   gandslab:
-    max_gpu: 2
     max_cpu: 32.0
+    max_gpu: 2
     max_mem_gb: 192
   lobot_a16:
-    max_gpu: 4
     max_cpu: 8.0
-    max_mem_gb: 64
+    max_gpu: 1
+    max_mem_gb: 32
   lobot_a40:
-    max_gpu: 2
     max_cpu: 16.0
+    max_gpu: 2
     max_mem_gb: 256
   lobot_a5000:
-    max_gpu: 1
     max_cpu: 32.0
+    max_gpu: 1
     max_mem_gb: 256
   lobot_problackwell:
-    max_gpu: 2
     max_cpu: 64.0
+    max_gpu: 2
     max_mem_gb: 384
   miblab:
-    max_gpu: 4
     max_cpu: 64.0
+    max_gpu: 4
     max_mem_gb: 512
   mulab:
-    max_gpu: 6
     max_cpu: 64.0
+    max_gpu: 6
     max_mem_gb: 512
   riselab:
-    max_gpu: 7
     max_cpu: 64.0
+    max_gpu: 7
     max_mem_gb: 512
   winemocollab:
-    max_gpu: 4
     max_cpu: 24.0
+    max_gpu: 4
     max_mem_gb: 512
 from_data_bamlab: |2
     <script>
