@@ -8,16 +8,23 @@ SRC_DIR=/opt/shortcuts
 DESKTOP_DIR="$HOME_DIR/Desktop"
 
 ###############################################################################
-# 1. .condarc setup (do not fail if remote unreachable)
+# 1. .condarc setup
+# Originally sourced from L1NNA/L1NNA-peppapig; content is now embedded here
+# so the script has no external dependency on that repo.
 ###############################################################################
 
-wget -O "$HOME_DIR/.condarc" \
-  https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc || \
-  echo "[setup_desktop] WARNING: failed to fetch user .condarc"
+cat > "$HOME_DIR/.condarc" << "EOF"
+envs_dirs:
+  - /home/jovyan/conda-envs/
+EOF
 
-sudo wget -O /opt/conda/.condarc \
-  https://raw.githubusercontent.com/L1NNA/L1NNA-peppapig/master/.condarc-opt || \
-  echo "[setup_desktop] WARNING: failed to fetch system .condarc"
+sudo tee /opt/conda/.condarc > /dev/null << "EOF"
+channels:
+  - defaults
+auto_update_conda: false
+show_channel_urls: true
+channel_priority: strict
+EOF
 
 ###############################################################################
 # 2. Disable XFCE logout so users can't kill the VNC desktop (run as root)
