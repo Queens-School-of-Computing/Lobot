@@ -621,7 +621,13 @@ server {
         internal;
     }
 
-    error_page 404 500 /50x.html;
+    error_page 404 /404.html;
+    location = /404.html {
+        root /opt/Lobot/assets;
+        internal;
+    }
+
+    error_page 500 /50x.html;
     location = /50x.html {
         root /var/www/html;
         internal;
