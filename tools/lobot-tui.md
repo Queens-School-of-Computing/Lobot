@@ -308,14 +308,47 @@ All subprocess calls are async — the UI never blocks waiting for `kubectl`.
 
 ---
 
-## Log Files
+## Audit Log
 
-Action and log screens write output to `/tmp/` when you press `s`:
+Every command executed by the TUI is automatically recorded to a daily log file — no action required from the operator.
+
+**Location:** `/opt/Lobot/logs/lobot-tui-YYYY-MM-DD.log`
+
+The directory is created on first use. The file rotates at midnight (a new file is started each calendar day).
+
+Each entry records the timestamp, exit code, and full command:
+
+```
+[2026-03-13 14:22:05] [exit 0] $ kubectl describe pod jupyter-alice -n jhub
+[2026-03-13 14:22:10] [exit 0] $ kubectl cordon newcluster-gpu1
+[2026-03-13 14:22:15] [exit 0] $ kubectl logs -f jupyter-alice -n jhub --tail 500
+[2026-03-13 14:22:30] [exit 0] $ git push origin newcluster
+```
+
+**Commands logged:**
+
+| Action | Command logged |
+|--------|---------------|
+| Pod describe | `kubectl describe pod <name> -n <ns>` |
+| Pod logs | `kubectl logs -f <name> -n <ns> --tail 500` |
+| Pod exec | `kubectl exec -it <name> -n <ns> -- /bin/bash` |
+| Pod delete | `kubectl delete pod <name> -n <ns>` |
+| Node cordon | `kubectl cordon <node>` |
+| Node uncordon | `kubectl uncordon <node>` |
+| Node drain | `kubectl drain <node> --ignore-daemonsets --delete-emptydir-data` |
+| Tool actions (1–5) | Full shell command with all arguments |
+| Announcement push | Each `git add` / `git commit` / `git push` |
+
+The in-session history is also viewable live via the console screen (`` ` ``), which shows the most recent commands first and displays the path to today's log file in the header.
+
+### Manual save (optional)
+
+Action and log screens can also save their full streaming output to `/tmp/` by pressing `s`:
 
 | Screen | Filename pattern |
 |--------|-----------------|
-| Pod logs | `lobot-tui-logs-<username>-<timestamp>.log` |
-| Tool output | `lobot-tui-<action-name>-<timestamp>.log` |
+| Pod logs | `/tmp/lobot-tui-logs-<username>-<timestamp>.log` |
+| Tool output | `/tmp/lobot-tui-<action-name>-<timestamp>.log` |
 
 ---
 
