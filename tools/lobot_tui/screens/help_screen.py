@@ -12,33 +12,32 @@ HELP_TEXT = """
 | Key | Action |
 |-----|--------|
 | `q` | Quit |
-| `Tab` / `Shift+Tab` | Cycle panel focus |
 | `r` | Force refresh all data |
 | `?` | This help screen |
-| `Escape` | Close modal / go back |
+| `` ` `` | Command console (history + errors) |
+| `Escape` | Clear filter / close modal |
 
-## Pod Table (when focused)
+## Pod Table
 | Key | Action |
 |-----|--------|
-| `j` / `↓` | Move down |
-| `k` / `↑` | Move up |
+| `↑` / `↓` | Navigate rows |
 | `/` | Activate inline filter |
 | `Escape` | Clear filter |
-| `l` | View pod logs (`kubectl logs -f`) |
-| `x` | Exec bash into pod (`kubectl exec -it`) |
-| `d` | Delete pod (confirm required) |
-| `R` | Restart pod — delete & let JH respawn |
-| `D` or `Enter` | Describe pod (`kubectl describe pod`) |
-| `n` | Cycle namespace: jhub → all → jhub |
+| `l` | View pod logs (kubectl logs -f) |
+| `x` | Exec bash into pod (kubectl exec -it) |
+| `d` / `Enter` | Describe pod (kubectl describe pod) |
+| `X` | Delete pod (confirm required) |
+| `n` | Cycle namespace |
+| Click header | Sort by column (click again to reverse) |
 
-## Node Table (when focused)
+## Node Table
 | Key | Action |
 |-----|--------|
-| `j` / `↓` | Move down |
-| `k` / `↑` | Move up |
+| `↑` / `↓` | Navigate rows |
 | `c` | Cordon node (confirm required) |
 | `u` | Uncordon node (confirm required) |
-| `w` | Drain node wizard |
+| `w` | Drain node (confirm required) |
+| Click header | Sort by column (click again to reverse) |
 
 ## Tool Actions
 | Key | Action |
@@ -50,11 +49,12 @@ HELP_TEXT = """
 | `5` | helm upgrade — JupyterHub |
 | `6` | Edit announcement.yaml + push to GitHub |
 
-## Logs / Action Screens
+## Logs / Action / Exec Screens
 | Key | Action |
 |-----|--------|
 | `Escape` / `q` | Return to main screen |
-| `s` | Save output to `/tmp/lobot-tui-*.log` |
+| `s` | Save output to /tmp/lobot-tui-*.log |
+| `Ctrl-D` / `exit` | Exit exec shell (exec screen only) |
 
 ## Announcement Editor
 | Key | Action |
@@ -70,7 +70,7 @@ class HelpScreen(ModalScreen):
     BINDINGS = [
         ("escape", "close", "Close"),
         ("q", "close", "Close"),
-        ("?", "close", "Close"),
+        ("question_mark", "close", "Close"),
     ]
 
     def compose(self) -> ComposeResult:

@@ -11,6 +11,13 @@ if [[ "${1:-}" == "--dev" ]]; then
     export LOBOT_TUI_DEV=1
 fi
 
+# Use venv if present (required on Ubuntu 24.04 / PEP 668 systems)
+# Create it with: python3 -m venv lobot_tui/.venv && lobot_tui/.venv/bin/pip install textual aiofiles
+PYTHON="$SCRIPT_DIR/lobot_tui/.venv/bin/python3"
+if [[ ! -x "$PYTHON" ]]; then
+    PYTHON="python3"
+fi
+
 # Run as a module so relative imports work
 cd "$SCRIPT_DIR"
-exec python3 -m lobot_tui
+exec "$PYTHON" -m lobot_tui

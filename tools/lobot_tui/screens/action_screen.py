@@ -1,13 +1,12 @@
 """ActionScreen: full-screen streaming output for running tools."""
 
+import asyncio
 from datetime import datetime
 from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
-
-from ..actions.runner import run_command
 
 
 class ActionScreen(Screen):
@@ -19,13 +18,14 @@ class ActionScreen(Screen):
         ("s", "save_output", "Save"),
     ]
 
-    def __init__(self, title: str, argv: list, cwd: str = None) -> None:
+    def __init__(self, title: str, argv: list, cwd: str = None, auto_close: bool = False) -> None:
         super().__init__()
         self._title = title
         self._argv = argv
         self._cwd = cwd
+        self._auto_close = auto_close
         self._output_lines: list[str] = []
-        self._running = True
+        self._proc = None
 
     def compose(self) -> ComposeResult:
         cmd_display = " ".join(self._argv[:6])
@@ -38,7 +38,7 @@ class ActionScreen(Screen):
             markup=True,
         )
         yield RichLog(id="screen-log", highlight=True, markup=False, wrap=True)
-        yield Label("[dim]Running…[/]", id="screen-footer")
+        yield Label("[dim]Running…[/]", id="screen-footer", markup=True)
 
     def on_mount(self) -> None:
         self.run_worker(self._stream_output(), exclusive=True)
@@ -50,30 +50,39 @@ class ActionScreen(Screen):
         log.write(f"$ {' '.join(self._argv)}")
         log.write("")
 
-        exit_code = None
         try:
-            async for line in run_command(self._argv, cwd=self._cwd):
-                if line.startswith("[exit "):
-                    exit_code = line
-                else:
-                    self._output_lines.append(line)
-                    log.write(line)
-        except Exception as e:
-            log.write(f"Error launching command: {e}")
-            footer.update("[red]Command failed to launch[/]")
-            return
-
-        self._running = False
-        if exit_code:
+            self._proc = await asyncio.create_subprocess_exec(
+                *self._argv,
+                cwd=self._cwd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            async for raw_line in self._proc.stdout:
+                line = raw_line.decode(errors="replace").rstrip()
+                self._output_lines.append(line)
+                log.write(line)
+            await self._proc.wait()
+            rc = self._proc.returncode
             log.write("")
-            log.write(exit_code)
-            code = exit_code.replace("[exit ", "").replace("]", "")
-            if code == "0":
-                footer.update(f"[green]Completed successfully[/]  [dim][Esc/q] back  [s] save[/]")
+            log.write(f"[exit {rc}]")
+            if self._auto_close:
+                await asyncio.sleep(0.8)
+                self.app.pop_screen()
+            elif rc == 0:
+                footer.update("[green]Completed successfully[/]  [dim][Esc/q] back  [s] save[/]")
             else:
-                footer.update(f"[red]Exited with code {code}[/]  [dim][Esc/q] back  [s] save[/]")
+                footer.update(f"[red]Exited with code {rc}[/]  [dim][Esc/q] back  [s] save[/]")
+        except Exception as e:
+            log.write(f"Error: {e}")
+            if not self._auto_close:
+                footer.update("[red]Command failed to launch[/]")
+            else:
+                await asyncio.sleep(1.5)
+                self.app.pop_screen()
 
     def action_go_back(self) -> None:
+        if self._proc and self._proc.returncode is None:
+            self._proc.terminate()
         self.app.pop_screen()
 
     def action_save_output(self) -> None:

@@ -6,6 +6,7 @@ from textual.widgets import Button, Checkbox, Input, Label, Static
 from textual.containers import Vertical, Horizontal
 
 from ..actions.definitions import ActionDef
+from ..config import TOOLS_LOCKED
 
 
 class ActionWizardScreen(ModalScreen):
@@ -18,6 +19,7 @@ class ActionWizardScreen(ModalScreen):
     def __init__(self, action: ActionDef) -> None:
         super().__init__()
         self._action = action
+        self._locked = TOOLS_LOCKED
 
     def compose(self) -> ComposeResult:
         with Vertical(id="wizard-dialog"):
@@ -43,11 +45,19 @@ class ActionWizardScreen(ModalScreen):
                 yield Checkbox("Dry run (safe preview — no changes made)", value=True,
                                id="cb-dry-run", classes="wizard-checkbox")
 
+            if self._locked:
+                yield Label(
+                    "[bold yellow]⚠ Tools locked — dry run only[/]",
+                    classes="wizard-field-label",
+                    markup=True,
+                )
+
             with Horizontal(id="wizard-buttons"):
                 yield Button("Cancel", variant="default", id="btn-cancel")
                 if self._action.has_dry_run:
                     yield Button("Dry Run", variant="primary", id="btn-dry-run")
-                yield Button("Run", variant="error", id="btn-run")
+                if not self._locked:
+                    yield Button("Run", variant="error", id="btn-run")
 
     def _collect_values(self, dry_run: bool) -> dict:
         values = {}

@@ -17,9 +17,14 @@
 <li>Python 3.8+ on the control plane (Ubuntu 24.04 ships Python 3.12)</li>
 <li><code>kubectl</code> configured with cluster access</li>
 <li><code>/opt/Lobot/kubectl-view-allocations</code> binary present</li>
-<li>Textual and aiofiles Python packages:</li>
+<li><code>python3.12-venv</code> apt package — not installed by default on Ubuntu 24.04:</li>
 </ul>
-<pre><code>pip3 install textual aiofiles</code></pre>
+<pre><code>sudo apt install python3.12-venv</code></pre>
+<ul>
+<li>Textual and aiofiles Python packages — installed into a venv (Ubuntu 24.04 enforces PEP 668 and blocks system-wide pip installs):</li>
+</ul>
+<pre><code>python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
+/opt/Lobot/tools/lobot_tui/.venv/bin/pip install textual aiofiles</code></pre>
 <ul>
 <li><code>helm</code> on PATH (required only for the helm upgrade action)</li>
 <li><code>git</code> on PATH with push access to the Lobot repo (required only for the announcement editor)</li>
@@ -29,8 +34,9 @@
 <pre><code># Clone/pull the repo on the control plane (if not already at /opt/Lobot)
 cd /opt/Lobot
 
-# Install Python dependencies
-pip3 install -r tools/lobot-tui/requirements-tui.txt
+# Install Python dependencies into a venv (required on Ubuntu 24.04)
+python3 -m venv tools/lobot_tui/.venv
+tools/lobot_tui/.venv/bin/pip install -r tools/lobot_tui/requirements-tui.txt
 
 # Optional: symlink for quick access
 ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui

@@ -4,15 +4,15 @@
 
 A [btop](https://github.com/aristocratos/btop)-style terminal dashboard for managing the Lobot JupyterHub cluster. Provides real-time visibility into running pods, node status, and lab resource allocation — along with keyboard-driven access to all common admin operations.
 
-Designed for the control plane (`lobot-dev.cs.queensu.ca`) where a terminal is always available, including during disaster recovery when a web interface may not be.
+Designed for the control plane where a terminal is always available, including during disaster recovery when a web interface may not be.
 
 **Capabilities at a glance:**
 
 - Real-time pod list with resource usage, image tag, lab, node, age, and phase
-- Per-lab resource utilisation bars (CPU, RAM, GPU) updated every 5 seconds
+- Per-lab resource utilisation table (CPU, RAM, GPU) updated every 10 seconds
 - Per-node allocation table with cordon/schedulable status
 - Stream pod logs, exec bash into a pod, describe or delete pods
-- Cordon, uncordon, and drain nodes
+- Cordon, uncordon, and drain nodes (double-keypress to confirm)
 - Launch image-pull, image-cleanup, apply-config, sync-groups, and helm upgrade — with live streaming output and dry-run support
 - Edit `announcement.yaml` and push directly to GitHub from within the TUI
 
@@ -23,10 +23,17 @@ Designed for the control plane (`lobot-dev.cs.queensu.ca`) where a terminal is a
 - Python 3.8+ on the control plane (Ubuntu 24.04 ships Python 3.12)
 - `kubectl` configured with cluster access
 - `/opt/Lobot/kubectl-view-allocations` binary present
-- Textual and aiofiles Python packages:
+- `python3.12-venv` apt package (not installed by default on Ubuntu 24.04):
 
 ```bash
-pip3 install textual aiofiles
+sudo apt install python3.12-venv
+```
+
+- Textual and aiofiles Python packages (installed into a venv — Ubuntu 24.04 enforces PEP 668):
+
+```bash
+python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
+/opt/Lobot/tools/lobot_tui/.venv/bin/pip install textual aiofiles
 ```
 
 - `helm` on PATH (required only for the helm upgrade action)
@@ -40,12 +47,33 @@ pip3 install textual aiofiles
 # Clone/pull the repo on the control plane (if not already at /opt/Lobot)
 cd /opt/Lobot
 
-# Install Python dependencies
-pip3 install -r tools/lobot-tui/requirements-tui.txt
+# Install Python dependencies into a venv (required on Ubuntu 24.04)
+python3 -m venv tools/lobot_tui/.venv
+tools/lobot_tui/.venv/bin/pip install -r tools/lobot_tui/requirements-tui.txt
 
 # Optional: symlink for quick access
 ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
 chmod +x /opt/Lobot/tools/lobot-tui.sh
+```
+
+---
+
+## Deploying Updates
+
+To push the latest code from the dev control plane to prod in one command:
+
+```bash
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_tui/ PROD_HOST:/opt/Lobot/tools/lobot_tui/
+```
+
+Replace `PROD_HOST` with the production control plane hostname.
+
+**First-time setup on prod** (if the venv doesn't exist yet):
+
+```bash
+ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_tui/.venv && \
+  /opt/Lobot/tools/lobot_tui/.venv/bin/pip install -q textual aiofiles"
 ```
 
 ---
@@ -77,22 +105,23 @@ python3 -m lobot_tui
 
 ```
 ┌─ LOBOT  lobot-dev.cs.queensu.ca ─────────────────── 2026-03-13 14:22:05 ─┐
-│ CLUSTER SUMMARY               │ NODES                                      │
-│ Lobot [A40]  [3 pods]         │ NAME             STATUS  CPU    RAM  GPU   │
-│   CPU ████████░░ 65/256        │ newcluster-gpu1  Ready  26/64  256G  2/2  │
-│   RAM █████░░░░░ 320/2014GB    │ newcluster-gpu2  Ready   8/64   64G  1/2  │
-│   GPU ████████░░ 3/8           │ newcluster-gpu3  Cordoned 10/64 64G  2/2  │
-│ Lobot [A5000] [3 pods]        │ lobot-dev        ctrl    –      –    –    │
-│   CPU ████████░░ 103/256       │                                            │
-│   GPU ████░░░░░░ 4/8           │                                            │
-├───────────────────────────────┴────────────────────────────────────────────┤
-│ PODS  namespace:[jhub]  filter:__________  24 pods                         │
-│ USERNAME         LAB        NODE      IMAGE TAG    CPU  RAM   GPU  AGE     │
-│▶ ruslanamruddin  lobot_a40  gpu-1     13.0.2cu…   10   128G   1   2d3h    │
-│  busvp52         lobot_a40  gpu-1     13.0.2cu…   16   128G   1   1d1h    │
-│  ryanz8          miblab     gpu-3     13.0.2cu…   64   512G   4   3d      │
+│ LAB             #   CPU       RAM        GPU  │ NODES                      │
+│ lobot_a40       5   78/256  576/2014G    5/8  │ NAME       STATUS  CPU  …  │
+│ lobot_a5000     7  142/256  704/1007G    3/8  │ gpu1       Ready  45/64 …  │
+│ lobot_a16       0    2/24     0/125G     0/8  │ gpu2       Ready  12/64 …  │
+│ bamlab          2   86/128  896/1007G    6/8  │ gpu3       Cordoned  …  …  │
+│ gandslab        3   47/128   176/251G    1/2  │ lobot-dev  ctrl    –    –  │
+│ miblab          1  168/192  768/1007G    6/6  │                            │
+│ riselab         4  168/256  640/1007G    6/7  │                            │
+│ winemocollab    2   87/128  832/1007G    3/4  │                            │
+├───────────────────────────────────────────────┴────────────────────────────┤
+│ PODS  ns:[jhub]  filter: jupyter|jhub                          43 pods     │
+│ POD              LAB        NODE      IMAGE TAG    CPU  RAM   GPU  AGE     │
+│▶ jupyter-ali11x  mulab      debwewin  13.0.2cu…   10   64G    2   3d0h    │
+│  jupyter-busvp52 lobot_a40  kickstart 13.0.2cu…   16  256G    1   8d2h    │
+│  hub-6b6646cb8d  digilab    floppy    4.0.0-beta…  0    0G    0   2d3h    │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ PODS: [l]logs [x]exec [d]delete [R]restart [D]describe [/]filter [n]ns    │
+│ PODS: [l]logs [x]exec [d]describe [X]delete [/]filter [n]ns               │
 │ NODES:[c]cordon [u]uncordon [w]drain  TOOLS:[1-6] [?]help [q]quit         │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ ● Live  Pods:14:22:03  Nodes:14:22:01  Alloc:14:22:01   [q]quit           │
@@ -103,7 +132,7 @@ python3 -m lobot_tui
 
 | Panel | Location | Refresh |
 |-------|----------|---------|
-| Cluster Summary | Top-left | 10s (allocations) |
+| Cluster Summary | Top-left | 10s (allocations) — compact table, one row per lab |
 | Nodes | Top-right | 10s |
 | Pods | Centre | 5s |
 | Actions hint bar | Bottom-2 | Static |
@@ -120,32 +149,31 @@ The **status bar** shows a green `● Live` indicator when data is fresh. If all
 | Key | Action |
 |-----|--------|
 | `q` | Quit |
-| `Tab` / `Shift+Tab` | Cycle focus between panels |
 | `r` | Force-refresh all data immediately |
 | `?` | Help screen (full key binding reference) |
-| `1` – `6` | Open tool action wizard |
-| `Escape` | Close modal or go back |
+| `` ` `` | Command console (recent command history and errors) |
+| `Escape` | Clear filter / go back |
 
 ### Pod Table
 
-Focus the pod table with `Tab`. Navigation works with arrow keys or vim-style `j`/`k`.
-
 | Key | Action |
 |-----|--------|
-| `j` / `↓` | Move selection down |
-| `k` / `↑` | Move selection up |
-| `/` | Focus filter input (type to narrow pod list) |
-| `Escape` | Clear filter |
+| `↑` / `↓` | Navigate rows |
+| `/` | Focus filter input |
+| `Enter` (in filter) | Apply filter and return focus to pod table |
+| `Escape` | Clear filter and return focus to pod table |
 | `l` | Stream pod logs (`kubectl logs -f --tail=500`) |
 | `x` | Exec bash into pod (`kubectl exec -it … -- /bin/bash`) |
-| `d` | Delete pod — confirm required |
-| `R` | Restart pod — deletes pod; JupyterHub respawns on next access |
-| `D` or `Enter` | Full describe (`kubectl describe pod`) |
-| `n` | Cycle namespace: `jhub` → `all` → `jhub` |
+| `d` or `Enter` | Full describe (`kubectl describe pod`) |
+| `X` | Delete pod — press twice within 2 seconds to confirm |
+| `n` | Cycle namespace — per-namespace filters are remembered |
+| Click header | Sort by column (click again to reverse) |
 
-> **Exec (`x`)**: the TUI suspends, hands the terminal fully to bash, and resumes automatically when you exit the shell. Works the same as `kubectl exec -it` in a plain terminal.
+> **Filter**: matches against pod name, lab, node, image tag, and phase. Supports `|` as OR — e.g. `jupyter|jhub` shows pods whose name, lab, node, image, or phase contains `jupyter` or `jhub`. The `jhub` namespace starts with `jupyter|jhub` pre-filled to show only user pods and the hub pod. Per-namespace filters are saved to `~/.config/lobot-tui/ns_filters.json` and restored on next launch.
 
-> **Restart (`R`)**: deletes the pod but does not prevent JupyterHub from respawning it. Use **Delete** (`d`) if you want the server to stop until the user manually starts it again.
+> **Exec (`x`)**: the TUI suspends, hands the terminal fully to bash, and resumes automatically when you exit the shell (`Ctrl-D` or `exit`). Works the same as `kubectl exec -it` in a plain terminal.
+
+> **Delete (`X`)**: press `X` once to see a toast notification confirming what will be deleted. Press `X` again within 2 seconds to execute. The command output streams briefly then the screen closes automatically.
 
 ### Node Table
 
@@ -153,13 +181,15 @@ Focus the node table with `Tab`. The control plane (`lobot-dev.cs.queensu.ca`) i
 
 | Key | Action |
 |-----|--------|
-| `j` / `↓` | Move selection down |
-| `k` / `↑` | Move selection up |
-| `c` | Cordon node — prevent new pods from scheduling |
-| `u` | Uncordon node — restore scheduling |
-| `w` | Drain node — evict all pods (confirm required) |
+| `↑` / `↓` | Navigate rows |
+| `c` | Cordon node — press twice within 2 seconds to confirm |
+| `u` | Uncordon node — press twice within 2 seconds to confirm |
+| `w` | Drain node — press twice within 2 seconds to confirm |
+| Click header | Sort by column (click again to reverse) |
 
-> **Drain** runs `kubectl drain --ignore-daemonsets --delete-emptydir-data`. A confirmation modal shows the full command before execution. Output streams live in an action screen.
+> **Double-keypress confirmation**: for destructive node and pod operations, the first keypress shows a toast notification ("Press [key] again to confirm: …"). The second keypress within 2 seconds executes the command. The output screen closes automatically when the command completes.
+
+> **Drain** runs `kubectl drain --ignore-daemonsets --delete-emptydir-data`.
 
 ### Logs / Action Screens
 
@@ -172,7 +202,7 @@ Focus the node table with `Tab`. The control plane (`lobot-dev.cs.queensu.ca`) i
 
 ## Tool Actions (Keys `1` – `6`)
 
-All tool actions open a wizard or editor screen. Destructive actions require confirmation before running.
+All tool actions open a wizard or editor screen.
 
 ### `[1]` image-pull
 
@@ -205,8 +235,6 @@ Removes old image tags from all nodes while protecting images in use by running 
 
 Pulls the JupyterHub Helm config template from the `newcluster` GitHub branch, substitutes secrets from the existing config, and applies it. Runs `sudo bash apply-config.sh` on the control plane. The Hub pod restarts briefly.
 
-Confirm required. No dry-run mode.
-
 ### `[4]` sync-groups
 
 Syncs JupyterHub group membership from `group-roles.yaml`. Runs `bash sync_groups.sh`. Supports dry-run to preview changes without applying them.
@@ -223,7 +251,7 @@ helm upgrade jhub jupyterhub/jupyterhub \
   -f /opt/Lobot/config-prod.yaml.bk
 ```
 
-Confirm required. Output streams live. The Hub pod restarts; active user sessions may be briefly interrupted.
+Output streams live. The Hub pod restarts; active user sessions may be briefly interrupted.
 
 ### `[6]` Announcement Editor
 
@@ -298,23 +326,24 @@ tools/lobot-tui/
   __main__.py               Entry point (python3 -m lobot_tui)
   app.py                    Root Textual App class
   config.py                 Cluster constants and paths
-  requirements-tui.txt      Python dependencies
+  requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
     models.py               Dataclasses: PodInfo, NodeInfo, LabSummary, ClusterState
     collector.py            Async kubectl polling, ClusterStateUpdated message
   screens/
     main_screen.py          Primary dashboard layout and all key bindings
     logs_screen.py          Pod log viewer
-    action_screen.py        Streaming tool output screen
-    confirm_screen.py       Destructive action modal
+    action_screen.py        Streaming tool output screen (auto-close option)
     pod_detail_screen.py    kubectl describe viewer
     action_wizard_screen.py Tool parameter input form
     announcement_screen.py  YAML editor + git push
     help_screen.py          Key binding reference
+    console_screen.py       Command history / debug console
+    exec_screen.py          TTY handoff for kubectl exec
   widgets/
     cluster_summary.py      Per-lab resource bars
-    pod_table.py            Pod DataTable with filter
-    node_table.py           Node DataTable
+    pod_table.py            Pod DataTable with filter and column sort
+    node_table.py           Node DataTable with column sort
     actions_panel.py        Key hint bar
     status_bar.py           Bottom status line
   actions/

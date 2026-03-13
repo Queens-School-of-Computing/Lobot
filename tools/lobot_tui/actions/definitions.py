@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from ..config import CONTROL_PLANE, TOOLS_DIR, REPO_DIR, HELM_CONFIG, HELM_CONFIG_PROD, JUPYTERHUB_NAMESPACE, JUPYTERHUB_RELEASE, JUPYTERHUB_CHART
+from ..config import CONTROL_PLANE, TOOLS_DIR, REPO_DIR, HELM_CONFIG, HELM_CONFIG_ENV, JUPYTERHUB_NAMESPACE, JUPYTERHUB_RELEASE, JUPYTERHUB_CHART, JUPYTERHUB_API_URL
 
 
 @dataclass
@@ -60,7 +60,7 @@ def _apply_config_cmd(values: dict) -> list:
 
 
 def _sync_groups_cmd(values: dict) -> list:
-    cmd = ["bash", "sync_groups.sh"]
+    cmd = ["bash", "sync_groups.sh", JUPYTERHUB_API_URL]
     if values.get("dry_run"):
         cmd.append("--dry-run")
     return cmd
@@ -72,7 +72,7 @@ def _helm_upgrade_cmd(values: dict) -> list:
         "--namespace", JUPYTERHUB_NAMESPACE,
         "--reuse-values",
         "-f", HELM_CONFIG,
-        "-f", HELM_CONFIG_PROD,
+        "-f", HELM_CONFIG_ENV,
     ]
 
 

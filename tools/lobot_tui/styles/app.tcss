@@ -40,6 +40,7 @@ Screen {
     padding: 0;
 }
 
+
 /* ── Pod table ── */
 #pods-panel {
     height: 2fr;
@@ -68,9 +69,15 @@ Screen {
     background: #161b22;
     color: #c9d1d9;
     border: none;
+    border-bottom: solid #30363d;
 }
 
-#pod-count-label {
+#pod-filter-input:focus {
+    border-bottom: solid #58a6ff;
+    background: #0d1117;
+}
+
+#pod-count-outer {
     width: auto;
     color: #8b949e;
     content-align: right middle;
@@ -79,12 +86,11 @@ Screen {
 
 /* ── Actions panel ── */
 #actions-panel {
-    height: 2;
+    height: 3;
     background: #161b22;
     border-top: solid #30363d;
     padding: 0 1;
-    layout: horizontal;
-    content-align: left middle;
+    layout: vertical;
 }
 
 /* ── Status bar ── */
@@ -143,7 +149,7 @@ DataTable > .datatable--cursor {
 }
 
 DataTable > .datatable--hover {
-    background: #161b22;
+    background: #2d333b;
 }
 
 /* ── Cluster summary widget ── */

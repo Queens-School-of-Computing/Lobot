@@ -218,7 +218,7 @@ def _parse_gpu_request(raw: str) -> int:
 
 def _parse_nodes(json_str: str) -> tuple[dict, list]:
     """
-    Parse kubectl get nodes --show-labels -o json.
+    Parse kubectl get nodes -o json.
     Returns (node_lab_map: {node_name: lab}, partial_nodes: [NodeInfo with alloc fields=0]).
     """
     node_lab_map = {}
@@ -504,7 +504,7 @@ class DataCollector:
 
     async def _fetch_nodes(self) -> None:
         stdout, stderr, rc = await _run_kubectl(
-            "get", "nodes", "--show-labels", "-o", "json"
+            "get", "nodes", "-o", "json"
         )
         async with self._lock:
             if rc == 0:
