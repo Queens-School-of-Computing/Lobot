@@ -86,23 +86,23 @@
 # Pull a specific tagged image across all worker nodes in batches of 3
 # (control-plane is auto-excluded)
 ./image-pull.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -b 3
 
 # Pull two images (new + previous) in the same run
 ./image-pull.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
   -b 3
 
 # Pull on a single node only
 ./image-pull.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -n newcluster-gpunode3
 
 # Exclude a specific worker node (e.g. a node under maintenance)
 ./image-pull.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -b 3 \
   -e lobot-dev.cs.queensu.ca
 
@@ -310,26 +310,26 @@ helm upgrade ...
 <pre><code># Keep only the new image; remove all other old tags
 # (control-plane is auto-excluded)
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
 
 # Keep both new and previous image; remove everything else
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210
 
 # Clean a single node
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -n newcluster-gpunode3
 
 # Exclude a specific worker node (e.g. a node under maintenance)
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -e lobot-dev.cs.queensu.ca
 
 # Dry-run: see what would be removed without removing anything
 ./image-cleanup.sh \
-  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302 \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313 \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.1cudnn-2.19.0tf-matlab-ollama-claude-qsc-u24.04-20260210 \
   --dry-run</code></pre>
 <h3>How It Works</h3>

@@ -2,7 +2,7 @@
 # Deploy with: helm upgrade ... -f config.yaml.bk -f config-prod.yaml.bk
 singleuser:
   image:
-    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
+    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
 hub:
   config:
     GitHubOAuthenticator:

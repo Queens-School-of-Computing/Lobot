@@ -43,7 +43,7 @@ singleuser:
             curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
-    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260302
+    tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
   extraEnv:
     #Forsomereason this grant_sudo is not coming throug, so I have forced it in the start.sh file. 
     #GRANT_SUDO: "yes"
