@@ -1,0 +1,58 @@
+"""PodDetailScreen: kubectl describe pod viewer."""
+
+import asyncio
+
+from textual.app import ComposeResult
+from textual.screen import Screen
+from textual.widgets import Label, RichLog
+
+from ..data.models import PodInfo
+
+
+class PodDetailScreen(Screen):
+    """Shows kubectl describe pod output for the selected pod."""
+
+    BINDINGS = [
+        ("escape", "go_back", "Back"),
+        ("q", "go_back", "Back"),
+    ]
+
+    def __init__(self, pod: PodInfo) -> None:
+        super().__init__()
+        self._pod = pod
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            f" [bold cyan]DESCRIBE[/]  {self._pod.name}  "
+            f"ns:{self._pod.namespace}  [dim][Esc/q] back[/]",
+            id="screen-header",
+            markup=True,
+        )
+        yield RichLog(id="screen-log", highlight=False, markup=False, wrap=False)
+        yield Label("[dim]Loading…[/]", id="screen-footer")
+
+    def on_mount(self) -> None:
+        self.run_worker(self._load_describe(), exclusive=True)
+
+    async def _load_describe(self) -> None:
+        log = self.query_one(RichLog)
+        footer = self.query_one("#screen-footer", Label)
+
+        cmd = ["kubectl", "describe", "pod", self._pod.name, "-n", self._pod.namespace]
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            stdout, _ = await proc.communicate()
+            text = stdout.decode(errors="replace")
+            for line in text.splitlines():
+                log.write(line)
+            footer.update(f"[dim]{self._pod.name} — [Esc/q] back[/]")
+        except Exception as e:
+            log.write(f"Error: {e}")
+            footer.update("[red]Error loading describe output[/]")
+
+    def action_go_back(self) -> None:
+        self.app.pop_screen()

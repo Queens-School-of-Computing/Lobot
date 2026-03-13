@@ -1,0 +1,2 @@
+textual>=0.70.0
+aiofiles>=23.0

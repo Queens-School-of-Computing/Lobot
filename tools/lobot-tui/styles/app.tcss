@@ -1,0 +1,359 @@
+/* lobot-tui — dark btop-like theme */
+
+/* ── App shell ── */
+Screen {
+    background: #0d1117;
+    color: #c9d1d9;
+}
+
+/* ── Top info bar ── */
+#top-bar {
+    height: 1;
+    background: #161b22;
+    color: #58a6ff;
+    padding: 0 1;
+    content-align: left middle;
+}
+
+/* ── Two-column top section: summary | nodes ── */
+#top-section {
+    height: 1fr;
+    layout: horizontal;
+    min-height: 10;
+    max-height: 18;
+}
+
+#summary-panel {
+    width: 2fr;
+    border: solid #30363d;
+    border-title-color: #58a6ff;
+    border-title-align: left;
+    padding: 0 1;
+    overflow-y: auto;
+}
+
+#nodes-panel {
+    width: 3fr;
+    border: solid #30363d;
+    border-title-color: #58a6ff;
+    border-title-align: left;
+    padding: 0;
+}
+
+/* ── Pod table ── */
+#pods-panel {
+    height: 2fr;
+    border: solid #30363d;
+    border-title-color: #58a6ff;
+    border-title-align: left;
+    padding: 0;
+    min-height: 8;
+}
+
+#pod-filter-bar {
+    height: 1;
+    background: #161b22;
+    layout: horizontal;
+    padding: 0 1;
+}
+
+#pod-filter-label {
+    color: #8b949e;
+    width: auto;
+    content-align: left middle;
+}
+
+#pod-filter-input {
+    width: 1fr;
+    background: #161b22;
+    color: #c9d1d9;
+    border: none;
+}
+
+#pod-count-label {
+    width: auto;
+    color: #8b949e;
+    content-align: right middle;
+    padding-right: 1;
+}
+
+/* ── Actions panel ── */
+#actions-panel {
+    height: 2;
+    background: #161b22;
+    border-top: solid #30363d;
+    padding: 0 1;
+    layout: horizontal;
+    content-align: left middle;
+}
+
+/* ── Status bar ── */
+#status-bar {
+    height: 1;
+    background: #161b22;
+    color: #8b949e;
+    padding: 0 1;
+    layout: horizontal;
+}
+
+#status-live {
+    width: auto;
+    color: #3fb950;
+}
+
+#status-stale {
+    width: auto;
+    color: #d29922;
+}
+
+#status-error {
+    width: auto;
+    color: #f85149;
+}
+
+#status-timestamps {
+    width: 1fr;
+    content-align: left middle;
+    color: #8b949e;
+}
+
+#status-hint {
+    width: auto;
+    color: #8b949e;
+    content-align: right middle;
+}
+
+/* ── DataTable shared styles ── */
+DataTable {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: none;
+    height: 1fr;
+}
+
+DataTable > .datatable--header {
+    background: #161b22;
+    color: #58a6ff;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: #1f6feb;
+    color: #ffffff;
+}
+
+DataTable > .datatable--hover {
+    background: #161b22;
+}
+
+/* ── Cluster summary widget ── */
+.lab-name {
+    color: #58a6ff;
+    text-style: bold;
+}
+
+.lab-metric-label {
+    color: #8b949e;
+}
+
+.bar-full {
+    color: #3fb950;
+}
+
+.bar-warn {
+    color: #d29922;
+}
+
+.bar-crit {
+    color: #f85149;
+}
+
+/* ── Modal screens ── */
+ConfirmScreen {
+    align: center middle;
+}
+
+#confirm-dialog {
+    width: 60;
+    height: auto;
+    background: #161b22;
+    border: solid #58a6ff;
+    padding: 1 2;
+}
+
+#confirm-title {
+    text-style: bold;
+    color: #f85149;
+    margin-bottom: 1;
+}
+
+#confirm-message {
+    color: #c9d1d9;
+    margin-bottom: 1;
+}
+
+#confirm-buttons {
+    layout: horizontal;
+    height: auto;
+    align: right middle;
+}
+
+#confirm-buttons Button {
+    margin-left: 1;
+}
+
+/* ── Action wizard ── */
+ActionWizardScreen {
+    align: center middle;
+}
+
+#wizard-dialog {
+    width: 70;
+    height: auto;
+    max-height: 80%;
+    background: #161b22;
+    border: solid #58a6ff;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#wizard-title {
+    text-style: bold;
+    color: #58a6ff;
+    margin-bottom: 1;
+}
+
+.wizard-field-label {
+    color: #8b949e;
+    margin-top: 1;
+}
+
+.wizard-input {
+    background: #0d1117;
+    border: solid #30363d;
+    color: #c9d1d9;
+    width: 1fr;
+}
+
+.wizard-checkbox {
+    margin-top: 1;
+    color: #c9d1d9;
+}
+
+#wizard-buttons {
+    layout: horizontal;
+    height: auto;
+    margin-top: 1;
+    align: right middle;
+}
+
+#wizard-buttons Button {
+    margin-left: 1;
+}
+
+/* ── Logs / Action / Detail screens ── */
+LogsScreen, ActionScreen, PodDetailScreen {
+    background: #0d1117;
+}
+
+#screen-header {
+    height: 1;
+    background: #161b22;
+    color: #58a6ff;
+    padding: 0 1;
+}
+
+#screen-log {
+    height: 1fr;
+    background: #0d1117;
+    color: #c9d1d9;
+    border: none;
+    scrollbar-color: #30363d;
+}
+
+#screen-footer {
+    height: 1;
+    background: #161b22;
+    color: #8b949e;
+    padding: 0 1;
+}
+
+/* ── Announcement editor ── */
+AnnouncementScreen {
+    background: #0d1117;
+}
+
+#announcement-header {
+    height: 1;
+    background: #161b22;
+    color: #58a6ff;
+    padding: 0 1;
+}
+
+#announcement-editor {
+    height: 1fr;
+    background: #0d1117;
+    color: #c9d1d9;
+    border: none;
+}
+
+#announcement-footer {
+    height: 1;
+    background: #161b22;
+    color: #8b949e;
+    padding: 0 1;
+}
+
+/* ── Help screen ── */
+HelpScreen {
+    align: center middle;
+}
+
+#help-dialog {
+    width: 80;
+    height: 80%;
+    background: #161b22;
+    border: solid #58a6ff;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#help-title {
+    text-style: bold;
+    color: #58a6ff;
+    margin-bottom: 1;
+}
+
+/* ── Node status colours ── */
+.node-ready {
+    color: #3fb950;
+}
+
+.node-notready {
+    color: #f85149;
+}
+
+.node-cordoned {
+    color: #d29922;
+}
+
+.node-ctrl {
+    color: #8b949e;
+}
+
+/* ── Pod phase colours ── */
+.phase-running {
+    color: #3fb950;
+}
+
+.phase-pending {
+    color: #d29922;
+}
+
+.phase-failed {
+    color: #f85149;
+}
+
+.phase-unknown {
+    color: #8b949e;
+}
