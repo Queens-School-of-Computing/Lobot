@@ -75,7 +75,7 @@ class AnnouncementScreen(Screen):
 
         for cmd in git_commands:
             rc, out = await self._run_git(cmd)
-            command_log.record(" ".join(cmd), out, rc)
+            command_log.record(" ".join(cmd), [], rc)
             if rc != 0:
                 footer.update(f"[red]Git command failed: {' '.join(cmd)}[/]")
                 return

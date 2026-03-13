@@ -65,7 +65,7 @@ class ActionScreen(Screen):
                 log.write(line)
             await self._proc.wait()
             rc = self._proc.returncode
-            command_log.record(" ".join(self._argv), self._output_lines, rc)
+            command_log.record(" ".join(self._argv), [], rc)
             log.write("")
             log.write(f"[exit {rc}]")
             if self._auto_close:
@@ -76,7 +76,7 @@ class ActionScreen(Screen):
             else:
                 footer.update(f"[red]Exited with code {rc}[/]  [dim][Esc/q] back  [s] save[/]")
         except Exception as e:
-            command_log.record(" ".join(self._argv), self._output_lines, None)
+            command_log.record(" ".join(self._argv), [], None)
             log.write(f"Error: {e}")
             if not self._auto_close:
                 footer.update("[red]Command failed to launch[/]")

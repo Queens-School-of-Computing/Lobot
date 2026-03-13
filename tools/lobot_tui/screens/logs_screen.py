@@ -70,7 +70,7 @@ class LogsScreen(Screen):
             if self._proc:
                 await self._proc.wait()
             rc = self._proc.returncode if self._proc else None
-            command_log.record(" ".join(cmd), [f"[{len(self._log_lines)} lines streamed]"], rc)
+            command_log.record(" ".join(cmd), [], rc)
             footer.update("[dim]Stream ended — [Esc/q] back  [s] save[/]")
 
     def action_go_back(self) -> None:

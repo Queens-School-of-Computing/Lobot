@@ -52,10 +52,10 @@ class PodDetailScreen(Screen):
             lines = text.splitlines()
             for line in lines:
                 log.write(line)
-            command_log.record(" ".join(cmd), lines, proc.returncode)
+            command_log.record(" ".join(cmd), [], proc.returncode)
             footer.update(f"[dim]{self._pod.name} — [Esc/q] back[/]")
         except Exception as e:
-            command_log.record(" ".join(cmd), lines, None)
+            command_log.record(" ".join(cmd), [], None)
             log.write(f"Error: {e}")
             footer.update("[red]Error loading describe output[/]")
 
