@@ -7,6 +7,8 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Label, Static
 
+from ..data import command_log
+
 
 class ExecScreen(Screen):
     """Suspends the TUI and hands the terminal to kubectl exec."""
@@ -37,5 +39,6 @@ class ExecScreen(Screen):
         ]
         with self.app.suspend():
             os.system("clear")
-            subprocess.run(cmd)
+            result = subprocess.run(cmd)
+        command_log.record(" ".join(cmd), ["[interactive session]"], result.returncode)
         self.app.pop_screen()

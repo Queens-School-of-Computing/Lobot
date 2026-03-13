@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Label, RichLog, TextArea
 
 from ..config import ANNOUNCEMENT_YAML, REPO_DIR
-from ..actions.runner import run_command
+from ..data import command_log
 
 
 class AnnouncementScreen(Screen):
@@ -22,7 +22,6 @@ class AnnouncementScreen(Screen):
     def __init__(self) -> None:
         super().__init__()
         self._path = Path(ANNOUNCEMENT_YAML)
-        self._git_log_lines: list[str] = []
 
     def compose(self) -> ComposeResult:
         yield Label(
@@ -68,7 +67,6 @@ class AnnouncementScreen(Screen):
 
         footer.update("[yellow]Committing and pushing…[/]")
 
-        # Run git commands sequentially in the repo dir
         git_commands = [
             ["git", "add", str(self._path)],
             ["git", "commit", "-m", "chore: update announcement via lobot-tui"],
@@ -76,19 +74,21 @@ class AnnouncementScreen(Screen):
         ]
 
         for cmd in git_commands:
-            rc = await self._run_git(cmd)
+            rc, out = await self._run_git(cmd)
+            command_log.record(" ".join(cmd), out, rc)
             if rc != 0:
                 footer.update(f"[red]Git command failed: {' '.join(cmd)}[/]")
                 return
 
         footer.update("[green]Saved and pushed to GitHub successfully![/]")
 
-    async def _run_git(self, cmd: list) -> int:
+    async def _run_git(self, cmd: list) -> tuple[int, list[str]]:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             cwd=REPO_DIR,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
-        await proc.communicate()
-        return proc.returncode
+        stdout, _ = await proc.communicate()
+        lines = stdout.decode(errors="replace").splitlines()
+        return proc.returncode, lines

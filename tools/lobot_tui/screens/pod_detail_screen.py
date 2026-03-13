@@ -6,6 +6,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
+from ..data import command_log
 from ..data.models import PodInfo
 
 
@@ -39,6 +40,7 @@ class PodDetailScreen(Screen):
         footer = self.query_one("#screen-footer", Label)
 
         cmd = ["kubectl", "describe", "pod", self._pod.name, "-n", self._pod.namespace]
+        lines: list[str] = []
         try:
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
@@ -47,10 +49,13 @@ class PodDetailScreen(Screen):
             )
             stdout, _ = await proc.communicate()
             text = stdout.decode(errors="replace")
-            for line in text.splitlines():
+            lines = text.splitlines()
+            for line in lines:
                 log.write(line)
+            command_log.record(" ".join(cmd), lines, proc.returncode)
             footer.update(f"[dim]{self._pod.name} — [Esc/q] back[/]")
         except Exception as e:
+            command_log.record(" ".join(cmd), lines, None)
             log.write(f"Error: {e}")
             footer.update("[red]Error loading describe output[/]")
 

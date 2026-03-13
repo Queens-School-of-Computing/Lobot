@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
+from ..data import command_log
 from ..data.models import PodInfo
 
 
@@ -68,6 +69,8 @@ class LogsScreen(Screen):
         finally:
             if self._proc:
                 await self._proc.wait()
+            rc = self._proc.returncode if self._proc else None
+            command_log.record(" ".join(cmd), [f"[{len(self._log_lines)} lines streamed]"], rc)
             footer.update("[dim]Stream ended — [Esc/q] back  [s] save[/]")
 
     def action_go_back(self) -> None:

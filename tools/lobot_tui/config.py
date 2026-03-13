@@ -44,6 +44,10 @@ DEV_MODE = os.environ.get("LOBOT_TUI_DEV", "0") == "1"
 # ── Per-namespace filter persistence ──────────────────────────────────────────
 NS_FILTERS_FILE = Path.home() / ".config" / "lobot-tui" / "ns_filters.json"
 
+# ── Audit log ─────────────────────────────────────────────────────────────────
+# All commands run via the TUI are appended here (rotates daily).
+LOG_DIR = Path("/opt/Lobot/logs")
+
 # ── Safety lock: when True, tool actions 1-5 are restricted to dry-run only ───
 # Set to False when ready to run tools live.
 TOOLS_LOCKED = True
