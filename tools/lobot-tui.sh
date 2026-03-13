@@ -18,7 +18,6 @@ if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
 fi
 
-# Run as a module so relative imports work; clear screen on exit
+# Run as a module so relative imports work
 cd "$SCRIPT_DIR"
-"$PYTHON" -m lobot_tui
-clear
+exec "$PYTHON" -m lobot_tui
