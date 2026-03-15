@@ -1,6 +1,7 @@
 """HelpScreen: full key bindings reference."""
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Label, Markdown
@@ -52,9 +53,15 @@ HELP_TEXT = """
 ## Logs / Action / Exec Screens
 | Key | Action |
 |-----|--------|
-| `Escape` / `q` | Return to main screen |
-| `s` | Save output to /tmp/lobot-tui-*.log |
+| `Escape` (×2) / `q` | Return to main screen (`Escape` needs two presses) |
+| `s` | Save output to /opt/Lobot/logs/lobot-tui-*.log |
 | `Ctrl-D` / `exit` | Exit exec shell (exec screen only) |
+
+## Log Viewer (scroll behaviour)
+| Key | Action |
+|-----|--------|
+| Scroll up | Pause live stream (new lines buffered, not displayed) |
+| `l` | Resume stream — flush buffered lines and scroll to bottom |
 
 ## Announcement Editor
 | Key | Action |
@@ -68,9 +75,9 @@ class HelpScreen(ModalScreen):
     """Displays key bindings reference."""
 
     BINDINGS = [
-        ("escape", "close", "Close"),
-        ("q", "close", "Close"),
-        ("question_mark", "close", "Close"),
+        Binding("escape", "close", "Close", priority=True),
+        Binding("q", "close", "Close", priority=True),
+        Binding("question_mark", "close", "Close", priority=True),
     ]
 
     def compose(self) -> ComposeResult:

@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -14,9 +15,9 @@ class ConsoleScreen(Screen):
     """Shows the history of all commands run in this session."""
 
     BINDINGS = [
-        ("escape", "go_back", "Back"),
-        ("q", "go_back", "Back"),
-        ("grave_accent", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", priority=True),
+        Binding("q", "go_back", "Back", priority=True),
+        Binding("grave_accent", "go_back", "Back", priority=True),
     ]
 
     def compose(self) -> ComposeResult:

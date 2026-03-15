@@ -28,6 +28,7 @@ HELM_CONFIG_ENV = "/opt/Lobot/config-dev.yaml.bk" if IS_DEV else "/opt/Lobot/con
 JUPYTERHUB_NAMESPACE = "jhub"
 JUPYTERHUB_RELEASE = "jhub"
 JUPYTERHUB_CHART = "jupyterhub/jupyterhub"
+JUPYTERHUB_CHART_VERSION = "4.0.0-beta.2"
 
 # ── Refresh intervals (seconds) ────────────────────────────────────────────────
 PODS_INTERVAL = 5
@@ -36,7 +37,7 @@ ALLOC_INTERVAL = 10
 
 # ── Display ───────────────────────────────────────────────────────────────────
 APP_TITLE = "LOBOT"
-MAX_TAG_LEN = 12  # truncate image tags in table
+MAX_TAG_LEN = 34  # truncate image tags in table (left-truncated, keeps date suffix)
 
 # ── Dev/local mode: use mock data when kubectl is unavailable ──────────────────
 DEV_MODE = os.environ.get("LOBOT_TUI_DEV", "0") == "1"
@@ -50,4 +51,4 @@ LOG_DIR = Path("/opt/Lobot/logs")
 
 # ── Safety lock: when True, tool actions 1-5 are restricted to dry-run only ───
 # Set to False when ready to run tools live.
-TOOLS_LOCKED = True
+TOOLS_LOCKED = False

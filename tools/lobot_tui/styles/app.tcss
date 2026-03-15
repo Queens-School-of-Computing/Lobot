@@ -214,7 +214,7 @@ ActionWizardScreen {
 }
 
 #wizard-dialog {
-    width: 70;
+    width: 90;
     height: auto;
     max-height: 80%;
     background: #161b22;
@@ -246,6 +246,15 @@ ActionWizardScreen {
     color: #c9d1d9;
 }
 
+.wizard-checkbox-row {
+    height: auto;
+    margin-top: 1;
+}
+
+.wizard-checkbox-row Checkbox {
+    margin-right: 2;
+}
+
 #wizard-buttons {
     layout: horizontal;
     height: auto;
@@ -257,8 +266,112 @@ ActionWizardScreen {
     margin-left: 1;
 }
 
-/* ── Logs / Action / Detail screens ── */
-LogsScreen, ActionScreen, PodDetailScreen {
+.wizard-select {
+    width: 1fr;
+    margin-top: 0;
+}
+
+.wizard-selection-list {
+    width: 1fr;
+    height: auto;
+    max-height: 8;
+    border: solid #30363d;
+    background: #0d1117;
+}
+
+/* ── Node picker modal ── */
+NodePickerScreen {
+    align: center middle;
+}
+
+#node-picker-dialog {
+    width: 50;
+    height: auto;
+    max-height: 70%;
+    background: #161b22;
+    border: solid #58a6ff;
+    padding: 1 2;
+}
+
+#node-picker-title {
+    text-style: bold;
+    color: #58a6ff;
+    margin-bottom: 1;
+}
+
+#node-picker-list {
+    height: auto;
+    max-height: 20;
+    overflow-y: auto;
+}
+
+#node-picker-buttons {
+    layout: horizontal;
+    height: auto;
+    margin-top: 1;
+    align: right middle;
+}
+
+#node-picker-buttons Button {
+    margin-left: 1;
+}
+
+/* ── Command preview modal ── */
+CommandPreviewScreen {
+    align: center middle;
+}
+
+#preview-dialog {
+    width: 80;
+    height: auto;
+    max-height: 80%;
+    background: #161b22;
+    border: solid #f85149;
+    padding: 1 2;
+}
+
+#preview-title {
+    text-style: bold;
+    color: #f85149;
+    margin-bottom: 1;
+}
+
+#preview-warning {
+    color: #c9d1d9;
+    margin-bottom: 1;
+}
+
+.preview-section-label {
+    color: #8b949e;
+    margin-top: 1;
+}
+
+#preview-command {
+    background: #0d1117;
+    border: solid #30363d;
+    color: #79c0ff;
+    padding: 1;
+    margin-top: 0;
+}
+
+#preview-hint {
+    color: #8b949e;
+    margin-top: 1;
+}
+
+#preview-buttons {
+    layout: horizontal;
+    height: auto;
+    margin-top: 1;
+    align: right middle;
+}
+
+#preview-buttons Button {
+    margin-left: 1;
+}
+
+/* ── Logs / Action / Detail / Jobs screens ── */
+LogsScreen, ActionScreen, PodDetailScreen, JobsScreen, ConsoleScreen {
     background: #0d1117;
 }
 
@@ -284,30 +397,40 @@ LogsScreen, ActionScreen, PodDetailScreen {
     padding: 0 1;
 }
 
-/* ── Announcement editor ── */
+/* ── Announcement editor modal ── */
 AnnouncementScreen {
-    background: #0d1117;
+    align: center middle;
 }
 
-#announcement-header {
-    height: 1;
+#announcement-dialog {
+    width: 80;
+    height: auto;
     background: #161b22;
-    color: #58a6ff;
-    padding: 0 1;
+    border: solid #58a6ff;
+    padding: 1 2;
 }
 
-#announcement-editor {
-    height: 1fr;
-    background: #0d1117;
-    color: #c9d1d9;
-    border: none;
+#announcement-title {
+    text-style: bold;
+    color: #58a6ff;
+    margin-bottom: 0;
 }
 
 #announcement-footer {
     height: 1;
-    background: #161b22;
     color: #8b949e;
-    padding: 0 1;
+    margin-top: 1;
+}
+
+#announcement-buttons {
+    layout: horizontal;
+    height: auto;
+    margin-top: 1;
+    align: right middle;
+}
+
+#announcement-buttons Button {
+    margin-left: 1;
 }
 
 /* ── Help screen ── */

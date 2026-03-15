@@ -44,7 +44,7 @@ def _parse_image_tag(image: str) -> str:
     else:
         tag = "latest"
     if len(tag) > MAX_TAG_LEN:
-        return tag[:MAX_TAG_LEN] + "…"
+        return "…" + tag[-(MAX_TAG_LEN - 1):]
     return tag
 
 

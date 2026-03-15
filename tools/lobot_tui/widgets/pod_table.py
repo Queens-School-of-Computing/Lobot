@@ -12,7 +12,7 @@ from ..data.models import PodInfo
 _FIXED_COLS = [
     ("LAB",       14),
     ("NODE",      24),
-    ("IMAGE TAG", 22),
+    ("IMAGE TAG", 34),
     ("CPU",        5),
     ("RAM",        6),
     ("GPU",        4),
@@ -30,6 +30,13 @@ PHASE_MARKUP = {
     "Failed":    "[red]Failed[/]",
     "Succeeded": "[dim]Done[/]",
 }
+
+def _left_trunc(text: str, width: int) -> str:
+    """Truncate from the left so the tail (date) is always visible."""
+    if len(text) <= width:
+        return text
+    return "…" + text[-(width - 1):]
+
 
 # Sort key functions indexed by column position (0=POD, then _FIXED_COLS order)
 _SORT_KEYS = [

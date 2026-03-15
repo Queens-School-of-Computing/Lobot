@@ -3,7 +3,11 @@
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from ..config import CONTROL_PLANE, TOOLS_DIR, REPO_DIR, HELM_CONFIG, HELM_CONFIG_ENV, JUPYTERHUB_NAMESPACE, JUPYTERHUB_RELEASE, JUPYTERHUB_CHART, JUPYTERHUB_API_URL
+from ..config import (
+    CONTROL_PLANE, TOOLS_DIR, REPO_DIR, HELM_CONFIG, HELM_CONFIG_ENV,
+    JUPYTERHUB_NAMESPACE, JUPYTERHUB_RELEASE, JUPYTERHUB_CHART,
+    JUPYTERHUB_CHART_VERSION, JUPYTERHUB_API_URL,
+)
 
 
 @dataclass
@@ -13,6 +17,13 @@ class ActionField:
     default: str
     required: bool = True
     placeholder: str = ""
+    field_type: str = "input"
+    # field_type values:
+    #   "input"        — plain text Input widget
+    #   "checkbox"     — Checkbox widget; default "true"/"false"; value stored as bool
+    #   "tag_select"   — image-name Input + async tag Select combo
+    #   "node_exclude" — text Input + "Pick…" button (multi-select, comma-sep)
+    #   "node_single"  — text Input + "Pick…" button (single node, -n flag)
 
 
 @dataclass
@@ -28,16 +39,23 @@ class ActionDef:
     confirm_message: str = ""
 
 
-# ── Helper to build the dry-run variant ──────────────────────────────────────
+# ── Command builders ──────────────────────────────────────────────────────────
 
 def _image_pull_cmd(values: dict) -> list:
     cmd = ["bash", "image-pull.sh", "-i", values["image"]]
-    batch = values.get("batch_size", "3").strip()
-    if batch and batch != "3":
-        cmd += ["-b", batch]
-    exclude = values.get("exclude", CONTROL_PLANE).strip()
-    if exclude:
-        cmd += ["-e", exclude]
+    batch = values.get("batch_size", "3").strip() or "3"
+    cmd += ["-b", batch]
+    timeout = values.get("timeout", "1200").strip() or "1200"
+    cmd += ["-t", timeout]
+    node = values.get("node", "").strip()
+    if node:
+        cmd += ["-n", node]
+    else:
+        exclude = values.get("exclude", CONTROL_PLANE).strip()
+        if exclude:
+            cmd += ["-e", exclude]
+    if values.get("use_latest"):
+        cmd.append("--latest")
     cmd.append("--yes")
     if values.get("dry_run"):
         cmd.append("--dry-run")
@@ -46,9 +64,13 @@ def _image_pull_cmd(values: dict) -> list:
 
 def _image_cleanup_cmd(values: dict) -> list:
     cmd = ["bash", "image-cleanup.sh", "-i", values["image"]]
-    exclude = values.get("exclude", CONTROL_PLANE).strip()
-    if exclude:
-        cmd += ["-e", exclude]
+    node = values.get("node", "").strip()
+    if node:
+        cmd += ["-n", node]
+    else:
+        exclude = values.get("exclude", CONTROL_PLANE).strip()
+        if exclude:
+            cmd += ["-e", exclude]
     cmd.append("--yes")
     if values.get("dry_run"):
         cmd.append("--dry-run")
@@ -68,11 +90,13 @@ def _sync_groups_cmd(values: dict) -> list:
 
 def _helm_upgrade_cmd(values: dict) -> list:
     return [
-        "helm", "upgrade", JUPYTERHUB_RELEASE, JUPYTERHUB_CHART,
+        "helm", "upgrade", "--cleanup-on-fail",
+        JUPYTERHUB_RELEASE, JUPYTERHUB_CHART,
         "--namespace", JUPYTERHUB_NAMESPACE,
-        "--reuse-values",
-        "-f", HELM_CONFIG,
-        "-f", HELM_CONFIG_ENV,
+        "--version", JUPYTERHUB_CHART_VERSION,
+        "--values", "/opt/Lobot/config.yaml",
+        "--values", "/opt/Lobot/config-env.yaml",
+        "--timeout", "60m",
     ]
 
 
@@ -86,11 +110,19 @@ ACTIONS: list = [
         needs_confirm=True,
         has_dry_run=True,
         fields=[
-            ActionField("image", "Image (name:tag)", "",
-                        placeholder="queensschoolofcomputingdocker/gpu-jupyter-latest:TAG"),
+            ActionField("image", "Image", "queensschoolofcomputingdocker/gpu-jupyter-latest",
+                        placeholder="queensschoolofcomputingdocker/gpu-jupyter-latest",
+                        field_type="tag_select"),
             ActionField("batch_size", "Batch size", "3", required=False,
                         placeholder="3"),
-            ActionField("exclude", "Exclude nodes (comma-sep)", CONTROL_PLANE, required=False),
+            ActionField("timeout", "Timeout (seconds)", "1200", required=False,
+                        placeholder="1200"),
+            ActionField("exclude", "Exclude nodes", CONTROL_PLANE, required=False,
+                        field_type="node_exclude"),
+            ActionField("node", "Single target node (-n)", "", required=False,
+                        field_type="node_single"),
+            ActionField("use_latest", "Use --latest", "true", required=False,
+                        field_type="checkbox"),
         ],
         build_command=_image_pull_cmd,
         working_dir=TOOLS_DIR,
@@ -103,9 +135,13 @@ ACTIONS: list = [
         needs_confirm=True,
         has_dry_run=True,
         fields=[
-            ActionField("image", "Image to KEEP (name:tag)", "",
-                        placeholder="queensschoolofcomputingdocker/gpu-jupyter-latest:TAG"),
-            ActionField("exclude", "Exclude nodes (comma-sep)", CONTROL_PLANE, required=False),
+            ActionField("image", "Image to KEEP", "queensschoolofcomputingdocker/gpu-jupyter-latest",
+                        placeholder="queensschoolofcomputingdocker/gpu-jupyter-latest",
+                        field_type="tag_select"),
+            ActionField("exclude", "Exclude nodes", CONTROL_PLANE, required=False,
+                        field_type="node_exclude"),
+            ActionField("node", "Single target node (-n)", "", required=False,
+                        field_type="node_single"),
         ],
         build_command=_image_cleanup_cmd,
         working_dir=TOOLS_DIR,
@@ -143,7 +179,8 @@ ACTIONS: list = [
         build_command=_helm_upgrade_cmd,
         working_dir=REPO_DIR,
         confirm_message=(
-            f"This will run: helm upgrade {JUPYTERHUB_RELEASE} {JUPYTERHUB_CHART}\n"
+            f"This will run: helm upgrade --cleanup-on-fail {JUPYTERHUB_RELEASE} {JUPYTERHUB_CHART}"
+            f" --version {JUPYTERHUB_CHART_VERSION}\n"
             "The Hub pod will restart. Active user sessions may be briefly interrupted."
         ),
     ),

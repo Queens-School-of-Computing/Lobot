@@ -5,9 +5,11 @@ from datetime import datetime
 from pathlib import Path
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
+from ..config import LOG_DIR
 from ..data import command_log
 
 
@@ -15,8 +17,8 @@ class ActionScreen(Screen):
     """Streams live output of a shell command."""
 
     BINDINGS = [
-        ("escape", "go_back", "Back"),
-        ("q", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", priority=True),
+        Binding("q", "go_back", "Back", priority=True),
         ("s", "save_output", "Save"),
     ]
 
@@ -94,7 +96,8 @@ class ActionScreen(Screen):
             return
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         safe_title = self._title.replace(" ", "-").replace("/", "-")
-        path = Path(f"/tmp/lobot-tui-{safe_title}-{ts}.log")
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        path = LOG_DIR / f"lobot-tui-{safe_title}-{ts}.log"
         path.write_text(f"$ {' '.join(self._argv)}\n\n" + "\n".join(self._output_lines))
         footer = self.query_one("#screen-footer", Label)
         footer.update(f"[green]Saved to {path}[/]")

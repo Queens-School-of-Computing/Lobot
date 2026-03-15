@@ -3,6 +3,7 @@
 import asyncio
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -14,8 +15,8 @@ class PodDetailScreen(Screen):
     """Shows kubectl describe pod output for the selected pod."""
 
     BINDINGS = [
-        ("escape", "go_back", "Back"),
-        ("q", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", priority=True),
+        Binding("q", "go_back", "Back", priority=True),
     ]
 
     def __init__(self, pod: PodInfo) -> None:

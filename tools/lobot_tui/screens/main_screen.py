@@ -15,7 +15,7 @@ from textual.widgets import DataTable, Input, Label, Static
 from ..config import CONTROL_PLANE, IS_DEV, JUPYTERHUB_NAMESPACE, NS_FILTERS_FILE, TOOLS_DIR, TOOLS_LOCKED
 from ..data.collector import ClusterStateUpdated, DataCollector
 from ..data.models import NodeInfo, PodInfo
-from ..widgets.actions_panel import ActionsPanelWidget
+from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
 from ..widgets.cluster_summary import ClusterSummaryWidget
 from ..widgets.node_table import NodeTableWidget
 from ..widgets.pod_table import PodTableWidget
@@ -23,12 +23,15 @@ from ..widgets.status_bar import StatusBarWidget
 from .action_screen import ActionScreen
 from .action_wizard_screen import ActionWizardScreen
 from .announcement_screen import AnnouncementScreen
+from .command_preview_screen import CommandPreviewScreen
 from .console_screen import ConsoleScreen
 from .help_screen import HelpScreen
 from .exec_screen import ExecScreen
+from .jobs_screen import JobsScreen
 from .logs_screen import LogsScreen
 from .pod_detail_screen import PodDetailScreen
 from ..actions.definitions import ACTIONS_BY_KEY
+from ..data.job_manager import JobCompleted
 
 
 _NAMESPACES_DEFAULT = [JUPYTERHUB_NAMESPACE, "all"]
@@ -89,6 +92,7 @@ class MainScreen(Screen):
         ("r", "force_refresh", "Refresh"),
         ("question_mark", "show_help", "Help"),
         ("grave_accent", "show_console", "Console"),
+        ("b", "show_jobs", "Jobs"),
         ("1", "tool_1", "image-pull"),
         ("2", "tool_2", "image-cleanup"),
         ("3", "tool_3", "apply-config"),
@@ -168,6 +172,23 @@ class MainScreen(Screen):
             )
         except Exception:
             pass
+        self._update_job_indicator()
+
+    def _update_job_indicator(self) -> None:
+        """Refresh the running-job status in the actions panel hint bar."""
+        try:
+            panel = self.query_one("#actions-panel", ActionsPanelWidget)
+        except Exception:
+            return
+        job = self.app.job_manager.current_job
+        if job is None or job.status != "running":
+            return
+        elapsed = int((datetime.now() - job.start_time).total_seconds())
+        mins, secs = divmod(elapsed, 60)
+        elapsed_str = f"{mins}m{secs:02d}s" if mins else f"{secs}s"
+        panel.set_job_status(
+            f"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]"
+        )
 
     # ── Double-keypress confirmation ───────────────────────────────────────
 
@@ -238,6 +259,9 @@ class MainScreen(Screen):
 
     def action_show_console(self) -> None:
         self.app.push_screen(ConsoleScreen())
+
+    def action_show_jobs(self) -> None:
+        self.app.push_screen(JobsScreen())
 
     def action_focus_filter(self) -> None:
         inp = self.query_one("#pod-filter-input", Input)
@@ -333,6 +357,16 @@ class MainScreen(Screen):
         if not action:
             return
 
+        if self.app.job_manager.is_running:
+            job = self.app.job_manager.current_job
+            self.notify(
+                f"{job.title} is running — press \[b] to view it.",
+                title="Job in progress",
+                severity="warning",
+                timeout=4.0,
+            )
+            return
+
         if TOOLS_LOCKED and not action.has_dry_run:
             self.notify(
                 f"[bold yellow]Tools locked[/] — {action.name} has no dry-run mode and cannot run.",
@@ -346,11 +380,30 @@ class MainScreen(Screen):
                 ActionWizardScreen(action),
                 callback=lambda result: self._on_wizard_result(result, action),
             )
+        elif action.needs_confirm:
+            # No wizard fields, but needs explicit confirmation — show command preview
+            argv = action.build_command({})
+            self.app.push_screen(
+                CommandPreviewScreen(action.name, action.confirm_message, argv),
+                callback=lambda confirmed, a=action, v=argv: (
+                    self._launch_tool(a, v, a.working_dir) if confirmed else None
+                ),
+            )
         else:
             self._launch_tool(action, action.build_command({}), action.working_dir)
 
     def _launch_tool(self, action, argv, cwd) -> None:
-        self.app.push_screen(ActionScreen(action.name, argv, cwd=cwd))
+        if self.app.job_manager.is_running:
+            self.notify(
+                "A background job is already running — press [b] to view it.",
+                title="Job in progress",
+                severity="warning",
+                timeout=4.0,
+            )
+            return
+        self.app.job_manager.start(self.app, action.name, argv, cwd)
+        self._update_job_indicator()
+        self.app.push_screen(JobsScreen())
 
     def _on_wizard_result(self, result, action) -> None:
         if result is None:
@@ -358,7 +411,7 @@ class MainScreen(Screen):
         argv, cwd, dry_run = result
         if not argv:
             return
-        self.app.push_screen(ActionScreen(action.name, argv, cwd=cwd))
+        self._launch_tool(action, argv, cwd)
 
     def action_tool_1(self) -> None:
         self._do_tool("1")
@@ -377,3 +430,53 @@ class MainScreen(Screen):
 
     def action_tool_6(self) -> None:
         self.app.push_screen(AnnouncementScreen())
+
+    # ── Actions panel click passthrough ───────────────────────────────────────
+
+    def on_job_completed(self, event: JobCompleted) -> None:
+        job = event.job
+        # Clear the running-job indicator and restore normal hints
+        try:
+            self.query_one("#actions-panel", ActionsPanelWidget).set_job_status(None)
+        except Exception:
+            pass
+        if job.status == "done":
+            self.notify(
+                f"{job.title} finished — press \[b] to view output.",
+                title="Job completed",
+                timeout=6.0,
+            )
+        else:
+            rc = job.returncode if job.returncode is not None else "?"
+            self.notify(
+                f"{job.title} failed (exit {rc}) — press \[b] to view output.",
+                title="Job failed",
+                severity="error",
+                timeout=8.0,
+            )
+
+    def on_hint_clicked(self, event: HintClicked) -> None:
+        dispatch = {
+            "1": self.action_tool_1,
+            "2": self.action_tool_2,
+            "3": self.action_tool_3,
+            "4": self.action_tool_4,
+            "5": self.action_tool_5,
+            "6": self.action_tool_6,
+            "`": self.action_show_console,
+            "b": self.action_show_jobs,
+            "l": self.action_pod_logs,
+            "x": self.action_pod_exec,
+            "d": self.action_pod_describe,
+            "X": self.action_pod_delete,
+            "/": self.action_focus_filter,
+            "n": self.action_cycle_namespace,
+            "c": self.action_node_cordon,
+            "u": self.action_node_uncordon,
+            "w": self.action_node_drain,
+            "?": self.action_show_help,
+            "q": self.action_quit_app,
+        }
+        fn = dispatch.get(event.key)
+        if fn:
+            fn()
