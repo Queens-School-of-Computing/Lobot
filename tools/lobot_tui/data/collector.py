@@ -1,18 +1,17 @@
-"""Async data collector: polls kubectl and kubectl-view-allocations."""
+"""Async data collector: polls kubectl for pod and node data."""
 
 import asyncio
 import json
 import math
 from datetime import datetime, timezone
-from io import StringIO
 from typing import Optional
 
 from textual.message import Message
 from textual.widget import Widget
 
 from ..config import (
-    CONTROL_PLANE, KUBECTL_VIEW_ALLOCATIONS, JUPYTERHUB_NAMESPACE,
-    PODS_INTERVAL, NODES_INTERVAL, ALLOC_INTERVAL, DEV_MODE, MAX_TAG_LEN,
+    CONTROL_PLANE, JUPYTERHUB_NAMESPACE,
+    PODS_INTERVAL, NODES_INTERVAL, DEV_MODE, MAX_TAG_LEN,
 )
 from .models import ClusterState, LabSummary, NodeInfo, PodInfo
 
@@ -70,22 +69,6 @@ def _age_string(start_time_str: Optional[str]) -> str:
         return "?"
 
 
-def _cpu_to_cores(value) -> int:
-    """Convert CPU value from allocations CSV (may be float millicore string) to int cores."""
-    try:
-        return math.floor(float(value))
-    except (TypeError, ValueError):
-        return 0
-
-
-def _bytes_to_gb(value) -> int:
-    """Convert bytes (float) to GB integer."""
-    try:
-        return math.floor(float(value) / 1_073_741_824)
-    except (TypeError, ValueError):
-        return 0
-
-
 # ---------------------------------------------------------------------------
 # Async kubectl helpers
 # ---------------------------------------------------------------------------
@@ -94,17 +77,6 @@ async def _run_kubectl(*args) -> tuple[str, str, int]:
     """Run kubectl with given args, return (stdout, stderr, returncode)."""
     proc = await asyncio.create_subprocess_exec(
         "kubectl", *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    return stdout.decode(errors="replace"), stderr.decode(errors="replace"), proc.returncode
-
-
-async def _run_allocations() -> tuple[str, str, int]:
-    """Run kubectl-view-allocations, return (stdout, stderr, returncode)."""
-    proc = await asyncio.create_subprocess_exec(
-        KUBECTL_VIEW_ALLOCATIONS, "-o", "csv",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -204,7 +176,7 @@ def _parse_memory_request_gb(raw: str) -> int:
         elif raw.endswith("M"):
             return math.floor(int(raw[:-1]) / 1024)
         else:
-            return _bytes_to_gb(raw)
+            return math.floor(float(raw) / 1_073_741_824)
     except (ValueError, AttributeError):
         return 0
 
@@ -256,17 +228,23 @@ def _parse_nodes(json_str: str) -> tuple[dict, list]:
 
             schedulable = not spec.get("unschedulable", False)
 
+            # Parse allocatable resources directly from node status
+            alloc = status_obj.get("allocatable", {})
+            cpu_allocatable = _parse_cpu_request(alloc.get("cpu", "0"))
+            ram_allocatable_gb = _parse_memory_request_gb(alloc.get("memory", "0"))
+            gpu_allocatable = _parse_gpu_request(alloc.get("nvidia.com/gpu", "0"))
+
             node_lab_map[name] = lab
             partial_nodes.append(NodeInfo(
                 name=name,
                 lab=lab,
                 status=ready_status,
                 schedulable=schedulable,
-                cpu_allocatable=0,
-                cpu_requested=0,
-                ram_allocatable_gb=0,
+                cpu_allocatable=cpu_allocatable,
+                cpu_requested=0,  # filled by _merge_nodes_and_pods
+                ram_allocatable_gb=ram_allocatable_gb,
                 ram_requested_gb=0,
-                gpu_allocatable=0,
+                gpu_allocatable=gpu_allocatable,
                 gpu_requested=0,
                 is_control_plane=is_ctrl,
             ))
@@ -276,94 +254,45 @@ def _parse_nodes(json_str: str) -> tuple[dict, list]:
     return node_lab_map, partial_nodes
 
 
-def _parse_allocations(csv_str: str, node_lab_map: dict, partial_nodes: list) -> tuple[list, dict]:
+def _merge_nodes_and_pods(partial_nodes: list, pods: list) -> tuple[list, dict]:
     """
-    Parse kubectl-view-allocations CSV output.
-    Returns (nodes: [NodeInfo], labs: {lab: LabSummary}).
+    Compute final NodeInfo (with requested resources) and LabSummary by
+    aggregating pod resource requests per node. No external tools needed.
+
+    partial_nodes must already carry allocatable values (populated by _parse_nodes).
+    pods is the current pod list from _parse_pods.
     """
-    # Build a lookup of partial node info
-    node_lookup = {n.name: n for n in partial_nodes}
-
-    # Parse CSV manually (avoid pandas dependency in TUI)
-    lines = csv_str.strip().splitlines()
-    if len(lines) < 2:
-        return list(node_lookup.values()), {}
-
-    # CSV columns: node,resource,Kind,Requested,%Requested,Limit,%Limit,Allocatable,Free
-    # (actual columns from kubectl-view-allocations may vary — use header to find indices)
-    header = [h.strip() for h in lines[0].split(",")]
-    try:
-        idx_node = header.index("node")
-        idx_resource = header.index("resource")
-        idx_kind = header.index("Kind")
-        idx_requested = header.index("Requested")
-        idx_allocatable = header.index("Allocatable")
-    except ValueError:
-        return list(node_lookup.values()), {}
-
-    # Aggregate per-node
-    node_cpu_alloc: dict = {}
+    # Sum pod resource requests by node name
     node_cpu_req: dict = {}
-    node_mem_alloc: dict = {}
-    node_mem_req: dict = {}
-    node_gpu_alloc: dict = {}
+    node_ram_req: dict = {}
     node_gpu_req: dict = {}
-
-    for line in lines[1:]:
-        parts = line.split(",")
-        if len(parts) <= max(idx_node, idx_resource, idx_kind, idx_requested, idx_allocatable):
+    for pod in pods:
+        n = pod.node
+        if not n:
             continue
-        try:
-            node = parts[idx_node].strip()
-            resource = parts[idx_resource].strip()
-            kind = parts[idx_kind].strip()
-            requested_raw = parts[idx_requested].strip()
-            allocatable_raw = parts[idx_allocatable].strip()
+        node_cpu_req[n] = node_cpu_req.get(n, 0) + pod.cpu_requested
+        node_ram_req[n] = node_ram_req.get(n, 0) + pod.ram_requested_gb
+        node_gpu_req[n] = node_gpu_req.get(n, 0) + pod.gpu_requested
 
-            if kind != "node":
-                continue
+    # Merge with allocatable to produce final NodeInfo list
+    nodes = [
+        NodeInfo(
+            name=pn.name,
+            lab=pn.lab,
+            status=pn.status,
+            schedulable=pn.schedulable,
+            cpu_allocatable=pn.cpu_allocatable,
+            cpu_requested=node_cpu_req.get(pn.name, 0),
+            ram_allocatable_gb=pn.ram_allocatable_gb,
+            ram_requested_gb=node_ram_req.get(pn.name, 0),
+            gpu_allocatable=pn.gpu_allocatable,
+            gpu_requested=node_gpu_req.get(pn.name, 0),
+            is_control_plane=pn.is_control_plane,
+        )
+        for pn in partial_nodes
+    ]
 
-            if resource == "cpu":
-                node_cpu_alloc[node] = node_cpu_alloc.get(node, 0) + _cpu_to_cores(allocatable_raw)
-                node_cpu_req[node] = node_cpu_req.get(node, 0) + _cpu_to_cores(requested_raw)
-            elif resource == "memory":
-                node_mem_alloc[node] = node_mem_alloc.get(node, 0) + _bytes_to_gb(allocatable_raw)
-                node_mem_req[node] = node_mem_req.get(node, 0) + _bytes_to_gb(requested_raw)
-            elif resource == "nvidia.com/gpu":
-                node_gpu_alloc[node] = node_gpu_alloc.get(node, 0) + _cpu_to_cores(allocatable_raw)
-                node_gpu_req[node] = node_gpu_req.get(node, 0) + _cpu_to_cores(requested_raw)
-        except Exception:
-            continue
-
-    # Build final NodeInfo list with allocation data
-    all_node_names = set(node_lookup.keys()) | set(node_cpu_alloc.keys())
-    nodes = []
-    for name in all_node_names:
-        partial = node_lookup.get(name)
-        if partial is None:
-            lab = node_lab_map.get(name, "")
-            partial = NodeInfo(
-                name=name, lab=lab, status="Unknown", schedulable=True,
-                cpu_allocatable=0, cpu_requested=0,
-                ram_allocatable_gb=0, ram_requested_gb=0,
-                gpu_allocatable=0, gpu_requested=0,
-                is_control_plane=(name == CONTROL_PLANE),
-            )
-        nodes.append(NodeInfo(
-            name=partial.name,
-            lab=partial.lab,
-            status=partial.status,
-            schedulable=partial.schedulable,
-            cpu_allocatable=node_cpu_alloc.get(name, partial.cpu_allocatable),
-            cpu_requested=node_cpu_req.get(name, partial.cpu_requested),
-            ram_allocatable_gb=node_mem_alloc.get(name, partial.ram_allocatable_gb),
-            ram_requested_gb=node_mem_req.get(name, partial.ram_requested_gb),
-            gpu_allocatable=node_gpu_alloc.get(name, partial.gpu_allocatable),
-            gpu_requested=node_gpu_req.get(name, partial.gpu_requested),
-            is_control_plane=partial.is_control_plane,
-        ))
-
-    # Build LabSummary from node aggregates
+    # Aggregate by lab to build LabSummary
     labs: dict = {}
     for node in nodes:
         if not node.lab or node.is_control_plane:
@@ -424,7 +353,7 @@ def _mock_state() -> ClusterState:
     ]
     return ClusterState(
         labs=labs, pods=pods, nodes=nodes,
-        last_pods_update=now, last_nodes_update=now, last_alloc_update=now,
+        last_pods_update=now, last_nodes_update=now,
     )
 
 
@@ -462,7 +391,6 @@ class DataCollector:
             return
         asyncio.ensure_future(self._poll_pods())
         asyncio.ensure_future(self._poll_nodes())
-        asyncio.ensure_future(self._poll_allocations())
 
     async def _poll_pods(self) -> None:
         while True:
@@ -473,11 +401,6 @@ class DataCollector:
         while True:
             await self._fetch_nodes()
             await asyncio.sleep(NODES_INTERVAL)
-
-    async def _poll_allocations(self) -> None:
-        while True:
-            await self._fetch_allocations()
-            await asyncio.sleep(ALLOC_INTERVAL)
 
     async def _fetch_pods(self) -> None:
         ns_args = ["get", "pods", "-o", "json"]
@@ -492,7 +415,11 @@ class DataCollector:
                 self._state.pods = _parse_pods(stdout, self._namespace, self._node_lab_map)
                 self._state.last_pods_update = datetime.now()
                 self._state.pods_error = None
-                # Update pod_count on labs
+                # Recompute nodes and labs from updated pod requests
+                nodes, labs = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
+                self._state.nodes = nodes
+                self._state.labs = labs
+                # Apply pod counts to labs
                 pod_lab_counts: dict = {}
                 for pod in self._state.pods:
                     pod_lab_counts[pod.lab] = pod_lab_counts.get(pod.lab, 0) + 1
@@ -513,27 +440,18 @@ class DataCollector:
                 self._partial_nodes = partial_nodes
                 self._state.last_nodes_update = datetime.now()
                 self._state.nodes_error = None
-            else:
-                self._state.nodes_error = stderr.strip() or "kubectl error"
-            self._poster.post_message(ClusterStateUpdated(self._state))
-
-    async def _fetch_allocations(self) -> None:
-        stdout, stderr, rc = await _run_allocations()
-        async with self._lock:
-            if rc == 0:
-                nodes, labs = _parse_allocations(stdout, self._node_lab_map, self._partial_nodes)
+                # Recompute nodes and labs from updated allocatable values
+                nodes, labs = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
                 self._state.nodes = nodes
                 self._state.labs = labs
-                self._state.last_alloc_update = datetime.now()
-                self._state.alloc_error = None
-                # Re-count pods per lab after lab refresh
+                # Apply pod counts to labs
                 pod_lab_counts: dict = {}
                 for pod in self._state.pods:
                     pod_lab_counts[pod.lab] = pod_lab_counts.get(pod.lab, 0) + 1
-                for lab_name, lab in labs.items():
+                for lab_name, lab in self._state.labs.items():
                     lab.pod_count = pod_lab_counts.get(lab_name, 0)
             else:
-                self._state.alloc_error = stderr.strip() or "kubectl-view-allocations error"
+                self._state.nodes_error = stderr.strip() or "kubectl error"
             self._poster.post_message(ClusterStateUpdated(self._state))
 
     async def force_refresh(self) -> None:
@@ -541,5 +459,4 @@ class DataCollector:
         await asyncio.gather(
             self._fetch_pods(),
             self._fetch_nodes(),
-            self._fetch_allocations(),
         )

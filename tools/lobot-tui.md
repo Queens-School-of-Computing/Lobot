@@ -24,7 +24,6 @@ Designed for the control plane where a terminal is always available, including d
 
 - Python 3.8+ on the control plane (Ubuntu 24.04 ships Python 3.12)
 - `kubectl` configured with cluster access
-- `/opt/Lobot/kubectl-view-allocations` binary present
 - `python3.12-venv` apt package (not installed by default on Ubuntu 24.04):
 
 ```bash
@@ -140,7 +139,7 @@ python3 -m lobot_tui
 | Actions hint bar | Bottom-2 | Dynamic — all hints clickable; replaced by job status when a job is running |
 | Status bar | Bottom-1 | Live |
 
-The **status bar** shows a green `● Live` indicator when data is fresh. If allocation data is stale by more than 15 seconds (e.g. kubectl-view-allocations is slow or failing) it shows `⚠ Stale` in amber. Errors are shown in red.
+The **status bar** shows a green `● Live` indicator when data is fresh. If pod data is stale by more than 30 seconds it shows `⚠ Stale` in amber. Errors are shown in red.
 
 ---
 
@@ -381,11 +380,12 @@ The TUI polls `kubectl` directly — it does **not** read from `current.json`. T
 
 | Data | Source | Interval |
 |------|--------|----------|
-| Pod list, image tags | `kubectl get pods -n jhub -o json` | 5s |
-| Node status, labels | `kubectl get nodes --show-labels -o json` | 10s |
-| CPU/RAM/GPU allocations | `/opt/Lobot/kubectl-view-allocations -o csv` | 10s |
+| Pod list, image tags, resource requests | `kubectl get pods -n jhub -o json` | 5s |
+| Node status, labels, allocatable CPU/RAM/GPU | `kubectl get nodes -o json` | 10s |
 | Available image tags | DockerHub API (on wizard open) | On demand |
 | Node list (for pickers) | `kubectl get nodes` (on wizard open) | On demand |
+
+Resource utilisation (requested vs allocatable) is computed in-process by aggregating pod resource requests from the pod list against the allocatable values from the node list. No third-party tools required.
 
 All subprocess calls are async — the UI never blocks waiting for `kubectl`.
 

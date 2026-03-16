@@ -49,21 +49,19 @@ class StatusBarWidget(Widget):
         ts_label = self.query_one("#status-timestamps", Label)
 
         # Live / stale / error indicator
-        has_error = bool(state.pods_error or state.nodes_error or state.alloc_error)
+        has_error = bool(state.pods_error or state.nodes_error)
         pods_stale = _is_stale(state.last_pods_update)
-        alloc_stale = _is_stale(state.last_alloc_update)
 
         if has_error:
-            err = state.pods_error or state.nodes_error or state.alloc_error
+            err = state.pods_error or state.nodes_error
             live_label.update(f"[red]✗ {err[:40]}[/]  ")
-        elif pods_stale or alloc_stale:
+        elif pods_stale:
             live_label.update("[yellow]⚠ Stale[/]  ")
         else:
             live_label.update("[green]● Live[/]  ")
 
         pods_ts = _fmt_time(state.last_pods_update)
         nodes_ts = _fmt_time(state.last_nodes_update)
-        alloc_ts = _fmt_time(state.last_alloc_update)
         ts_label.update(
-            f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}  Alloc:{alloc_ts}[/]"
+            f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}[/]"
         )

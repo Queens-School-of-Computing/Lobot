@@ -16,7 +16,6 @@ JUPYTERHUB_URL = f"https://{_HOSTNAME}"
 JUPYTERHUB_API_URL = f"{JUPYTERHUB_URL}/hub/api"
 
 # ── Cluster infrastructure ─────────────────────────────────────────────────────
-KUBECTL_VIEW_ALLOCATIONS = "/opt/Lobot/kubectl-view-allocations"
 TOOLS_DIR = "/opt/Lobot/tools"
 REPO_DIR = "/opt/Lobot"
 ANNOUNCEMENT_YAML = "/opt/Lobot/announcement.yaml"
@@ -33,7 +32,6 @@ JUPYTERHUB_CHART_VERSION = "4.0.0-beta.2"
 # ── Refresh intervals (seconds) ────────────────────────────────────────────────
 PODS_INTERVAL = 5
 NODES_INTERVAL = 10
-ALLOC_INTERVAL = 10
 
 # ── Display ───────────────────────────────────────────────────────────────────
 APP_TITLE = "LOBOT"

@@ -81,10 +81,10 @@ class ClusterSummaryWidget(Widget):
         content = self.query_one("#summary-content", Static)
 
         if not state.labs:
-            if state.alloc_error:
-                content.update(f"[red]Error: {state.alloc_error}[/]")
+            if state.nodes_error:
+                content.update(f"[red]Error: {state.nodes_error}[/]")
             else:
-                content.update("[dim]Waiting for allocation data…[/]")
+                content.update("[dim]Waiting for node data…[/]")
             return
 
         content.update(_render_table(state.labs))

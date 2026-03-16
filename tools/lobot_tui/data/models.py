@@ -88,7 +88,5 @@ class ClusterState:
     nodes: list = field(default_factory=list)       # list[NodeInfo]
     last_pods_update: Optional[datetime] = None
     last_nodes_update: Optional[datetime] = None
-    last_alloc_update: Optional[datetime] = None
     pods_error: Optional[str] = None
     nodes_error: Optional[str] = None
-    alloc_error: Optional[str] = None
