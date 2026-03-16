@@ -13,32 +13,43 @@ HELP_TEXT = """
 | Key | Action |
 |-----|--------|
 | `q` | Quit |
-| `r` | Force refresh all data |
+| `R` | Force refresh all data |
+| `Tab` | Cycle panel focus: Resources → Nodes → Pods |
 | `?` | This help screen |
 | `` ` `` | Command console (history + errors) |
-| `Escape` | Clear filter / close modal |
+| `Escape` | Return focus to pod table (from filter input) |
 
 ## Pod Table
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Navigate rows |
-| `/` | Activate inline filter |
-| `Escape` | Clear filter |
+| `f` | Focus filter input |
+| `Enter` (in filter) | Apply filter, return focus to table |
+| `Escape` (in filter) | Return focus to table (text unchanged) |
 | `l` | View pod logs (kubectl logs -f) |
 | `x` | Exec bash into pod (kubectl exec -it) |
 | `d` / `Enter` | Describe pod (kubectl describe pod) |
 | `X` | Delete pod (confirm required) |
-| `n` | Cycle namespace |
+| `N` | Cycle namespace |
 | Click header | Sort by column (click again to reverse) |
 
 ## Node Table
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Navigate rows |
+| `n` | Toggle node filter — filter pods to selected node; navigate to update |
 | `c` | Cordon node (confirm required) |
 | `u` | Uncordon node (confirm required) |
 | `w` | Drain node (confirm required) |
 | Click header | Sort by column (click again to reverse) |
+
+## Resource Table
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate rows |
+| `r` | Toggle resource filter — filter pods to selected resource group; navigate to update |
+
+> Stats show **jupyter-\\* pod requests only**. Full node accounting is in the Node Table.
 
 ## Tool Actions
 | Key | Action |
@@ -68,6 +79,7 @@ HELP_TEXT = """
 |-----|--------|
 | `Ctrl+S` | Save YAML and push to GitHub |
 | `Escape` | Back (without saving) |
+
 """
 
 
