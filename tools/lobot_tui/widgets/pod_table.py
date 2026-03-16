@@ -1,18 +1,19 @@
-"""PodTable: DataTable widget showing jhub pods."""
+"""PodTable: DataTable widget showing pods filtered by namespace."""
 
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import DataTable, Static
 from textual.reactive import reactive
 
+from ..config import JUPYTERHUB_NAMESPACE
 from ..data.collector import ClusterStateUpdated
 from ..data.models import PodInfo
 
 # Fixed-width columns (excluding USERNAME which expands)
 _FIXED_COLS = [
-    ("LAB",       14),
-    ("NODE",      24),
-    ("IMAGE TAG", 34),
+    ("RESOURCE",  20),
+    ("NODE",      23),
+    ("IMAGE TAG", 66),
     ("CPU",        5),
     ("RAM",        6),
     ("GPU",        4),
@@ -38,10 +39,27 @@ def _left_trunc(text: str, width: int) -> str:
     return "…" + text[-(width - 1):]
 
 
+def _fmt_cpu(v: float) -> str:
+    if v == 0:
+        return "0"
+    if v < 1:
+        s = f"{v:.2f}".rstrip("0").rstrip(".")
+        return s
+    return str(int(round(v)))
+
+
+def _fmt_ram(v: float) -> str:
+    if v == 0:
+        return "0G"
+    if v < 1:
+        return f"{round(v * 1024)}M"
+    return f"{int(round(v))}G"
+
+
 # Sort key functions indexed by column position (0=POD, then _FIXED_COLS order)
 _SORT_KEYS = [
     lambda p: p.name,
-    lambda p: p.lab or "",
+    lambda p: p.resource or "",
     lambda p: p.node or "",
     lambda p: p.image_tag,
     lambda p: p.cpu_requested,
@@ -56,6 +74,9 @@ class PodTableWidget(Widget):
     """Pod list with inline filter and column sort."""
 
     filter_text: reactive[str] = reactive("")
+    namespace: reactive[str] = reactive(JUPYTERHUB_NAMESPACE)
+    node_filter: reactive[str] = reactive("")       # node name to filter by, "" = all
+    resource_filter: reactive[str] = reactive("")   # resource name to filter by, "" = all
     _all_pods: list = []
     _current_pods: list = []
     _sort_col: int = -1   # -1 = no sort
@@ -89,6 +110,15 @@ class PodTableWidget(Widget):
     def watch_filter_text(self, value: str) -> None:
         self._apply_filter()
 
+    def watch_namespace(self, value: str) -> None:
+        self._apply_filter()
+
+    def watch_node_filter(self, value: str) -> None:
+        self._apply_filter()
+
+    def watch_resource_filter(self, value: str) -> None:
+        self._apply_filter()
+
     def on_data_table_header_selected(self, event: DataTable.HeaderSelected) -> None:
         """Toggle sort when a column header is clicked."""
         idx = event.column_index
@@ -102,15 +132,33 @@ class PodTableWidget(Widget):
         self._apply_filter()
 
     def _apply_filter(self) -> None:
+        # Step 1: filter by namespace
+        ns = self.namespace
+        if ns and ns != "all":
+            ns_pods = [p for p in self._all_pods if p.namespace == ns]
+        else:
+            ns_pods = self._all_pods
+
+        # Step 2: filter by selected node
+        node_f = self.node_filter
+        if node_f:
+            ns_pods = [p for p in ns_pods if p.node == node_f]
+
+        # Step 3: filter by selected resource
+        resource_f = self.resource_filter
+        if resource_f:
+            ns_pods = [p for p in ns_pods if p.resource == resource_f]
+
+        # Step 4: apply text filter
         f = self.filter_text.strip().lower()
         if f:
             terms = [t.strip() for t in f.split("|") if t.strip()]
             def _matches(p: "PodInfo") -> bool:
-                haystack = f"{p.name} {p.node} {p.lab} {p.image_tag} {p.phase}".lower()
+                haystack = f"{p.name} {p.node} {p.resource} {p.image_tag} {p.phase}".lower()
                 return any(t in haystack for t in terms)
-            self._current_pods = [p for p in self._all_pods if _matches(p)]
+            self._current_pods = [p for p in ns_pods if _matches(p)]
         else:
-            self._current_pods = list(self._all_pods)
+            self._current_pods = list(ns_pods)
 
         if self._sort_col >= 0:
             key_fn = _SORT_KEYS[self._sort_col]
@@ -122,6 +170,9 @@ class PodTableWidget(Widget):
                 pass
 
         self._rebuild_table()
+        total = len(ns_pods)
+        shown = len(self._current_pods)
+        self.call_after_refresh(self._update_pod_count, total, shown)
 
     def _rebuild_table(self) -> None:
         table = self.query_one(DataTable)
@@ -135,11 +186,11 @@ class PodTableWidget(Widget):
             phase_display = PHASE_MARKUP.get(pod.phase, pod.phase)
             table.add_row(
                 pod.name,
-                pod.lab or "–",
+                pod.resource or "–",
                 pod.node or "–",
                 pod.image_tag,
-                str(pod.cpu_requested),
-                f"{pod.ram_requested_gb}G",
+                _fmt_cpu(pod.cpu_requested),
+                _fmt_ram(pod.ram_requested_gb),
                 str(pod.gpu_requested),
                 pod.age,
                 phase_display,
@@ -153,10 +204,6 @@ class PodTableWidget(Widget):
             except Exception:
                 pass
 
-        total = len(self._all_pods)
-        shown = len(self._current_pods)
-        self.call_after_refresh(self._update_pod_count, total, shown)
-
     def _update_pod_count(self, total: int, shown: int) -> None:
         try:
             count_label = self.screen.query_one("#pod-count-outer", Static)
@@ -169,7 +216,7 @@ class PodTableWidget(Widget):
 
     @property
     def selected_pod(self) -> "PodInfo | None":
-        """Return the currently highlighted PodInfo, or None."""
+        """Return the currently highlighted PodInfo, or None if table is empty."""
         table = self.query_one(DataTable)
         if not self._current_pods:
             return None

@@ -52,13 +52,15 @@ class StatusBarWidget(Widget):
         has_error = bool(state.pods_error or state.nodes_error)
         pods_stale = _is_stale(state.last_pods_update)
 
+        source_tag = "[cyan]svc[/]" if event.source == "service" else "[dim]kubectl[/]"
+
         if has_error:
             err = state.pods_error or state.nodes_error
             live_label.update(f"[red]✗ {err[:40]}[/]  ")
         elif pods_stale:
-            live_label.update("[yellow]⚠ Stale[/]  ")
+            live_label.update(f"[yellow]⚠ Stale[/] {source_tag}  ")
         else:
-            live_label.update("[green]● Live[/]  ")
+            live_label.update(f"[green]● Live[/] {source_tag}  ")
 
         pods_ts = _fmt_time(state.last_pods_update)
         nodes_ts = _fmt_time(state.last_nodes_update)

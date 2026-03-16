@@ -350,27 +350,51 @@ curl -O https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcl
 python3 generate-resource-page.py --lab &lt;labname&gt;</code></pre>
 <p>This writes <code>&lt;labname&gt;.html</code> in the current directory. Copy it to <code>assets/html/</code> in the repo, commit, and push. The <code>generate-runtime-config</code> workflow will pick up the new limits automatically on the next run.</p>
 <blockquote><p>The image tag is read from <code>/opt/Lobot/config-env.yaml</code> if present, falling back to <code>config.yaml.bk</code> fetched directly from GitHub. No manual update should be needed.</p></blockquote>
-<h3>Resource collector (cluster status page)</h3>
-<p>The resource collector publishes live CPU/GPU/memory availability to <code>/allocationstatus</code> (served by nginx). It requires the <code>kubectl-view-allocations</code> binary.</p>
-<pre><code># Install Python dependency
-pip3 install pandas
+<h3>lobot-collector (cluster status service)</h3>
+<p>The lobot-collector service polls kubectl once on behalf of all consumers:</p>
+<ul>
+<li>Writes live CPU/GPU/memory availability to <code>/allocationstatus/current.json</code> (served by nginx)</li>
+<li>Serves a live HTTP API on <code>127.0.0.1:9095</code> consumed by lobot-tui</li>
+<li>Sends email notifications on startup, shutdown, and persistent errors</li>
+</ul>
+<p>No third-party binaries required (<code>kubectl-view-allocations</code> and <code>pandas</code> are not used).</p>
+<pre><code># Create a dedicated venv for the service
+python3 -m venv /opt/Lobot/tools/lobot_collector/.venv
+/opt/Lobot/tools/lobot_collector/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_collector/requirements-collector.txt
 
-# Download kubectl-view-allocations
-# Find latest release: https://github.com/davidB/kubectl-view-allocations/releases
-wget https://github.com/davidB/kubectl-view-allocations/releases/latest/download/kubectl-view-allocations_linux_amd64 \
-  -O /opt/Lobot/kubectl-view-allocations
-chmod +x /opt/Lobot/kubectl-view-allocations
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-collector.sh
 
 # Install and start as a systemd service
-sudo cp /opt/Lobot/tools/resource-collector.service /etc/systemd/system/
+sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now resource-collector
+sudo systemctl enable --now lobot-collector
 
 # Verify it's running
-sudo systemctl status resource-collector
+sudo systemctl status lobot-collector
 
 # Follow logs
-sudo journalctl -u resource-collector -f</code></pre>
+sudo journalctl -u lobot-collector -f
+
+# Verify the HTTP API
+curl -s http://localhost:9095/api/state | python3 -m json.tool</code></pre>
+<h3>lobot-tui (cluster management terminal)</h3>
+<p>The terminal dashboard for managing the cluster. Requires the lobot-collector service to be running first (it will fall back to direct kubectl polling if not, but service mode is preferred).</p>
+<pre><code># Install Python dependencies
+python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
+/opt/Lobot/tools/lobot_tui/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_tui/requirements-tui.txt
+
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-tui.sh
+
+# Optional: symlink for quick access
+ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
+
+# Launch
+bash /opt/Lobot/tools/lobot-tui.sh</code></pre>
+<p>See <a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/lobot-tui.md" target="_blank" rel="noopener">lobot-tui.md</a> for full documentation.</p>
 <hr />
 <h2>Step 20 — nginx</h2>
 <pre><code>sudo apt install nginx</code></pre>

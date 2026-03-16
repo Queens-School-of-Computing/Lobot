@@ -28,8 +28,12 @@ Screen {
     border: solid #30363d;
     border-title-color: #58a6ff;
     border-title-align: left;
-    padding: 0 1;
-    overflow-y: auto;
+    padding: 0;
+}
+
+#summary-panel:focus-within {
+    border: solid #e3b341;
+    border-title-color: #e3b341;
 }
 
 #nodes-panel {
@@ -38,6 +42,11 @@ Screen {
     border-title-color: #58a6ff;
     border-title-align: left;
     padding: 0;
+}
+
+#nodes-panel:focus-within {
+    border: solid #e3b341;
+    border-title-color: #e3b341;
 }
 
 
@@ -49,6 +58,11 @@ Screen {
     border-title-align: left;
     padding: 0;
     min-height: 8;
+}
+
+#pods-panel:focus-within {
+    border: solid #e3b341;
+    border-title-color: #e3b341;
 }
 
 #pod-filter-bar {
@@ -150,16 +164,6 @@ DataTable > .datatable--cursor {
 
 DataTable > .datatable--hover {
     background: #2d333b;
-}
-
-/* ── Cluster summary widget ── */
-.lab-name {
-    color: #58a6ff;
-    text-style: bold;
-}
-
-.lab-metric-label {
-    color: #8b949e;
 }
 
 .bar-full {

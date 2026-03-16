@@ -2,18 +2,21 @@
 
 import asyncio
 import json
-import math
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
 
 from textual.message import Message
 from textual.widget import Widget
 
 from ..config import (
     CONTROL_PLANE, JUPYTERHUB_NAMESPACE,
-    PODS_INTERVAL, NODES_INTERVAL, DEV_MODE, MAX_TAG_LEN,
+    PODS_INTERVAL, NODES_INTERVAL, DEV_MODE,
+    SERVICE_HOST, SERVICE_PORT,
 )
-from .models import ClusterState, LabSummary, NodeInfo, PodInfo
+from .models import ClusterState, ResourceSummary, NodeInfo, PodInfo
+from .parsers import (
+    _run_kubectl,
+    _parse_pods, _parse_nodes, _merge_nodes_and_pods,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -21,299 +24,10 @@ from .models import ClusterState, LabSummary, NodeInfo, PodInfo
 # ---------------------------------------------------------------------------
 
 class ClusterStateUpdated(Message):
-    def __init__(self, state: ClusterState) -> None:
+    def __init__(self, state: ClusterState, source: str = "kubectl") -> None:
         super().__init__()
         self.state = state
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _pod_username(pod_name: str) -> str:
-    """Strip jupyter- prefix and unescape -2d→- (mirrors resource_collector.py:116-117)."""
-    name = pod_name.removeprefix("jupyter-")
-    return name.replace("-2d", "-")
-
-
-def _parse_image_tag(image: str) -> str:
-    """Return the tag portion of an image string, truncated for display."""
-    if ":" in image:
-        tag = image.split(":")[-1]
-    else:
-        tag = "latest"
-    if len(tag) > MAX_TAG_LEN:
-        return "…" + tag[-(MAX_TAG_LEN - 1):]
-    return tag
-
-
-def _age_string(start_time_str: Optional[str]) -> str:
-    """Convert ISO8601 start time to human-readable age."""
-    if not start_time_str:
-        return "?"
-    try:
-        start = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
-        delta = datetime.now(timezone.utc) - start
-        total_seconds = int(delta.total_seconds())
-        if total_seconds < 60:
-            return f"{total_seconds}s"
-        elif total_seconds < 3600:
-            return f"{total_seconds // 60}m"
-        elif total_seconds < 86400:
-            return f"{total_seconds // 3600}h{(total_seconds % 3600) // 60}m"
-        else:
-            days = total_seconds // 86400
-            hours = (total_seconds % 86400) // 3600
-            return f"{days}d{hours}h"
-    except Exception:
-        return "?"
-
-
-# ---------------------------------------------------------------------------
-# Async kubectl helpers
-# ---------------------------------------------------------------------------
-
-async def _run_kubectl(*args) -> tuple[str, str, int]:
-    """Run kubectl with given args, return (stdout, stderr, returncode)."""
-    proc = await asyncio.create_subprocess_exec(
-        "kubectl", *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    return stdout.decode(errors="replace"), stderr.decode(errors="replace"), proc.returncode
-
-
-# ---------------------------------------------------------------------------
-# Parsers
-# ---------------------------------------------------------------------------
-
-def _parse_pods(json_str: str, namespace: str, node_lab_map: dict) -> list:
-    """Parse kubectl get pods -o json output into PodInfo list."""
-    pods = []
-    try:
-        data = json.loads(json_str)
-        items = data.get("items", [])
-    except json.JSONDecodeError:
-        return pods
-
-    for item in items:
-        try:
-            meta = item.get("metadata", {})
-            spec = item.get("spec", {})
-            status = item.get("status", {})
-
-            name = meta.get("name", "")
-            ns = meta.get("namespace", namespace)
-            node = spec.get("nodeName", "")
-            phase = status.get("phase", "Unknown")
-            start_time = status.get("startTime")
-
-            # Image from first container
-            containers = spec.get("containers", [{}])
-            image = containers[0].get("image", "") if containers else ""
-            image_tag = _parse_image_tag(image)
-
-            # Resources from first container requests
-            resources = containers[0].get("resources", {}) if containers else {}
-            requests = resources.get("requests", {})
-            cpu_raw = requests.get("cpu", "0")
-            mem_raw = requests.get("memory", "0")
-            gpu_raw = requests.get("nvidia.com/gpu", "0")
-
-            cpu = _parse_cpu_request(cpu_raw)
-            ram_gb = _parse_memory_request_gb(mem_raw)
-            gpu = _parse_gpu_request(gpu_raw)
-
-            username = _pod_username(name)
-            lab = node_lab_map.get(node, "")
-            age = _age_string(start_time)
-
-            pods.append(PodInfo(
-                name=name,
-                username=username,
-                namespace=ns,
-                node=node,
-                lab=lab,
-                image=image,
-                image_tag=image_tag,
-                cpu_requested=cpu,
-                ram_requested_gb=ram_gb,
-                gpu_requested=gpu,
-                age=age,
-                phase=phase,
-                start_time=start_time,
-            ))
-        except Exception:
-            continue
-
-    return sorted(pods, key=lambda p: p.username.lower())
-
-
-def _parse_cpu_request(raw: str) -> int:
-    """Parse k8s CPU request string (e.g. '4', '500m') to integer cores."""
-    try:
-        if raw.endswith("m"):
-            return math.floor(int(raw[:-1]) / 1000)
-        return math.floor(float(raw))
-    except (ValueError, AttributeError):
-        return 0
-
-
-def _parse_memory_request_gb(raw: str) -> int:
-    """Parse k8s memory request string (e.g. '128Gi', '512Mi') to GB."""
-    try:
-        if raw.endswith("Ki"):
-            return math.floor(int(raw[:-2]) / 1_048_576)
-        elif raw.endswith("Mi"):
-            return math.floor(int(raw[:-2]) / 1024)
-        elif raw.endswith("Gi"):
-            return int(raw[:-2])
-        elif raw.endswith("Ti"):
-            return int(raw[:-2]) * 1024
-        elif raw.endswith("G"):
-            return int(raw[:-1])
-        elif raw.endswith("M"):
-            return math.floor(int(raw[:-1]) / 1024)
-        else:
-            return math.floor(float(raw) / 1_073_741_824)
-    except (ValueError, AttributeError):
-        return 0
-
-
-def _parse_gpu_request(raw: str) -> int:
-    try:
-        return int(raw)
-    except (ValueError, TypeError):
-        return 0
-
-
-def _parse_nodes(json_str: str) -> tuple[dict, list]:
-    """
-    Parse kubectl get nodes -o json.
-    Returns (node_lab_map: {node_name: lab}, partial_nodes: [NodeInfo with alloc fields=0]).
-    """
-    node_lab_map = {}
-    partial_nodes = []
-    try:
-        data = json.loads(json_str)
-        items = data.get("items", [])
-    except json.JSONDecodeError:
-        return node_lab_map, partial_nodes
-
-    for item in items:
-        try:
-            meta = item.get("metadata", {})
-            spec = item.get("spec", {})
-            status_obj = item.get("status", {})
-
-            name = meta.get("name", "")
-            labels = meta.get("labels", {})
-            lab = labels.get("lab", "")
-
-            # Determine if control plane
-            is_ctrl = (
-                name == CONTROL_PLANE
-                or "node-role.kubernetes.io/control-plane" in labels
-                or "node-role.kubernetes.io/master" in labels
-            )
-
-            # Node ready status
-            conditions = status_obj.get("conditions", [])
-            ready_status = "Unknown"
-            for cond in conditions:
-                if cond.get("type") == "Ready":
-                    ready_status = "Ready" if cond.get("status") == "True" else "NotReady"
-                    break
-
-            schedulable = not spec.get("unschedulable", False)
-
-            # Parse allocatable resources directly from node status
-            alloc = status_obj.get("allocatable", {})
-            cpu_allocatable = _parse_cpu_request(alloc.get("cpu", "0"))
-            ram_allocatable_gb = _parse_memory_request_gb(alloc.get("memory", "0"))
-            gpu_allocatable = _parse_gpu_request(alloc.get("nvidia.com/gpu", "0"))
-
-            node_lab_map[name] = lab
-            partial_nodes.append(NodeInfo(
-                name=name,
-                lab=lab,
-                status=ready_status,
-                schedulable=schedulable,
-                cpu_allocatable=cpu_allocatable,
-                cpu_requested=0,  # filled by _merge_nodes_and_pods
-                ram_allocatable_gb=ram_allocatable_gb,
-                ram_requested_gb=0,
-                gpu_allocatable=gpu_allocatable,
-                gpu_requested=0,
-                is_control_plane=is_ctrl,
-            ))
-        except Exception:
-            continue
-
-    return node_lab_map, partial_nodes
-
-
-def _merge_nodes_and_pods(partial_nodes: list, pods: list) -> tuple[list, dict]:
-    """
-    Compute final NodeInfo (with requested resources) and LabSummary by
-    aggregating pod resource requests per node. No external tools needed.
-
-    partial_nodes must already carry allocatable values (populated by _parse_nodes).
-    pods is the current pod list from _parse_pods.
-    """
-    # Sum pod resource requests by node name
-    node_cpu_req: dict = {}
-    node_ram_req: dict = {}
-    node_gpu_req: dict = {}
-    for pod in pods:
-        n = pod.node
-        if not n:
-            continue
-        node_cpu_req[n] = node_cpu_req.get(n, 0) + pod.cpu_requested
-        node_ram_req[n] = node_ram_req.get(n, 0) + pod.ram_requested_gb
-        node_gpu_req[n] = node_gpu_req.get(n, 0) + pod.gpu_requested
-
-    # Merge with allocatable to produce final NodeInfo list
-    nodes = [
-        NodeInfo(
-            name=pn.name,
-            lab=pn.lab,
-            status=pn.status,
-            schedulable=pn.schedulable,
-            cpu_allocatable=pn.cpu_allocatable,
-            cpu_requested=node_cpu_req.get(pn.name, 0),
-            ram_allocatable_gb=pn.ram_allocatable_gb,
-            ram_requested_gb=node_ram_req.get(pn.name, 0),
-            gpu_allocatable=pn.gpu_allocatable,
-            gpu_requested=node_gpu_req.get(pn.name, 0),
-            is_control_plane=pn.is_control_plane,
-        )
-        for pn in partial_nodes
-    ]
-
-    # Aggregate by lab to build LabSummary
-    labs: dict = {}
-    for node in nodes:
-        if not node.lab or node.is_control_plane:
-            continue
-        lab_name = node.lab
-        if lab_name not in labs:
-            labs[lab_name] = LabSummary(
-                name=lab_name,
-                cpu_free=0, cpu_total=0,
-                ram_free_gb=0, ram_total_gb=0,
-                gpu_free=0, gpu_total=0,
-            )
-        s = labs[lab_name]
-        s.cpu_total += node.cpu_allocatable
-        s.cpu_free += node.cpu_free
-        s.ram_total_gb += node.ram_allocatable_gb
-        s.ram_free_gb += node.ram_free_gb
-        s.gpu_total += node.gpu_allocatable
-        s.gpu_free += node.gpu_free
-
-    return nodes, labs
+        self.source = source  # "service" or "kubectl"
 
 
 # ---------------------------------------------------------------------------
@@ -321,14 +35,13 @@ def _merge_nodes_and_pods(partial_nodes: list, pods: list) -> tuple[list, dict]:
 # ---------------------------------------------------------------------------
 
 def _mock_state() -> ClusterState:
-    from .models import LabSummary, PodInfo, NodeInfo, ClusterState
     now = datetime.now()
-    labs = {
-        "lobot_a40": LabSummary("lobot_a40", 191, 256, 1694, 2014, 5, 8, pod_count=3),
-        "lobot_a5000": LabSummary("lobot_a5000", 153, 256, 368, 1008, 4, 8, pod_count=3),
-        "miblab": LabSummary("miblab", 104, 192, 495, 1007, 2, 6, pod_count=1),
-        "gandslab": LabSummary("gandslab", 68, 128, 27, 251, 2, 2, pod_count=3),
-        "riselab": LabSummary("riselab", 183, 256, 688, 1008, 5, 7, pod_count=5),
+    resources = {
+        "lobot_a40": ResourceSummary("lobot_a40", 191, 256, 1694, 2014, 5, 8, pod_count=3),
+        "lobot_a5000": ResourceSummary("lobot_a5000", 153, 256, 368, 1008, 4, 8, pod_count=3),
+        "miblab": ResourceSummary("miblab", 104, 192, 495, 1007, 2, 6, pod_count=1),
+        "gandslab": ResourceSummary("gandslab", 68, 128, 27, 251, 2, 2, pod_count=3),
+        "riselab": ResourceSummary("riselab", 183, 256, 688, 1008, 5, 7, pod_count=5),
     }
     pods = [
         PodInfo("jupyter-ruslanamruddin", "ruslanamruddin", "jhub", "newcluster-gpu1", "lobot_a40",
@@ -352,13 +65,13 @@ def _mock_state() -> ClusterState:
         NodeInfo(CONTROL_PLANE, "", "Ready", True, 16, 2, 32, 4, 0, 0, is_control_plane=True),
     ]
     return ClusterState(
-        labs=labs, pods=pods, nodes=nodes,
+        resources=resources, pods=pods, nodes=nodes,
         last_pods_update=now, last_nodes_update=now,
     )
 
 
 # ---------------------------------------------------------------------------
-# DataCollector
+# DataCollector — direct kubectl polling (used when service is unavailable)
 # ---------------------------------------------------------------------------
 
 class DataCollector:
@@ -370,7 +83,7 @@ class DataCollector:
     def __init__(self, poster: Widget) -> None:
         self._poster = poster
         self._state = ClusterState()
-        self._node_lab_map: dict = {}
+        self._node_resource_map: dict = {}
         self._partial_nodes: list = []
         self._namespace = JUPYTERHUB_NAMESPACE
         self._lock = asyncio.Lock()
@@ -403,7 +116,6 @@ class DataCollector:
             await asyncio.sleep(NODES_INTERVAL)
 
     async def _fetch_pods(self) -> None:
-        ns_args = ["get", "pods", "-o", "json"]
         if self._namespace == "all":
             ns_args = ["get", "pods", "--all-namespaces", "-o", "json"]
         else:
@@ -412,19 +124,18 @@ class DataCollector:
         stdout, stderr, rc = await _run_kubectl(*ns_args)
         async with self._lock:
             if rc == 0:
-                self._state.pods = _parse_pods(stdout, self._namespace, self._node_lab_map)
+                self._state.pods = _parse_pods(stdout, self._namespace, self._node_resource_map)
                 self._state.last_pods_update = datetime.now()
                 self._state.pods_error = None
-                # Recompute nodes and labs from updated pod requests
-                nodes, labs = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
+                nodes, resources = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
                 self._state.nodes = nodes
-                self._state.labs = labs
-                # Apply pod counts to labs
-                pod_lab_counts: dict = {}
+                self._state.resources = resources
+                pod_resource_counts: dict = {}
                 for pod in self._state.pods:
-                    pod_lab_counts[pod.lab] = pod_lab_counts.get(pod.lab, 0) + 1
-                for lab_name, lab in self._state.labs.items():
-                    lab.pod_count = pod_lab_counts.get(lab_name, 0)
+                    if pod.name.startswith("jupyter-"):
+                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                for resource_name, resource in self._state.resources.items():
+                    resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:
                 self._state.pods_error = stderr.strip() or "kubectl error"
             self._poster.post_message(ClusterStateUpdated(self._state))
@@ -435,21 +146,20 @@ class DataCollector:
         )
         async with self._lock:
             if rc == 0:
-                node_lab_map, partial_nodes = _parse_nodes(stdout)
-                self._node_lab_map = node_lab_map
+                node_resource_map, partial_nodes = _parse_nodes(stdout)
+                self._node_resource_map = node_resource_map
                 self._partial_nodes = partial_nodes
                 self._state.last_nodes_update = datetime.now()
                 self._state.nodes_error = None
-                # Recompute nodes and labs from updated allocatable values
-                nodes, labs = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
+                nodes, resources = _merge_nodes_and_pods(self._partial_nodes, self._state.pods)
                 self._state.nodes = nodes
-                self._state.labs = labs
-                # Apply pod counts to labs
-                pod_lab_counts: dict = {}
+                self._state.resources = resources
+                pod_resource_counts: dict = {}
                 for pod in self._state.pods:
-                    pod_lab_counts[pod.lab] = pod_lab_counts.get(pod.lab, 0) + 1
-                for lab_name, lab in self._state.labs.items():
-                    lab.pod_count = pod_lab_counts.get(lab_name, 0)
+                    if pod.name.startswith("jupyter-"):
+                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                for resource_name, resource in self._state.resources.items():
+                    resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:
                 self._state.nodes_error = stderr.strip() or "kubectl error"
             self._poster.post_message(ClusterStateUpdated(self._state))
@@ -460,3 +170,82 @@ class DataCollector:
             self._fetch_pods(),
             self._fetch_nodes(),
         )
+
+
+# ---------------------------------------------------------------------------
+# ServiceCollector — polls lobot-collector /api/state on the same interval
+# ---------------------------------------------------------------------------
+
+class ServiceCollector:
+    """
+    Polls the lobot-collector HTTP service for ClusterState every PODS_INTERVAL
+    seconds.  Drop-in replacement for DataCollector — same start() interface.
+    Using periodic HTTP polling (rather than SSE) avoids chunked-encoding
+    complexity and is equally reliable for a 5-second update cycle.
+
+    The service always returns all-namespace pod data; namespace filtering is
+    done client-side in PodTableWidget, not here.
+    """
+
+    def __init__(self, poster: Widget) -> None:
+        self._poster = poster
+        self._namespace = JUPYTERHUB_NAMESPACE
+
+    @property
+    def namespace(self) -> str:
+        return self._namespace
+
+    @namespace.setter
+    def namespace(self, value: str) -> None:
+        self._namespace = value
+
+    def start(self) -> None:
+        asyncio.ensure_future(self._poll())
+
+    async def _poll(self) -> None:
+        while True:
+            await self._fetch()
+            await asyncio.sleep(PODS_INTERVAL)
+
+    async def _fetch(self) -> None:
+        try:
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(SERVICE_HOST, SERVICE_PORT), timeout=2.0
+            )
+            try:
+                # Connection: close tells HTTP/1.1 server to close after response,
+                # so read(-1) sees EOF instead of blocking on keep-alive.
+                writer.write(
+                    b"GET /api/state HTTP/1.1\r\n"
+                    b"Host: localhost\r\n"
+                    b"Connection: close\r\n"
+                    b"\r\n"
+                )
+                await writer.drain()
+                # Skip HTTP response headers, capture Content-Length if present
+                content_length = None
+                while True:
+                    line = await asyncio.wait_for(reader.readline(), timeout=5.0)
+                    if not line or line in (b"\r\n", b"\n"):
+                        break
+                    if line.lower().startswith(b"content-length:"):
+                        content_length = int(line.split(b":", 1)[1].strip())
+                if content_length is not None:
+                    body = await asyncio.wait_for(
+                        reader.readexactly(content_length), timeout=10.0
+                    )
+                else:
+                    body = await asyncio.wait_for(reader.read(-1), timeout=10.0)
+                state = ClusterState.from_dict(json.loads(body))
+                self._poster.post_message(ClusterStateUpdated(state, source="service"))
+            finally:
+                writer.close()
+                try:
+                    await writer.wait_closed()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    async def force_refresh(self) -> None:
+        await self._fetch()

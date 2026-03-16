@@ -225,7 +225,7 @@ nodename=NODENAMEHERE
 kubectl describe node $nodename
 kubectl get pod -o wide --all-namespaces | grep $nodename
 
-# Add lab label (used by resource collector for grouping)
+# Add resource group label (key 'lab' — used by lobot-collector to group nodes by resource)
 kubectl label nodes $nodename lab=lobot_a16
 
 # Add GPU labels
@@ -518,32 +518,61 @@ automatically on the next run.
 > **Note:** The image tag is read from `/opt/Lobot/config-env.yaml` if present, falling back
 > to `config.yaml.bk` fetched directly from GitHub. No manual update should be needed.
 
-### Resource collector (cluster status page)
+### lobot-collector (cluster status service)
 
-The resource collector publishes live CPU/GPU/memory availability to `/allocationstatus`
-(served by nginx). It requires the `kubectl-view-allocations` binary.
+The lobot-collector service polls kubectl once on behalf of all consumers:
+- Writes live CPU/GPU/memory availability to `/allocationstatus/current.json` (served by nginx)
+- Serves a live HTTP API on `127.0.0.1:9095` consumed by lobot-tui
+- Sends email notifications on startup, shutdown, and persistent errors
+
+No third-party binaries required (`kubectl-view-allocations` and `pandas` are not used).
 
 ```bash
-# Install Python dependency
-pip3 install pandas
+# Create a dedicated venv for the service
+python3 -m venv /opt/Lobot/tools/lobot_collector/.venv
+/opt/Lobot/tools/lobot_collector/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_collector/requirements-collector.txt
 
-# Download kubectl-view-allocations
-# Find latest release: https://github.com/davidB/kubectl-view-allocations/releases
-wget https://github.com/davidB/kubectl-view-allocations/releases/latest/download/kubectl-view-allocations_linux_amd64 \
-  -O /opt/Lobot/kubectl-view-allocations
-chmod +x /opt/Lobot/kubectl-view-allocations
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-collector.sh
 
 # Install and start as a systemd service
-sudo cp /opt/Lobot/tools/resource-collector.service /etc/systemd/system/
+sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now resource-collector
+sudo systemctl enable --now lobot-collector
 
 # Verify it's running
-sudo systemctl status resource-collector
+sudo systemctl status lobot-collector
 
 # Follow logs
-sudo journalctl -u resource-collector -f
+sudo journalctl -u lobot-collector -f
+
+# Verify the HTTP API
+curl -s http://localhost:9095/api/state | python3 -m json.tool
 ```
+
+### lobot-tui (cluster management terminal)
+
+The terminal dashboard for managing the cluster. Requires the lobot-collector service to be
+running first (it will fall back to direct kubectl polling if not, but service mode is preferred).
+
+```bash
+# Install Python dependencies
+python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
+/opt/Lobot/tools/lobot_tui/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_tui/requirements-tui.txt
+
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-tui.sh
+
+# Optional: symlink for quick access
+ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
+
+# Launch
+bash /opt/Lobot/tools/lobot-tui.sh
+```
+
+See [lobot-tui.md](lobot-tui.md) for full documentation.
 
 ---
 

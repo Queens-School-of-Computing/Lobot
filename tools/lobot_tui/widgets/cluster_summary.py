@@ -1,20 +1,26 @@
-"""ClusterSummaryWidget: per-lab resource table."""
+"""ResourceTableWidget: DataTable showing resource group utilisation."""
 
-from rich.markup import escape as markup_escape
 from textual.app import ComposeResult
+from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Static
+from textual.widgets import DataTable
 
 from ..data.collector import ClusterStateUpdated
-from ..data.models import ClusterState, LabSummary
+from ..data.models import ResourceSummary
 
-_LAB_W = 14   # max lab name display width
-_CPU_W = 7    # "142/256"
-_RAM_W = 9    # "704/1007G"
-_GPU_W = 5    # "  5/8 " or "  –  "
+# Fixed-width columns (excluding RESOURCE which expands)
+_FIXED_COLS = [
+    ("#",    3),
+    ("CPU",  9),
+    ("RAM", 15),
+    ("GPU",  6),
+]
+_NUM_COLS = len(_FIXED_COLS) + 1
+_FIXED_SUM = sum(w for _, w in _FIXED_COLS)
+_RESOURCE_MIN = 10
 
 
-def _util_color(used: int, total: int) -> str:
+def _util_color(used: float, total: float) -> str:
     if total <= 0:
         return "dim"
     ratio = used / total
@@ -25,66 +31,141 @@ def _util_color(used: int, total: int) -> str:
     return "green"
 
 
-def _render_table(labs: dict) -> str:
-    def sort_key(name: str) -> tuple:
-        return (0 if name.startswith("lobot_") else 1, name)
+class ResourceTableWidget(Widget):
+    """Resource group utilisation table with row selection and filter support."""
 
-    sorted_labs = sorted(labs.values(), key=lambda l: sort_key(l.name))
+    class ResourceFilterChanged(Message):
+        """Posted when the user toggles a resource filter (via `r` hotkey)."""
+        def __init__(self, resource_name: "str | None") -> None:
+            super().__init__()
+            self.resource_name = resource_name  # None = filter cleared
 
-    header = (
-        f"[bold dim]{'LAB':<{_LAB_W}}  {'#':>2}  "
-        f"{'CPU':>{_CPU_W}}  {'RAM':>{_RAM_W}}  {'GPU':>{_GPU_W}}[/]"
-    )
-    lines = [header]
-
-    for lab in sorted_labs:
-        name = markup_escape(lab.name[:_LAB_W])
-
-        pods_str = f"{lab.pod_count:>2}"
-
-        cpu_c = _util_color(lab.cpu_used, lab.cpu_total)
-        cpu_str = f"{lab.cpu_used}/{lab.cpu_total}"
-
-        ram_c = _util_color(lab.ram_used_gb, lab.ram_total_gb)
-        ram_str = f"{lab.ram_used_gb}/{lab.ram_total_gb}G"
-
-        if lab.has_gpu:
-            gpu_c = _util_color(lab.gpu_used, lab.gpu_total)
-            gpu_str = f"{lab.gpu_used}/{lab.gpu_total}"
-        else:
-            gpu_c = "dim"
-            gpu_str = "–"
-
-        row = (
-            f"[cyan]{name:<{_LAB_W}}[/]  [dim]{pods_str}[/]"
-            f"  [{cpu_c}]{cpu_str:>{_CPU_W}}[/]"
-            f"  [{ram_c}]{ram_str:>{_RAM_W}}[/]"
-            f"  [{gpu_c}]{gpu_str:>{_GPU_W}}[/]"
-        )
-        lines.append(row)
-
-    return "\n".join(lines)
-
-
-class ClusterSummaryWidget(Widget):
-    """Displays per-lab resource utilisation as a compact table."""
-
-    DEFAULT_CSS = ""
+    _all_resources: dict = {}       # resource_name -> ResourceSummary
+    _sorted_resources: list = []    # ordered list for cursor mapping
+    _filter_resource: "str | None" = None
 
     def compose(self) -> ComposeResult:
-        yield Static("Loading cluster data…", id="summary-content")
+        yield DataTable(id="resource-datatable", cursor_type="row", zebra_stripes=True)
+
+    def on_mount(self) -> None:
+        self._setup_columns()
+
+    def on_resize(self) -> None:
+        self._setup_columns()
+        self._rebuild_table()
+
+    def _resource_name_width(self) -> int:
+        overhead = _FIXED_SUM + _NUM_COLS * 2 + 4
+        return max(_RESOURCE_MIN, self.size.width - overhead)
+
+    def _setup_columns(self) -> None:
+        table = self.query_one(DataTable)
+        table.clear(columns=True)
+        table.add_column("RESOURCE", width=self._resource_name_width())
+        for col_name, col_width in _FIXED_COLS:
+            table.add_column(col_name, width=col_width)
 
     def on_cluster_state_updated(self, event: ClusterStateUpdated) -> None:
-        self._refresh_display(event.state)
-
-    def _refresh_display(self, state: ClusterState) -> None:
-        content = self.query_one("#summary-content", Static)
-
-        if not state.labs:
-            if state.nodes_error:
-                content.update(f"[red]Error: {state.nodes_error}[/]")
-            else:
-                content.update("[dim]Waiting for node data…[/]")
+        if not event.state.resources and event.state.nodes_error:
+            # Can't show table — leave columns but clear rows
+            self.query_one(DataTable).clear()
             return
+        self._all_resources = event.state.resources
+        self._rebuild_table()
 
-        content.update(_render_table(state.labs))
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        """Auto-update pod filter when navigating with filter active."""
+        if self._filter_resource is None:
+            return
+        try:
+            if not self.query_one(DataTable).has_focus:
+                return
+        except Exception:
+            return
+        res = self.selected_resource
+        if res and res.name != self._filter_resource:
+            self._filter_resource = res.name
+            self.post_message(self.ResourceFilterChanged(res.name))
+            self._rebuild_table()
+
+    def toggle_filter(self) -> None:
+        """Toggle pod filter on/off for currently selected resource (called by `r` hotkey)."""
+        res = self.selected_resource
+        if res is None:
+            return
+        if self._filter_resource is not None:
+            self._filter_resource = None
+            self.post_message(self.ResourceFilterChanged(None))
+        else:
+            self._filter_resource = res.name
+            self.post_message(self.ResourceFilterChanged(res.name))
+        self._rebuild_table()
+
+    def clear_filter(self) -> None:
+        """Clear the resource filter (called externally)."""
+        if self._filter_resource is not None:
+            self._filter_resource = None
+            self.post_message(self.ResourceFilterChanged(None))
+            self._rebuild_table()
+
+    def _rebuild_table(self) -> None:
+        table = self.query_one(DataTable)
+        try:
+            cursor_row = table.cursor_row
+        except Exception:
+            cursor_row = 0
+
+        table.clear()
+
+        sorted_resources = sorted(
+            self._all_resources.values(),
+            key=lambda r: (0 if r.name.startswith("lobot_") else 1, r.name),
+        )
+        self._sorted_resources = sorted_resources
+
+        for res in sorted_resources:
+            pods_str = str(res.pod_count)
+
+            cpu_c = _util_color(res.cpu_used, res.cpu_total)
+            cpu_str = f"[{cpu_c}]{res.cpu_used}/{res.cpu_total}[/]"
+
+            ram_c = _util_color(res.ram_used_gb, res.ram_total_gb)
+            ram_str = f"[{ram_c}]{res.ram_used_gb:.1f}/{res.ram_total_gb:.1f}G[/]"
+
+            if res.has_gpu:
+                gpu_c = _util_color(res.gpu_used, res.gpu_total)
+                gpu_str = f"[{gpu_c}]{res.gpu_used}/{res.gpu_total}[/]"
+            else:
+                gpu_str = "[dim]–[/]"
+
+            name_display = res.name
+            if self._filter_resource and res.name == self._filter_resource:
+                name_display = f"[bold cyan]{res.name}[/]"
+
+            table.add_row(
+                name_display,
+                pods_str,
+                cpu_str,
+                ram_str,
+                gpu_str,
+                key=res.name,
+            )
+
+        if sorted_resources:
+            row = min(cursor_row, len(sorted_resources) - 1)
+            try:
+                table.move_cursor(row=row)
+            except Exception:
+                pass
+
+    @property
+    def selected_resource(self) -> "ResourceSummary | None":
+        if not self._sorted_resources:
+            return None
+        try:
+            row = self.query_one(DataTable).cursor_row
+            if 0 <= row < len(self._sorted_resources):
+                return self._sorted_resources[row]
+        except Exception:
+            pass
+        return None

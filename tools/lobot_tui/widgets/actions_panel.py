@@ -13,8 +13,8 @@ _ROW1_LEFT = [
     ("[bold cyan](x)[/] exec",              "hint-pod",     "x"),
     ("[bold cyan](d)[/] describe",          "hint-pod",     "d"),
     ("[bold cyan](X)[/] delete",            "hint-pod",     "X"),
-    ("[bold cyan](/)[/] filter",            "hint-pod",     "/"),
-    ("[bold cyan](n)[/] ns",                "hint-pod",     "n"),
+    ("[bold cyan](f)[/] filter",            "hint-pod",     "f"),
+    ("[bold cyan](N)[/] ns",               "hint-pod",     "N"),
 ]
 
 _ROW1_RIGHT = [
@@ -26,6 +26,8 @@ _ROW1_RIGHT = [
 
 _ROW2_LEFT = [
     ("[bold dim]NODES[/]",                  "hint-prefix",  None),
+    ("[bold cyan](n)[/] node filter",       "hint-node",    "n"),
+    ("[bold cyan](r)[/] resource filter",   "hint-node",    "r"),
     ("[bold cyan](c)[/] cordon",            "hint-node",    "c"),
     ("[bold cyan](u)[/] uncordon",          "hint-node",    "u"),
     ("[bold cyan](w)[/] drain",             "hint-node",    "w"),

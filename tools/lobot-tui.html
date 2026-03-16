@@ -32,6 +32,7 @@
 </ul>
 <hr />
 <h2>Installation</h2>
+<h3>lobot-tui</h3>
 <pre><code># Clone/pull the repo on the control plane (if not already at /opt/Lobot)
 cd /opt/Lobot
 
@@ -42,15 +43,52 @@ tools/lobot_tui/.venv/bin/pip install -r tools/lobot_tui/requirements-tui.txt
 # Optional: symlink for quick access
 ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
 chmod +x /opt/Lobot/tools/lobot-tui.sh</code></pre>
+<h3>lobot-collector service</h3>
+<p>The lobot-collector service polls kubectl once on behalf of all consumers, writes <code>current.json</code> for the web dashboards, and serves a live HTTP API on <code>127.0.0.1:9095</code> for lobot-tui.</p>
+<pre><code># Create a venv for the collector (separate from the TUI venv — no Textual needed)
+python3 -m venv /opt/Lobot/tools/lobot_collector/.venv
+/opt/Lobot/tools/lobot_collector/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_collector/requirements-collector.txt
+
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-collector.sh
+
+# Install and start the systemd service
+sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now lobot-collector
+
+# Verify it is running
+sudo systemctl status lobot-collector
+
+# Follow logs
+sudo journalctl -u lobot-collector -f
+
+# Verify the HTTP API (should return ClusterState JSON)
+curl -s http://localhost:9095/api/state | python3 -m json.tool</code></pre>
+<p>When the service is running, lobot-tui automatically switches to service mode on the next start (<code>svc</code> tag in the status bar). If the service stops, lobot-tui falls back to direct kubectl polling transparently.</p>
+<p><strong>Deploying updates to the collector:</strong></p>
+<pre><code>rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_collector/ PROD_HOST:/opt/Lobot/tools/lobot_collector/
+ssh PROD_HOST "sudo systemctl restart lobot-collector"</code></pre>
 <hr />
 <h2>Deploying Updates</h2>
 <p>To push the latest code from the dev control plane to prod in one command:</p>
-<pre><code>rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
-  /opt/Lobot/tools/lobot_tui/ PROD_HOST:/opt/Lobot/tools/lobot_tui/</code></pre>
+<pre><code># Push TUI
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_tui/ PROD_HOST:/opt/Lobot/tools/lobot_tui/
+
+# Push collector (then restart the service)
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_collector/ PROD_HOST:/opt/Lobot/tools/lobot_collector/
+ssh PROD_HOST "sudo systemctl restart lobot-collector"</code></pre>
 <p>Replace <code>PROD_HOST</code> with the production control plane hostname.</p>
 <p><strong>First-time setup on prod</strong> (if the venv doesn't exist yet):</p>
 <pre><code>ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_tui/.venv && \
-  /opt/Lobot/tools/lobot_tui/.venv/bin/pip install -q textual aiofiles"</code></pre>
+  /opt/Lobot/tools/lobot_tui/.venv/bin/pip install -q textual aiofiles"
+
+ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_collector/.venv && \
+  /opt/Lobot/tools/lobot_collector/.venv/bin/pip install -q aiohttp"</code></pre>
 <hr />
 <h2>Usage</h2>
 <pre><code># Standard launch (requires kubectl access)
@@ -125,7 +163,7 @@ python3 -m lobot_tui</code></pre>
 </tr>
 </tbody>
 </table>
-<p>The <strong>status bar</strong> shows a green <code>● Live</code> indicator when data is fresh. If pod data is stale by more than 30 seconds it shows <code>⚠ Stale</code> in amber. Errors are shown in red.</p>
+<p>The <strong>status bar</strong> shows a green <code>● Live</code> indicator when data is fresh. If pod data is stale by more than 30 seconds it shows <code>⚠ Stale</code> in amber. Errors are shown in red. The source tag next to the indicator shows <code>svc</code> (cyan) when the TUI is reading from the lobot-collector service, or <code>kubectl</code> (dim) when falling back to direct kubectl polling.</p>
 <hr />
 <h2>Key Bindings</h2>
 <h3>Global</h3>
@@ -530,7 +568,8 @@ git push origin newcluster</code></pre>
 <p>All UI panels render with representative data. Pod actions (logs, exec, delete) are wired up but will fail gracefully since there is no real cluster.</p>
 <hr />
 <h2>Data Sources</h2>
-<p>The TUI polls <code>kubectl</code> directly — it does <strong>not</strong> read from <code>current.json</code>. This keeps the TUI self-contained and independent of the <code>resource_collector</code> systemd service.</p>
+<p>The TUI uses <strong>lobot-collector</strong> as its primary data source when the service is running. On startup it probes <code>127.0.0.1:9095</code>; if reachable it enters <strong>service mode</strong> (<code>svc</code> tag in the status bar) and polls <code>/api/state</code> every 5 seconds — no kubectl calls of its own. If the service is unreachable it falls back to <strong>kubectl mode</strong> (<code>kubectl</code> tag) and polls the cluster directly. The fallback is transparent; all panels and operations continue to work.</p>
+<p>The lobot-collector service itself handles all kubectl polling and also writes <code>current.json</code> for the web dashboards — see <a href="#lobot-collector-service">lobot-collector service</a> under Installation.</p>
 <table>
 <thead>
 <tr>
@@ -541,12 +580,22 @@ git push origin newcluster</code></pre>
 </thead>
 <tbody>
 <tr>
-<td>Pod list, image tags, resource requests</td>
+<td>Pod list, image tags, resource requests (service mode)</td>
+<td><code>GET http://localhost:9095/api/state</code></td>
+<td>5s</td>
+</tr>
+<tr>
+<td>Pod list, image tags, resource requests (kubectl fallback)</td>
 <td><code>kubectl get pods -n jhub -o json</code></td>
 <td>5s</td>
 </tr>
 <tr>
-<td>Node status, labels, allocatable CPU/RAM/GPU</td>
+<td>Node status, labels, allocatable CPU/RAM/GPU (service mode)</td>
+<td>included in <code>/api/state</code> response</td>
+<td>5s</td>
+</tr>
+<tr>
+<td>Node status, labels, allocatable CPU/RAM/GPU (kubectl fallback)</td>
 <td><code>kubectl get nodes -o json</code></td>
 <td>10s</td>
 </tr>
@@ -562,8 +611,8 @@ git push origin newcluster</code></pre>
 </tr>
 </tbody>
 </table>
-<p>Resource utilisation (requested vs allocatable) is computed in-process by aggregating pod resource requests from the pod list against the allocatable values from the node list. No third-party tools required.</p>
-<p>All subprocess calls are async — the UI never blocks waiting for <code>kubectl</code>.</p>
+<p>Resource utilisation (requested vs allocatable) is computed by aggregating pod resource requests against node allocatable values — no third-party tools required.</p>
+<p>All subprocess and network calls are async — the UI never blocks.</p>
 <hr />
 <h2>Audit Log</h2>
 <p>Every command executed by the TUI is automatically recorded to a daily log file — no action required from the operator.</p>
@@ -647,12 +696,13 @@ git push origin newcluster</code></pre>
 <h2>Source Files</h2>
 <pre><code>tools/lobot_tui/
   __main__.py               Entry point (python3 -m lobot_tui)
-  app.py                    Root Textual App class; owns job_manager
-  config.py                 Cluster constants and paths
+  app.py                    Root Textual App class; owns job_manager; picks ServiceCollector vs DataCollector
+  config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT)
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
-    models.py               Dataclasses: PodInfo, NodeInfo, LabSummary, ClusterState
-    collector.py            Async kubectl polling, ClusterStateUpdated message
+    models.py               Dataclasses: PodInfo, NodeInfo, LabSummary, ClusterState (with to_dict/from_dict)
+    parsers.py              Pure kubectl parsing functions (shared with lobot_collector)
+    collector.py            DataCollector (direct kubectl), ServiceCollector (HTTP polling), ClusterStateUpdated
     command_log.py          In-session command history (also written to audit log)
     job_manager.py          BackgroundJobManager — runs tool commands as background tasks
   screens/
@@ -671,22 +721,32 @@ git push origin newcluster</code></pre>
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
   widgets/
-    cluster_summary.py      Per-lab resource table (compact, one row per lab)
+    cluster_summary.py      Per-lab resource bars
     pod_table.py            Pod DataTable with filter and column sort
     node_table.py           Node DataTable with column sort
     actions_panel.py        Key hint bar (all hints are clickable)
-    status_bar.py           Bottom status line
+    status_bar.py           Bottom status line (shows svc/kubectl source tag)
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/
     tag_fetcher.py          DockerHub tag fetching; kubectl node list
   styles/
     app.tcss                Textual CSS dark theme
-tools/lobot-tui.sh          Shell launcher (supports --dev flag)</code></pre>
+tools/lobot-tui.sh          Shell launcher (supports --dev flag)
+
+tools/lobot_collector/      lobot-collector service (shared data collection)
+  __init__.py
+  __main__.py               Entry point (python3 -m lobot_collector)
+  config.py                 Service constants: port, paths, email settings, lab display names
+  collector.py              Async kubectl polling loop; maintains ClusterState; pub/sub queue
+  server.py                 aiohttp HTTP server: GET /api/state, GET /api/events (SSE)
+  writer.py                 Renders and writes current.json in the legacy format (atomic write)
+  notifier.py               Email notifications on startup/shutdown/error (30-min cooldown)
+  requirements-collector.txt  Python dependencies (aiohttp)
+tools/lobot-collector.sh    Shell launcher for the service
+tools/lobot-collector.service  systemd unit file</code></pre>
 <hr />
 <h2>Potential Improvements</h2>
-<h3>Web dashboard</h3>
-<p>The same data model (<code>collector.py</code>, <code>models.py</code>) could back a web-based dashboard served from the control plane — providing the same live cluster view from a browser without requiring an SSH session.</p>
 <h3>Slack / notification integration</h3>
 <p>Post a summary to Slack when a helm upgrade or image-pull completes, particularly useful for communicating maintenance to users in active sessions.</p>
 <h3>Multi-cluster support</h3>

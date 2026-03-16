@@ -2,14 +2,14 @@
 
 ## Overview
 
-A [btop](https://github.com/aristocratos/btop)-style terminal dashboard for managing the Lobot JupyterHub cluster. Provides real-time visibility into running pods, node status, and lab resource allocation — along with keyboard-driven access to all common admin operations.
+A [btop](https://github.com/aristocratos/btop)-style terminal dashboard for managing the Lobot JupyterHub cluster. Provides real-time visibility into running pods, node status, and resource group allocation — along with keyboard-driven access to all common admin operations.
 
 Designed for the control plane where a terminal is always available, including during disaster recovery when a web interface may not be.
 
 **Capabilities at a glance:**
 
-- Real-time pod list with resource usage, image tag, lab, node, age, and phase
-- Per-lab resource utilisation table (CPU, RAM, GPU) updated every 10 seconds
+- Real-time pod list with resource usage, image tag, resource group, node, age, and phase
+- Per-resource-group utilisation table (CPU, RAM, GPU) showing jupyter-* workload only, updated every 5 seconds
 - Per-node allocation table with cordon/schedulable status
 - Stream pod logs, exec bash into a pod, describe or delete pods
 - Cordon, uncordon, and drain nodes (double-keypress to confirm)
@@ -44,6 +44,8 @@ python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
 
 ## Installation
 
+### lobot-tui
+
 ```bash
 # Clone/pull the repo on the control plane (if not already at /opt/Lobot)
 cd /opt/Lobot
@@ -57,6 +59,52 @@ ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
 chmod +x /opt/Lobot/tools/lobot-tui.sh
 ```
 
+### lobot-collector service
+
+The lobot-collector service polls kubectl once on behalf of all consumers, writes `current.json` for the web dashboards, and serves a live HTTP API on `127.0.0.1:9095` for lobot-tui.
+
+```bash
+# Create a venv for the collector (separate from the TUI venv — no Textual needed)
+python3 -m venv /opt/Lobot/tools/lobot_collector/.venv
+/opt/Lobot/tools/lobot_collector/.venv/bin/pip install \
+  -r /opt/Lobot/tools/lobot_collector/requirements-collector.txt
+
+# Make the launcher executable
+chmod +x /opt/Lobot/tools/lobot-collector.sh
+
+# Install and start the systemd service
+sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now lobot-collector
+
+# Verify it is running
+sudo systemctl status lobot-collector
+
+# Follow logs
+sudo journalctl -u lobot-collector -f
+
+# Verify the HTTP API (should return ClusterState JSON)
+curl -s http://localhost:9095/api/state | python3 -m json.tool
+```
+
+When the service is running, lobot-tui automatically switches to service mode on the next start (`svc` tag in the status bar). If the service stops, lobot-tui falls back to direct kubectl polling transparently.
+
+**Deploying updates to the collector:**
+
+> **Important:** `parsers.py` lives inside `lobot_tui/data/` and is imported by the collector service. When updating the service, always push **both** directories:
+
+```bash
+# Push lobot_tui (contains parsers.py, shared with the collector)
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_tui/ PROD_HOST:/opt/Lobot/tools/lobot_tui/
+
+# Push collector
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_collector/ PROD_HOST:/opt/Lobot/tools/lobot_collector/
+
+ssh PROD_HOST "sudo systemctl restart lobot-collector"
+```
+
 ---
 
 ## Deploying Updates
@@ -64,8 +112,14 @@ chmod +x /opt/Lobot/tools/lobot-tui.sh
 To push the latest code from the dev control plane to prod in one command:
 
 ```bash
+# Push TUI (always push this — parsers.py is here and shared with the collector)
 rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
   /opt/Lobot/tools/lobot_tui/ PROD_HOST:/opt/Lobot/tools/lobot_tui/
+
+# Push collector (then restart the service)
+rsync -avz --exclude '__pycache__' --exclude '*.pyc' --exclude '.venv' \
+  /opt/Lobot/tools/lobot_collector/ PROD_HOST:/opt/Lobot/tools/lobot_collector/
+ssh PROD_HOST "sudo systemctl restart lobot-collector"
 ```
 
 Replace `PROD_HOST` with the production control plane hostname.
@@ -75,6 +129,9 @@ Replace `PROD_HOST` with the production control plane hostname.
 ```bash
 ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_tui/.venv && \
   /opt/Lobot/tools/lobot_tui/.venv/bin/pip install -q textual aiofiles"
+
+ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_collector/.venv && \
+  /opt/Lobot/tools/lobot_collector/.venv/bin/pip install -q aiohttp"
 ```
 
 ---
@@ -105,27 +162,27 @@ python3 -m lobot_tui
 ## Dashboard Layout
 
 ```
-┌─ LOBOT  lobot-dev.cs.queensu.ca ─────────────────── 2026-03-15 14:22:05 ─┐
-│ LAB             #   CPU       RAM        GPU  │ NODES                      │
-│ lobot_a40       5   78/256  576/2014G    5/8  │ NAME       STATUS  CPU  …  │
-│ lobot_a5000     7  142/256  704/1007G    3/8  │ gpu1       Ready  45/64 …  │
-│ lobot_a16       0    2/24     0/125G     0/8  │ gpu2       Ready  12/64 …  │
-│ bamlab          2   86/128  896/1007G    6/8  │ gpu3       Cordoned  …  …  │
-│ gandslab        3   47/128   176/251G    1/2  │ lobot-dev  ctrl    –    –  │
-│ miblab          1  168/192  768/1007G    6/6  │                            │
-│ riselab         4  168/256  640/1007G    6/7  │                            │
-│ winemocollab    2   87/128  832/1007G    3/4  │                            │
-├───────────────────────────────────────────────┴────────────────────────────┤
-│ PODS  ns:[jhub]  filter: jupyter|jhub                          43 pods     │
-│ POD              LAB        NODE      IMAGE TAG    CPU  RAM   GPU  AGE     │
-│▶ jupyter-ali11x  mulab      debwewin  13.0.2cu…   10   64G    2   3d0h    │
+┌─ LOBOT  lobot.cs.queensu.ca ─────────────────────── 2026-03-16 12:29:36 ─┐
+│ RESOURCE        #   CPU       RAM          GPU  │ NODE       RESOURCE  …  │
+│ lobot_a40       3   26/256  384/2014G      3/8  │ bootstrap  lobot_a40 …  │
+│ lobot_a5000     3   56/256  448/1007G      3/8  │ kickstart  lobot_a40 …  │
+│ lobot_a16       0    0/24     0/125G       0/8  │ giza       lobot_a50…   │
+│ bamlab          2   86/128  896/1007G      6/8  │ floppy     digilab   …  │
+│ gandslab        3   47/128   176/251G      1/2  │ lobot-dev  ctrl-plane…  │
+│ miblab          1  168/192  768/1007G      6/6  │                         │
+│ riselab         5  168/256  640/1007G      6/7  │                         │
+│ winemocollab    2   87/128  832/1007G      3/4  │                         │
+├─────────────────────────────────────────────────┴───────────────────────── ┤
+│ PODS  ns:jhub  (n) node  (r) resource  filter: jupyter|hub    19/27 pods  │
+│ POD              RESOURCE   NODE      IMAGE TAG    CPU  RAM   GPU  AGE     │
+│▶ jupyter-ali11x  miblab     pluto     13.0.2cu…   10   64G    2   3d0h    │
 │  jupyter-busvp52 lobot_a40  kickstart 13.0.2cu…   16  256G    1   8d2h    │
 │  hub-6b6646cb8d  digilab    floppy    4.0.0-beta…  0    0G    0   2d3h    │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ PODS: [l]logs [x]exec [d]describe [X]delete [/]filter [n]ns               │
-│ NODES:[c]cordon [u]uncordon [w]drain  TOOLS:[1-6] [`]console [b]jobs …    │
+│ PODS: [l]logs [x]exec [d]describe [X]delete [f]filter [N]ns               │
+│ NODES:[n]node filter [r]resource filter [c]cordon [u]uncordon [w]drain …  │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ ● Live  Pods:14:22:03  Nodes:14:22:01  Alloc:14:22:01   [q]quit           │
+│ ● Live svc  Pods:12:29:30  Nodes:12:29:30  [q]quit [R]refresh [?]help     │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -133,13 +190,15 @@ python3 -m lobot_tui
 
 | Panel | Location | Refresh |
 |-------|----------|---------|
-| Cluster Summary | Top-left | 10s (allocations) — compact table, one row per lab |
-| Nodes | Top-right | 10s |
+| Resources | Top-left | 5s — one row per resource group; stats reflect jupyter-\* pods only |
+| Nodes | Top-right | 5s |
 | Pods | Centre | 5s |
 | Actions hint bar | Bottom-2 | Dynamic — all hints clickable; replaced by job status when a job is running |
 | Status bar | Bottom-1 | Live |
 
-The **status bar** shows a green `● Live` indicator when data is fresh. If pod data is stale by more than 30 seconds it shows `⚠ Stale` in amber. Errors are shown in red.
+**Panel focus:** The active panel is highlighted with an amber border. Press `Tab` to cycle focus between the three data panels (Resources → Nodes → Pods).
+
+The **status bar** shows a green `● Live` indicator when data is fresh. If pod data is stale by more than 30 seconds it shows `⚠ Stale` in amber. Errors are shown in red. The source tag next to the indicator shows `svc` (cyan) when the TUI is reading from the lobot-collector service, or `kubectl` (dim) when falling back to direct kubectl polling.
 
 ---
 
@@ -150,28 +209,29 @@ The **status bar** shows a green `● Live` indicator when data is fresh. If pod
 | Key | Action |
 |-----|--------|
 | `q` | Quit (press twice within 2 seconds to confirm) |
-| `r` | Force-refresh all data immediately |
+| `R` | Force-refresh all data immediately |
 | `?` | Help screen (full key binding reference) |
 | `` ` `` | Command console (recent command history and errors) |
 | `b` | Background jobs panel (live output of running tool) |
-| `Escape` | Clear filter / go back |
+| `Tab` | Cycle focus between panels: Resources → Nodes → Pods |
+| `Escape` | Return focus to pod table (when filter input is focused) |
 
 ### Pod Table
 
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Navigate rows |
-| `/` | Focus filter input |
+| `f` | Focus filter input |
 | `Enter` (in filter) | Apply filter and return focus to pod table |
-| `Escape` | Clear filter and return focus to pod table |
+| `Escape` (in filter) | Return focus to pod table (filter text unchanged) |
 | `l` | Stream pod logs (`kubectl logs -f --tail=500`) |
 | `x` | Exec bash into pod (`kubectl exec -it … -- /bin/bash`) |
 | `d` or `Enter` | Full describe (`kubectl describe pod`) |
 | `X` | Delete pod — press twice within 2 seconds to confirm |
-| `n` | Cycle namespace — per-namespace filters are remembered |
+| `N` | Cycle namespace — per-namespace filters are remembered |
 | Click header | Sort by column (click again to reverse) |
 
-> **Filter**: matches against pod name, lab, node, image tag, and phase. Supports `|` as OR — e.g. `jupyter|jhub` shows pods whose name, lab, node, image, or phase contains `jupyter` or `jhub`. The `jhub` namespace starts with `jupyter|jhub` pre-filled to show only user pods and the hub pod. Per-namespace filters are saved to `~/.config/lobot-tui/ns_filters.json` and restored on next launch.
+> **Filter**: matches against pod name, resource group, node, image tag, and phase. Supports `|` as OR — e.g. `jupyter|jhub` shows pods whose name, resource, node, image, or phase contains `jupyter` or `jhub`. The `jhub` namespace starts with `jupyter|jhub` pre-filled to show only user pods and the hub pod. Per-namespace filters are saved to `~/.config/lobot-tui/ns_filters.json` and restored on next launch.
 
 > **Exec (`x`)**: the TUI suspends, hands the terminal fully to bash, and resumes automatically when you exit the shell (`Ctrl-D` or `exit`). Works the same as `kubectl exec -it` in a plain terminal.
 
@@ -184,14 +244,30 @@ Focus the node table with `Tab`. The control plane (`lobot-dev.cs.queensu.ca`) i
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Navigate rows |
+| `n` | Toggle node pod-filter — press once to filter the pod table to the selected node, press again to clear. While active, navigating to a different node auto-updates the filter. |
 | `c` | Cordon node — press twice within 2 seconds to confirm |
 | `u` | Uncordon node — press twice within 2 seconds to confirm |
 | `w` | Drain node — press twice within 2 seconds to confirm |
 | Click header | Sort by column (click again to reverse) |
 
+> **Node filter**: when active, the filtered node name is highlighted in bold cyan in the node table and the pod panel header shows `node:<name> (n)`. Switching namespace does **not** clear the node filter.
+
 > **Double-keypress confirmation**: for destructive node and pod operations, the first keypress shows a toast notification ("Press [key] again to confirm: …"). The second keypress within 2 seconds executes the command. The output screen closes automatically when the command completes.
 
 > **Drain** runs `kubectl drain --ignore-daemonsets --delete-emptydir-data`.
+
+### Resource Table
+
+Focus the resource table with `Tab`.
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate rows |
+| `r` | Toggle resource pod-filter — press once to filter the pod table to the selected resource group, press again to clear. While active, navigating to a different resource group auto-updates the filter. |
+
+> **Resource filter**: when active, the filtered resource name is highlighted in bold cyan in the resource table and the pod panel header shows `resource:<name> (r)`. Node and resource filters are independent and can both be active simultaneously. Switching namespace does **not** clear the resource filter.
+
+> **Stats**: CPU, RAM, and GPU values in the resource table reflect **jupyter-\* pod requests only** — system pods are excluded. This gives a view of user workload pressure per resource group. Full node-level accounting (all pods) is visible in the node table.
 
 ### Background Jobs Panel (`b`)
 
@@ -376,18 +452,22 @@ All UI panels render with representative data. Pod actions (logs, exec, delete) 
 
 ## Data Sources
 
-The TUI polls `kubectl` directly — it does **not** read from `current.json`. This keeps the TUI self-contained and independent of the `resource_collector` systemd service.
+The TUI uses **lobot-collector** as its primary data source when the service is running. On startup it probes `127.0.0.1:9095`; if reachable it enters **service mode** (`svc` tag in the status bar) and polls `/api/state` every 5 seconds — no kubectl calls of its own. If the service is unreachable it falls back to **kubectl mode** (`kubectl` tag) and polls the cluster directly. The fallback is transparent; all panels and operations continue to work.
+
+The lobot-collector service itself handles all kubectl polling and also writes `current.json` for the web dashboards — see [lobot-collector service](#lobot-collector-service) under Installation.
 
 | Data | Source | Interval |
 |------|--------|----------|
-| Pod list, image tags, resource requests | `kubectl get pods -n jhub -o json` | 5s |
-| Node status, labels, allocatable CPU/RAM/GPU | `kubectl get nodes -o json` | 10s |
+| Pod list, image tags, resource requests (service mode) | `GET http://localhost:9095/api/state` | 5s |
+| Pod list, image tags, resource requests (kubectl fallback) | `kubectl get pods -n jhub -o json` | 5s |
+| Node status, labels, allocatable CPU/RAM/GPU (service mode) | included in `/api/state` response | 5s |
+| Node status, labels, allocatable CPU/RAM/GPU (kubectl fallback) | `kubectl get nodes -o json` | 10s |
 | Available image tags | DockerHub API (on wizard open) | On demand |
 | Node list (for pickers) | `kubectl get nodes` (on wizard open) | On demand |
 
-Resource utilisation (requested vs allocatable) is computed in-process by aggregating pod resource requests from the pod list against the allocatable values from the node list. No third-party tools required.
+Resource utilisation is computed by aggregating pod resource requests against node allocatable values — no third-party tools required. The resource table aggregates **jupyter-\* pod requests only** (user workloads); the node table aggregates all pods. Both use only data already present in the pod and node JSON — no additional kubectl calls.
 
-All subprocess calls are async — the UI never blocks waiting for `kubectl`.
+All subprocess and network calls are async — the UI never blocks.
 
 ---
 
@@ -441,12 +521,13 @@ Action and log screens can also save their full streaming output to `/tmp/` by p
 ```
 tools/lobot_tui/
   __main__.py               Entry point (python3 -m lobot_tui)
-  app.py                    Root Textual App class; owns job_manager
-  config.py                 Cluster constants and paths
+  app.py                    Root Textual App class; owns job_manager; picks ServiceCollector vs DataCollector
+  config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT)
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
-    models.py               Dataclasses: PodInfo, NodeInfo, LabSummary, ClusterState
-    collector.py            Async kubectl polling, ClusterStateUpdated message
+    models.py               Dataclasses: PodInfo, NodeInfo, ResourceSummary, ClusterState (with to_dict/from_dict)
+    parsers.py              Pure kubectl parsing functions (shared with lobot_collector)
+    collector.py            DataCollector (direct kubectl), ServiceCollector (HTTP polling), ClusterStateUpdated
     command_log.py          In-session command history (also written to audit log)
     job_manager.py          BackgroundJobManager — runs tool commands as background tasks
   screens/
@@ -465,11 +546,11 @@ tools/lobot_tui/
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
   widgets/
-    cluster_summary.py      Per-lab resource bars
-    pod_table.py            Pod DataTable with filter and column sort
-    node_table.py           Node DataTable with column sort
+    cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle
+    pod_table.py            Pod DataTable with text filter, node filter, resource filter, and column sort
+    node_table.py           Node DataTable with column sort and node filter toggle
     actions_panel.py        Key hint bar (all hints are clickable)
-    status_bar.py           Bottom status line
+    status_bar.py           Bottom status line (shows svc/kubectl source tag)
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/
@@ -477,14 +558,23 @@ tools/lobot_tui/
   styles/
     app.tcss                Textual CSS dark theme
 tools/lobot-tui.sh          Shell launcher (supports --dev flag)
+
+tools/lobot_collector/      lobot-collector service (shared data collection)
+  __init__.py
+  __main__.py               Entry point (python3 -m lobot_collector)
+  config.py                 Service constants: port, paths, email settings, resource display names
+  collector.py              Async kubectl polling loop; maintains ClusterState; pub/sub queue
+  server.py                 aiohttp HTTP server: GET /api/state, GET /api/events (SSE)
+  writer.py                 Renders and writes current.json in the legacy format (atomic write)
+  notifier.py               Email notifications on startup/shutdown/error (30-min cooldown)
+  requirements-collector.txt  Python dependencies (aiohttp)
+tools/lobot-collector.sh    Shell launcher for the service
+tools/lobot-collector.service  systemd unit file
 ```
 
 ---
 
 ## Potential Improvements
-
-### Web dashboard
-The same data model (`collector.py`, `models.py`) could back a web-based dashboard served from the control plane — providing the same live cluster view from a browser without requiring an SSH session.
 
 ### Slack / notification integration
 Post a summary to Slack when a helm upgrade or image-pull completes, particularly useful for communicating maintenance to users in active sessions.

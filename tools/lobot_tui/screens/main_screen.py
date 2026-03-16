@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Callable
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import DataTable, Input, Label, Static
@@ -16,7 +17,7 @@ from ..config import CONTROL_PLANE, IS_DEV, JUPYTERHUB_NAMESPACE, NS_FILTERS_FIL
 from ..data.collector import ClusterStateUpdated, DataCollector
 from ..data.models import NodeInfo, PodInfo
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
-from ..widgets.cluster_summary import ClusterSummaryWidget
+from ..widgets.cluster_summary import ResourceTableWidget
 from ..widgets.node_table import NodeTableWidget
 from ..widgets.pod_table import PodTableWidget
 from ..widgets.status_bar import StatusBarWidget
@@ -89,7 +90,7 @@ class MainScreen(Screen):
 
     BINDINGS = [
         ("q", "quit_app", "Quit"),
-        ("r", "force_refresh", "Refresh"),
+        ("R", "force_refresh", "Refresh"),
         ("question_mark", "show_help", "Help"),
         ("grave_accent", "show_console", "Console"),
         ("b", "show_jobs", "Jobs"),
@@ -104,10 +105,12 @@ class MainScreen(Screen):
         ("x", "pod_exec", "Exec"),
         ("X", "pod_delete", "Delete pod"),
         ("d", "pod_describe", "Describe pod"),
-        ("enter", "pod_describe", "Describe pod"),
-        ("slash", "focus_filter", "Filter"),
-        ("escape", "clear_filter", "Clear filter"),
-        ("n", "cycle_namespace", "Namespace"),
+        ("f", "focus_filter", "Filter"),
+        Binding("tab", "cycle_panel", "Switch panel", priority=True, show=False),
+        ("n", "toggle_node_filter", "Node filter"),
+        ("r", "toggle_resource_filter", "Resource filter"),
+        Binding("escape", "escape_focus", "", priority=True, show=False),
+        ("N", "cycle_namespace", "Namespace"),
         # Node actions
         ("c", "node_cordon", "Cordon"),
         ("u", "node_uncordon", "Uncordon"),
@@ -134,7 +137,7 @@ class MainScreen(Screen):
         )
         with Horizontal(id="top-section"):
             with Vertical(id="summary-panel"):
-                yield ClusterSummaryWidget(id="cluster-summary")
+                yield ResourceTableWidget(id="resource-table")
             with Vertical(id="nodes-panel"):
                 yield NodeTableWidget(id="node-table")
         with Vertical(id="pods-panel"):
@@ -153,12 +156,14 @@ class MainScreen(Screen):
 
     def on_mount(self) -> None:
         self.set_interval(1, self._tick_clock)
-        self.query_one("#pod-table").focus()
         asyncio.ensure_future(self._load_namespaces())
-        # Apply initial filter to pod table
+        # Apply initial namespace and filter to pod table
+        pod_table = self.query_one("#pod-table", PodTableWidget)
+        pod_table.namespace = self._namespaces[self._ns_idx]
         initial_filter = self._ns_filters.get(self._namespaces[self._ns_idx], "")
         if initial_filter:
-            self.query_one("#pod-table", PodTableWidget).filter_text = initial_filter
+            pod_table.filter_text = initial_filter
+        self._update_pod_label()
 
     async def _load_namespaces(self) -> None:
         self._namespaces = await _fetch_namespaces()
@@ -208,10 +213,46 @@ class MainScreen(Screen):
         self._pending_key = None
         self._pending_timer = None
 
+    # ── Node filter → pod table ───────────────────────────────────────────
+
+    def on_node_table_widget_node_filter_changed(
+        self, event: "NodeTableWidget.NodeFilterChanged"
+    ) -> None:
+        pod_table = self.query_one("#pod-table", PodTableWidget)
+        pod_table.node_filter = event.node_name or ""
+        self._update_pod_label()
+
+    def on_resource_table_widget_resource_filter_changed(
+        self, event: "ResourceTableWidget.ResourceFilterChanged"
+    ) -> None:
+        pod_table = self.query_one("#pod-table", PodTableWidget)
+        pod_table.resource_filter = event.resource_name or ""
+        self._update_pod_label()
+
+    def on_data_table_row_selected(self, event: "DataTable.RowSelected") -> None:
+        """Enter on pod-datatable opens describe."""
+        if event.data_table.id == "pod-datatable":
+            pod = self._selected_pod()
+            if pod:
+                self.app.push_screen(PodDetailScreen(pod))
+
+    def _update_pod_label(self) -> None:
+        ns = self._namespaces[self._ns_idx]
+        pod_table = self.query_one("#pod-table", PodTableWidget)
+        node_f = pod_table.node_filter
+        resource_f = pod_table.resource_filter
+        node_part = f"node:[bold cyan]{node_f}[/] [dim](n)[/]" if node_f else "[dim](n) node[/]"
+        resource_part = f"resource:[bold cyan]{resource_f}[/] [dim](r)[/]" if resource_f else "[dim](r) resource[/]"
+        label = f"[bold]PODS[/]  ns:[cyan]{ns}[/]  {node_part}  {resource_part}  filter:"
+        try:
+            self.query_one("#pod-filter-label", Label).update(label)
+        except Exception:
+            pass
+
     # ── ClusterStateUpdated ────────────────────────────────────────────────
 
     def on_cluster_state_updated(self, event: ClusterStateUpdated) -> None:
-        for widget_id in ["cluster-summary", "node-table", "pod-table", "status-bar"]:
+        for widget_id in ["resource-table", "node-table", "pod-table", "status-bar"]:
             try:
                 self.query_one(f"#{widget_id}").post_message(event)
             except Exception:
@@ -263,14 +304,31 @@ class MainScreen(Screen):
     def action_show_jobs(self) -> None:
         self.app.push_screen(JobsScreen())
 
+    def action_cycle_panel(self) -> None:
+        """Tab: cycle focus through resource → node → pod tables."""
+        resource_dt = self.query_one("#resource-datatable")
+        node_dt = self.query_one("#node-datatable")
+        if resource_dt.has_focus:
+            node_dt.focus()
+        elif node_dt.has_focus:
+            self.query_one("#pod-datatable").focus()
+        else:
+            resource_dt.focus()
+
     def action_focus_filter(self) -> None:
         inp = self.query_one("#pod-filter-input", Input)
         inp.focus()
 
-    def action_clear_filter(self) -> None:
+    def action_escape_focus(self) -> None:
+        """Escape: if filter input is focused, return focus to the pod table."""
         inp = self.query_one("#pod-filter-input", Input)
-        inp.value = ""
-        self.query_one("#pod-datatable").focus()
+        if inp.has_focus:
+            self.query_one("#pod-datatable").focus()
+
+    def action_toggle_node_filter(self) -> None:
+        self.query_one("#node-table", NodeTableWidget).toggle_filter()
+    def action_toggle_resource_filter(self) -> None:
+        self.query_one("#resource-table", ResourceTableWidget).toggle_filter()
 
     def action_cycle_namespace(self) -> None:
         # Save current namespace's filter before switching
@@ -282,12 +340,11 @@ class MainScreen(Screen):
         self._ns_idx = (self._ns_idx + 1) % len(self._namespaces)
         ns = self._namespaces[self._ns_idx]
         self._collector.namespace = ns
-        try:
-            self.query_one("#pod-filter-label", Label).update(
-                f"[bold]PODS[/]  ns:[cyan]{ns}[/]  filter:"
-            )
-        except Exception:
-            pass
+
+        # Update pod table namespace — triggers immediate client-side re-filter
+        pod_table = self.query_one("#pod-table", PodTableWidget)
+        pod_table.namespace = ns
+        self._update_pod_label()
 
         # Restore saved filter for the new namespace (setting inp.value triggers on_input_changed)
         inp.value = self._ns_filters.get(ns, "")
@@ -295,23 +352,26 @@ class MainScreen(Screen):
 
     # ── Pod actions ───────────────────────────────────────────────────────
 
+    def _require_pod(self) -> "PodInfo | None":
+        return self._selected_pod()
+
     def action_pod_logs(self) -> None:
-        pod = self._selected_pod()
+        pod = self._require_pod()
         if pod:
             self.app.push_screen(LogsScreen(pod))
 
     def action_pod_describe(self) -> None:
-        pod = self._selected_pod()
+        pod = self._require_pod()
         if pod:
             self.app.push_screen(PodDetailScreen(pod))
 
     def action_pod_exec(self) -> None:
-        pod = self._selected_pod()
+        pod = self._require_pod()
         if pod:
             self.app.push_screen(ExecScreen(pod))
 
     def action_pod_delete(self) -> None:
-        pod = self._selected_pod()
+        pod = self._require_pod()
         if not pod:
             return
         argv = ["kubectl", "delete", "pod", pod.name, "-n", pod.namespace]
@@ -322,9 +382,15 @@ class MainScreen(Screen):
 
     # ── Node actions ──────────────────────────────────────────────────────
 
-    def action_node_cordon(self) -> None:
+    def _require_node(self) -> "NodeInfo | None":
         node = self._selected_node()
-        if not node or node.is_control_plane:
+        if node is not None and node.is_control_plane:
+            return None
+        return node
+
+    def action_node_cordon(self) -> None:
+        node = self._require_node()
+        if not node:
             return
         self._require_confirm(
             "c", f"cordon {node.name}",
@@ -332,8 +398,8 @@ class MainScreen(Screen):
         )
 
     def action_node_uncordon(self) -> None:
-        node = self._selected_node()
-        if not node or node.is_control_plane:
+        node = self._require_node()
+        if not node:
             return
         self._require_confirm(
             "u", f"uncordon {node.name}",
@@ -341,8 +407,8 @@ class MainScreen(Screen):
         )
 
     def action_node_drain(self) -> None:
-        node = self._selected_node()
-        if not node or node.is_control_plane:
+        node = self._require_node()
+        if not node:
             return
         argv = ["kubectl", "drain", node.name, "--ignore-daemonsets", "--delete-emptydir-data"]
         self._require_confirm(
@@ -469,8 +535,10 @@ class MainScreen(Screen):
             "x": self.action_pod_exec,
             "d": self.action_pod_describe,
             "X": self.action_pod_delete,
-            "/": self.action_focus_filter,
-            "n": self.action_cycle_namespace,
+            "f": self.action_focus_filter,
+            "n": self.action_toggle_node_filter,
+            "r": self.action_toggle_resource_filter,
+            "N": self.action_cycle_namespace,
             "c": self.action_node_cordon,
             "u": self.action_node_uncordon,
             "w": self.action_node_drain,

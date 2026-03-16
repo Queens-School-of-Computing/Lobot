@@ -35,7 +35,7 @@ NODES_INTERVAL = 10
 
 # ── Display ───────────────────────────────────────────────────────────────────
 APP_TITLE = "LOBOT"
-MAX_TAG_LEN = 34  # truncate image tags in table (left-truncated, keeps date suffix)
+MAX_TAG_LEN = 66  # truncate image tags in table (left-truncated, keeps date suffix)
 
 # ── Dev/local mode: use mock data when kubectl is unavailable ──────────────────
 DEV_MODE = os.environ.get("LOBOT_TUI_DEV", "0") == "1"
@@ -50,3 +50,9 @@ LOG_DIR = Path("/opt/Lobot/logs")
 # ── Safety lock: when True, tool actions 1-5 are restricted to dry-run only ───
 # Set to False when ready to run tools live.
 TOOLS_LOCKED = False
+
+# ── lobot-collector service connection ────────────────────────────────────────
+# The TUI connects here to receive pushed ClusterState updates via SSE.
+# Falls back to direct kubectl polling if the service is not available.
+SERVICE_HOST = "127.0.0.1"
+SERVICE_PORT = 9095
