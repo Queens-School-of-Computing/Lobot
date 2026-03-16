@@ -204,7 +204,7 @@ The available keys depend on whether the job is still running:
 |-----|--------|
 | `b` | Background the panel — return to dashboard, job keeps running |
 | `k` | Kill job — press twice within 3 seconds to confirm |
-| `s` | Save output so far to `/tmp/lobot-tui-<name>-<timestamp>.log` |
+| `s` | Save output so far to `/opt/Lobot/logs/lobot-tui-<name>-<timestamp>.log` |
 
 > `Escape` and `q` have **no effect** while a job is running. `b` is the only navigation key, making it impossible to accidentally close the panel in a way that could be mistaken for cancellation.
 
@@ -213,7 +213,7 @@ The available keys depend on whether the job is still running:
 | Key | Action |
 |-----|--------|
 | `Escape` / `q` / `b` | Close the panel and return to dashboard |
-| `s` | Save full output to `/tmp/lobot-tui-<name>-<timestamp>.log` |
+| `s` | Save full output to `/opt/Lobot/logs/lobot-tui-<name>-<timestamp>.log` |
 
 ### Logs / Action Screens
 
@@ -222,7 +222,7 @@ These are used for short-lived kubectl commands (pod logs, describe, cordon, dra
 | Key | Action |
 |-----|--------|
 | `Escape` / `q` | Return to main dashboard |
-| `s` | Save output to `/tmp/lobot-tui-<name>-<timestamp>.log` |
+| `s` | Save output to `/opt/Lobot/logs/lobot-tui-<name>-<timestamp>.log` |
 | Scroll up | **(Log viewer only)** Pause the live stream |
 | `l` | **(Log viewer only)** Resume stream — flushes buffered lines and scrolls to bottom |
 
@@ -326,10 +326,11 @@ Opens a modal form with two text fields — one for the production announcement 
 
 | Key | Action |
 |-----|--------|
-| `Ctrl+S` | Save, commit, and push to GitHub (`newcluster` branch) |
 | `Escape` | Cancel without saving |
 
-On save, the TUI writes the two field values back to `announcement.yaml` and runs:
+> **Save & push currently disabled.** The editor opens and loads current values from GitHub for reference, but the Save button and `Ctrl+S` binding are not yet wired up. A warning label is shown in the dialog: *"⚠ Save & push coming soon — edit announcement.yaml manually for now."* The git infrastructure (add / commit / push with per-step error messages) is already implemented and will be enabled in a future update.
+
+When implemented, save will write the two field values back to `announcement.yaml` and run:
 ```bash
 git add /opt/Lobot/announcement.yaml
 git commit -m "chore: update announcement via lobot-tui"
@@ -430,8 +431,8 @@ Action and log screens can also save their full streaming output to `/tmp/` by p
 
 | Screen | Filename pattern |
 |--------|-----------------|
-| Pod logs | `/tmp/lobot-tui-logs-<username>-<timestamp>.log` |
-| Tool output (background jobs) | `/tmp/lobot-tui-<action-name>-<timestamp>.log` |
+| Pod logs | `/opt/Lobot/logs/lobot-tui-logs-<username>-<timestamp>.log` |
+| Tool output (background jobs) | `/opt/Lobot/logs/lobot-tui-<action-name>-<timestamp>.log` |
 
 ---
 
@@ -456,7 +457,10 @@ tools/lobot_tui/
     action_wizard_screen.py Tool parameter input form (tag dropdowns, node pickers, dry-run)
     jobs_screen.py          Live background-job output panel (toggled with b)
     command_preview_screen.py  Pre-run command preview for destructive actions (helm upgrade)
-    announcement_screen.py  YAML editor + git push
+    confirm_screen.py       Generic boolean confirmation modal
+    node_picker_screen.py   Multi/single node selector modal used by wizard
+    pod_context_menu_screen.py  Right-click / Enter context menu for pod actions
+    announcement_screen.py  YAML editor + git push (save/push currently disabled)
     help_screen.py          Key binding reference
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec

@@ -8,8 +8,10 @@
 <li>Per-node allocation table with cordon/schedulable status</li>
 <li>Stream pod logs, exec bash into a pod, describe or delete pods</li>
 <li>Cordon, uncordon, and drain nodes (double-keypress to confirm)</li>
-<li>Launch image-pull, image-cleanup, apply-config, sync-groups, and helm upgrade — with live streaming output and dry-run support</li>
+<li>Launch image-pull, image-cleanup, apply-config, sync-groups, and helm upgrade — with tag dropdowns, node pickers, live streaming output, and dry-run support</li>
+<li>Background job mode: long-running commands (e.g. image-pull) run in the background so the dashboard remains usable during a pull</li>
 <li>Edit <code>announcement.yaml</code> and push directly to GitHub from within the TUI</li>
+<li>Clickable hint bar — every keyboard shortcut shown at the bottom is also clickable</li>
 </ul>
 <hr />
 <h2>Prerequisites</h2>
@@ -66,7 +68,7 @@ LOBOT_TUI_DEV=1 python3 -m lobot_tui</code></pre>
 python3 -m lobot_tui</code></pre>
 <hr />
 <h2>Dashboard Layout</h2>
-<pre><code>┌─ LOBOT  lobot-dev.cs.queensu.ca ─────────────────── 2026-03-13 14:22:05 ─┐
+<pre><code>┌─ LOBOT  lobot-dev.cs.queensu.ca ─────────────────── 2026-03-15 14:22:05 ─┐
 │ LAB             #   CPU       RAM        GPU  │ NODES                      │
 │ lobot_a40       5   78/256  576/2014G    5/8  │ NAME       STATUS  CPU  …  │
 │ lobot_a5000     7  142/256  704/1007G    3/8  │ gpu1       Ready  45/64 …  │
@@ -84,7 +86,7 @@ python3 -m lobot_tui</code></pre>
 │  hub-6b6646cb8d  digilab    floppy    4.0.0-beta…  0    0G    0   2d3h    │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ PODS: [l]logs [x]exec [d]describe [X]delete [/]filter [n]ns               │
-│ NODES:[c]cordon [u]uncordon [w]drain  TOOLS:[1-6] [?]help [q]quit         │
+│ NODES:[c]cordon [u]uncordon [w]drain  TOOLS:[1-6] [`]console [b]jobs …    │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ ● Live  Pods:14:22:03  Nodes:14:22:01  Alloc:14:22:01   [q]quit           │
 └────────────────────────────────────────────────────────────────────────────┘</code></pre>
@@ -115,7 +117,7 @@ python3 -m lobot_tui</code></pre>
 <tr>
 <td>Actions hint bar</td>
 <td>Bottom-2</td>
-<td>Static</td>
+<td>Dynamic — all hints clickable; replaced by job status when a job is running</td>
 </tr>
 <tr>
 <td>Status bar</td>
@@ -138,7 +140,7 @@ python3 -m lobot_tui</code></pre>
 <tbody>
 <tr>
 <td><code>q</code></td>
-<td>Quit — press twice within 2 seconds to confirm</td>
+<td>Quit (press twice within 2 seconds to confirm)</td>
 </tr>
 <tr>
 <td><code>r</code></td>
@@ -151,6 +153,10 @@ python3 -m lobot_tui</code></pre>
 <tr>
 <td><code>`</code></td>
 <td>Command console (recent command history and errors)</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>Background jobs panel (live output of running tool)</td>
 </tr>
 <tr>
 <td><code>Escape</code></td>
@@ -246,7 +252,53 @@ python3 -m lobot_tui</code></pre>
 </table>
 <p><strong>Double-keypress confirmation:</strong> for destructive node and pod operations, the first keypress shows a toast notification ("Press [key] again to confirm: …"). The second keypress within 2 seconds executes the command. The output screen closes automatically when the command completes.</p>
 <p>Drain runs <code>kubectl drain --ignore-daemonsets --delete-emptydir-data</code>.</p>
+<h3>Background Jobs Panel (<code>b</code>)</h3>
+<p>The available keys depend on whether the job is still running.</p>
+<p><strong>While running:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>b</code></td>
+<td>Background the panel — return to dashboard, job keeps running</td>
+</tr>
+<tr>
+<td><code>k</code></td>
+<td>Kill job — press twice within 3 seconds to confirm</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>Save output so far to <code>/opt/Lobot/logs/lobot-tui-&lt;name&gt;-&lt;timestamp&gt;.log</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>Escape</code> and <code>q</code> have <strong>no effect</strong> while a job is running. <code>b</code> is the only navigation key, making it impossible to accidentally close the panel in a way that could be mistaken for cancellation.</p>
+<p><strong>When finished (done or failed):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Escape</code> / <code>q</code> / <code>b</code></td>
+<td>Close the panel and return to dashboard</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>Save full output to <code>/opt/Lobot/logs/lobot-tui-&lt;name&gt;-&lt;timestamp&gt;.log</code></td>
+</tr>
+</tbody>
+</table>
 <h3>Logs / Action Screens</h3>
+<p>These are used for short-lived kubectl commands (pod logs, describe, cordon, drain, etc.) — not for tool actions 1–5, which use the background jobs panel.</p>
 <table>
 <thead>
 <tr>
@@ -261,89 +313,178 @@ python3 -m lobot_tui</code></pre>
 </tr>
 <tr>
 <td><code>s</code></td>
-<td>Save output to <code>/tmp/lobot-tui-&lt;name&gt;-&lt;timestamp&gt;.log</code></td>
+<td>Save output to <code>/opt/Lobot/logs/lobot-tui-&lt;name&gt;-&lt;timestamp&gt;.log</code></td>
+</tr>
+<tr>
+<td>Scroll up</td>
+<td><strong>(Log viewer only)</strong> Pause the live stream</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td><strong>(Log viewer only)</strong> Resume stream — flushes buffered lines and scrolls to bottom</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Known quirk — Escape requires two presses:</strong> Due to how Textual's <code>RichLog</code> widget handles keyboard focus internally, pressing <code>Escape</code> in log/describe screens requires <strong>two presses</strong> to return to the dashboard. <code>q</code> works with a single press. This is a known limitation with no clean fix in the current Textual version.</p>
+<p><strong>Log scroll/pause:</strong> When you scroll up in the log viewer the live stream is paused — new lines are buffered but not displayed, so your scroll position is stable. The footer changes to <strong>⏸ Paused</strong> and shows the <code>[l]</code> key to resume. Resuming flushes all buffered lines and jumps to the bottom. All lines (including buffered ones) are always included when you save with <code>s</code>.</p>
 <hr />
 <h2>Tool Actions (Keys 1 – 6)</h2>
-<p>All tool actions open a wizard or editor screen.</p>
+<p>All tool actions open a wizard screen to configure parameters before running. Press <code>Enter</code> (when not in a text field) or click <strong>Run ↵</strong> to submit. Tool actions (1–5) run as <strong>background jobs</strong> — the job starts and the output panel opens automatically. Press <code>b</code> to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing <code>1</code>–<code>5</code> is blocked until the job completes.</p>
 <h3>[1] image-pull</h3>
-<p>Pre-pulls a container image across all cluster nodes in controlled batches.</p>
+<p>Pre-pulls a container image across all cluster nodes in controlled batches. This is one of the longest-running operations (~30–60 min for an 18 GB image), so background mode is essential.</p>
 <table>
 <thead>
 <tr>
 <th>Field</th>
+<th>Type</th>
 <th>Description</th>
 <th>Default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Image (name:tag)</td>
-<td>Full image reference to pull</td>
+<td>Image</td>
+<td>Text + tag dropdown</td>
+<td>DockerHub repository name</td>
+<td><code>queensschoolofcomputingdocker/gpu-jupyter-latest</code></td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>Dropdown</td>
+<td>Available tags fetched live from DockerHub, newest first</td>
 <td>—</td>
 </tr>
 <tr>
+<td>Use latest tag (<code>--latest</code>)</td>
+<td>Checkbox</td>
+<td>Pull the most recently pushed tag; selecting a tag from the dropdown unchecks this automatically</td>
+<td>✓ checked</td>
+</tr>
+<tr>
 <td>Batch size</td>
+<td>Text</td>
 <td>Nodes pulling simultaneously</td>
 <td><code>3</code></td>
 </tr>
 <tr>
+<td>Timeout (seconds)</td>
+<td>Text</td>
+<td>Per-node timeout</td>
+<td><code>1200</code></td>
+</tr>
+<tr>
 <td>Exclude nodes</td>
-<td>Comma-separated nodes to skip</td>
-<td><code>lobot-dev.cs.queensu.ca</code></td>
+<td>Multi-select</td>
+<td>Worker nodes to skip (control plane always excluded by the script)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Single target node (<code>-n</code>)</td>
+<td>Dropdown</td>
+<td>Target one specific node (includes control plane — useful for updating it explicitly); overrides exclude list</td>
+<td>All nodes</td>
 </tr>
 <tr>
 <td>Dry run</td>
+<td>Checkbox</td>
 <td>Preview without pulling</td>
 <td>✓ checked</td>
 </tr>
 </tbody>
 </table>
-<p>Output streams live in an action screen. Supports <code>--dry-run</code> to check which nodes already have the image and estimate disk space before committing to the full pull.</p>
+<p><strong>Tag dropdown:</strong> tags are loaded asynchronously from DockerHub when the wizard opens, sorted newest-first by the <code>YYYYMMDD</code> date code embedded in the tag name. If <code>Use latest tag</code> is checked, the dropdown is greyed out and <code>--latest</code> is passed to the script. Selecting a tag automatically unchecks <code>Use latest tag</code>.</p>
+<p><strong>Node fields:</strong> <code>Single target node</code> and <code>Exclude nodes</code> are mutually exclusive in the script — if a single node is selected, the exclude list is ignored.</p>
+<p>Generated command example:</p>
+<pre><code>bash image-pull.sh -i queensschoolofcomputingdocker/gpu-jupyter-latest \
+  -b 3 -t 1200 -e lobot-dev.cs.queensu.ca --latest --yes</code></pre>
+<p>Or, with a specific tag and target node:</p>
+<pre><code>bash image-pull.sh -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-20260313 \
+  -b 3 -t 1200 -n gpu3 --yes</code></pre>
 <h3>[2] image-cleanup</h3>
-<p>Removes old image tags from all nodes while protecting images in use by running pods.</p>
+<p>Removes old image tags from all nodes while protecting images in use by running pods. The tag to <strong>keep</strong> is selected from a DockerHub dropdown.</p>
 <table>
 <thead>
 <tr>
 <th>Field</th>
+<th>Type</th>
 <th>Description</th>
 <th>Default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Image to KEEP (name:tag)</td>
-<td>Tag to retain; all others of the same image are removed</td>
+<td>Image to KEEP</td>
+<td>Text + tag dropdown</td>
+<td>Tag to retain; all others removed</td>
+<td><code>queensschoolofcomputingdocker/gpu-jupyter-latest</code></td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>Dropdown</td>
+<td>Available tags from DockerHub, newest first</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Exclude nodes</td>
-<td>Comma-separated nodes to skip</td>
-<td><code>lobot-dev.cs.queensu.ca</code></td>
+<td>Multi-select</td>
+<td>Worker nodes to skip</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Single target node (<code>-n</code>)</td>
+<td>Dropdown</td>
+<td>Target one specific node (includes control plane)</td>
+<td>All nodes</td>
 </tr>
 <tr>
 <td>Dry run</td>
+<td>Checkbox</td>
 <td>Preview without removing</td>
 <td>✓ checked</td>
 </tr>
 </tbody>
 </table>
+<p>Generated command example:</p>
+<pre><code>bash image-cleanup.sh \
+  -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-20260313 \
+  -e lobot-dev.cs.queensu.ca --yes</code></pre>
 <h3>[3] apply-config</h3>
 <p>Pulls the JupyterHub Helm config template from the <code>newcluster</code> GitHub branch, substitutes secrets from the existing config, and applies it. Runs <code>sudo bash apply-config.sh</code> on the control plane. The Hub pod restarts briefly.</p>
+<p>No wizard fields — a confirmation prompt is shown before the command runs.</p>
 <h3>[4] sync-groups</h3>
-<p>Syncs JupyterHub group membership from <code>group-roles.yaml</code>. Runs <code>bash sync_groups.sh</code>. Supports dry-run to preview changes without applying them.</p>
+<p>Syncs JupyterHub group membership from <code>group-roles.yaml</code>. Runs <code>bash sync_groups.sh</code>. Supports dry-run (checkbox in wizard) to preview changes without applying them.</p>
 <h3>[5] helm upgrade</h3>
-<p>Runs a full JupyterHub Helm upgrade:</p>
-<pre><code>helm upgrade jhub jupyterhub/jupyterhub \
+<p>Runs a full JupyterHub Helm upgrade. A <strong>command preview screen</strong> is shown first, displaying the exact command that will run, before any confirmation is accepted. The Hub pod restarts; active user sessions may be briefly interrupted.</p>
+<pre><code>helm upgrade --cleanup-on-fail jhub jupyterhub/jupyterhub \
   --namespace jhub \
-  --reuse-values \
-  -f /opt/Lobot/config.yaml.bk \
-  -f /opt/Lobot/config-prod.yaml.bk</code></pre>
-<p>Output streams live. The Hub pod restarts; active user sessions may be briefly interrupted.</p>
+  --version 4.0.0-beta.2 \
+  --values /opt/Lobot/config.yaml \
+  --values /opt/Lobot/config-env.yaml \
+  --timeout 60m</code></pre>
+<p>The preview screen requires an explicit confirmation (<code>y</code> or the Run button) before executing. Press <code>Escape</code> to cancel.</p>
 <h3>[6] Announcement Editor</h3>
-<p>Opens a full-screen YAML editor loaded with the current contents of <code>/opt/Lobot/announcement.yaml</code>.</p>
+<p>Opens a modal form with two text fields — one for the production announcement and one for the dev announcement. Current values are fetched live from GitHub so the form always reflects the authoritative version, not a potentially stale local copy. Falls back to the local <code>/opt/Lobot/announcement.yaml</code> if GitHub is unreachable.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>YAML key</th>
+<th>Served to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td><code>announcement_prod</code></td>
+<td>Production JupyterHub</td>
+</tr>
+<tr>
+<td>Development</td>
+<td><code>announcement_dev</code></td>
+<td>Dev JupyterHub</td>
+</tr>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -353,20 +494,36 @@ python3 -m lobot_tui</code></pre>
 </thead>
 <tbody>
 <tr>
-<td><code>Ctrl+S</code></td>
-<td>Save file, commit, and push to GitHub (<code>newcluster</code> branch)</td>
-</tr>
-<tr>
 <td><code>Escape</code></td>
-<td>Return without saving</td>
+<td>Cancel without saving</td>
 </tr>
 </tbody>
 </table>
-<p>On save, the TUI runs:</p>
+<p><strong>Save &amp; push currently disabled.</strong> The editor opens and loads current values from GitHub for reference, but the Save button and <code>Ctrl+S</code> binding are not yet wired up. A warning label is shown in the dialog: <em>"⚠ Save &amp; push coming soon — edit announcement.yaml manually for now."</em> The git infrastructure (add / commit / push with per-step error messages) is already implemented and will be enabled in a future update.</p>
+<p>When implemented, save will write the two field values back to <code>announcement.yaml</code> and run:</p>
 <pre><code>git add /opt/Lobot/announcement.yaml
 git commit -m "chore: update announcement via lobot-tui"
 git push origin newcluster</code></pre>
 <p>The JupyterHub announcement banner updates within seconds as the hub fetches the new YAML from GitHub.</p>
+<hr />
+<h2>Background Job System</h2>
+<p>Tool actions 1–5 run as background jobs so the main dashboard remains usable during long operations like image-pull.</p>
+<p><strong>Workflow:</strong></p>
+<ol>
+<li>Press <code>1</code>–<code>5</code>, fill in the wizard, and click <strong>Run</strong>.</li>
+<li>The background jobs panel opens immediately, showing live streaming output.</li>
+<li>Press <code>b</code> to background the panel and return to the dashboard — <strong>the job keeps running</strong>.</li>
+<li>While a job is active, the tool hint bar on the dashboard is replaced by a live status line showing the job name and elapsed time (<code>● image-pull  1m42s  [b] view output</code>). Pressing any tool key (<code>1</code>–<code>5</code>) shows a warning instead of opening a wizard.</li>
+<li>Press <code>b</code> again at any time to return to the live output.</li>
+<li>When the job finishes, a toast notification appears on the main dashboard showing success or failure, and the normal tool hint bar is restored.</li>
+</ol>
+<p><strong>Safety rules:</strong></p>
+<ul>
+<li><strong>Only one tool job runs at a time.</strong> Pressing <code>1</code>–<code>5</code> while a job is active shows a warning naming the running job. The wizard does not open.</li>
+<li><strong><code>Escape</code> and <code>q</code> do nothing while a job is running</strong> — they cannot accidentally dismiss the panel mid-run. Once the job finishes they work normally to close the panel.</li>
+<li><strong>Killing a job requires double confirmation.</strong> Press <code>k</code> once to arm (footer turns red with a 3-second countdown), then <code>k</code> again to confirm SIGTERM. Waiting lets the countdown expire with no effect.</li>
+<li><strong>The indicator clears automatically</strong> when a job completes, even if a different screen (pod logs, describe) is in the foreground — the main screen always receives the completion event.</li>
+</ul>
 <hr />
 <h2>Dev / Demo Mode</h2>
 <p>Run with <code>--dev</code> or <code>LOBOT_TUI_DEV=1</code> to launch with static mock data. No <code>kubectl</code> or cluster access required. Useful for testing on a development workstation before deploying.</p>
@@ -399,6 +556,16 @@ git push origin newcluster</code></pre>
 <td><code>/opt/Lobot/kubectl-view-allocations -o csv</code></td>
 <td>10s</td>
 </tr>
+<tr>
+<td>Available image tags</td>
+<td>DockerHub API (on wizard open)</td>
+<td>On demand</td>
+</tr>
+<tr>
+<td>Node list (for pickers)</td>
+<td><code>kubectl get nodes</code> (on wizard open)</td>
+<td>On demand</td>
+</tr>
 </tbody>
 </table>
 <p>All subprocess calls are async — the UI never blocks waiting for <code>kubectl</code>.</p>
@@ -408,10 +575,11 @@ git push origin newcluster</code></pre>
 <p><strong>Location:</strong> <code>/opt/Lobot/logs/lobot-tui-YYYY-MM-DD.log</code></p>
 <p>The directory is created on first use. The file rotates at midnight (a new file is started each calendar day).</p>
 <p>Each entry records the timestamp, exit code, and full command:</p>
-<pre><code>[2026-03-13 14:22:05] [exit 0] $ kubectl describe pod jupyter-alice -n jhub
-[2026-03-13 14:22:10] [exit 0] $ kubectl cordon newcluster-gpu1
-[2026-03-13 14:22:15] [exit 0] $ kubectl logs -f jupyter-alice -n jhub --tail 500
-[2026-03-13 14:22:30] [exit 0] $ git push origin newcluster</code></pre>
+<pre><code>[2026-03-15 14:22:05] [exit 0] $ kubectl describe pod jupyter-alice -n jhub
+[2026-03-15 14:22:10] [exit 0] $ kubectl cordon newcluster-gpu1
+[2026-03-15 14:22:15] [exit 0] $ kubectl logs -f jupyter-alice -n jhub --tail 500
+[2026-03-15 14:22:30] [exit 0] $ bash image-pull.sh -i queensschoolofcomputingdocker/gpu-jupyter-latest -b 3 -t 1200 --latest --yes
+[2026-03-15 14:22:35] [exit 0] $ git push origin newcluster</code></pre>
 <p><strong>Commands logged:</strong></p>
 <table>
 <thead>
@@ -461,7 +629,7 @@ git push origin newcluster</code></pre>
 </table>
 <p>The in-session history is also viewable live via the console screen (<code>`</code>), which shows the most recent commands first and displays the path to today's log file in the header.</p>
 <h3>Manual save (optional)</h3>
-<p>Action and log screens can also save their full streaming output to <code>/tmp/</code> by pressing <code>s</code>:</p>
+<p>Action and log screens can also save their full streaming output by pressing <code>s</code>:</p>
 <table>
 <thead>
 <tr>
@@ -472,32 +640,38 @@ git push origin newcluster</code></pre>
 <tbody>
 <tr>
 <td>Pod logs</td>
-<td><code>lobot-tui-logs-&lt;username&gt;-&lt;timestamp&gt;.log</code></td>
+<td><code>/opt/Lobot/logs/lobot-tui-logs-&lt;username&gt;-&lt;timestamp&gt;.log</code></td>
 </tr>
 <tr>
-<td>Tool output</td>
-<td><code>lobot-tui-&lt;action-name&gt;-&lt;timestamp&gt;.log</code></td>
+<td>Tool output (background jobs)</td>
+<td><code>/opt/Lobot/logs/lobot-tui-&lt;action-name&gt;-&lt;timestamp&gt;.log</code></td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h2>Source Files</h2>
-<pre><code>tools/lobot-tui/
+<pre><code>tools/lobot_tui/
   __main__.py               Entry point (python3 -m lobot_tui)
-  app.py                    Root Textual App class
+  app.py                    Root Textual App class; owns job_manager
   config.py                 Cluster constants and paths
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
     models.py               Dataclasses: PodInfo, NodeInfo, LabSummary, ClusterState
     collector.py            Async kubectl polling, ClusterStateUpdated message
-    command_log.py          Audit log: in-session deque + daily file persistence
+    command_log.py          In-session command history (also written to audit log)
+    job_manager.py          BackgroundJobManager — runs tool commands as background tasks
   screens/
     main_screen.py          Primary dashboard layout and all key bindings
     logs_screen.py          Pod log viewer
-    action_screen.py        Streaming tool output screen (auto-close option)
+    action_screen.py        Streaming tool output screen (kubectl commands, auto-close option)
     pod_detail_screen.py    kubectl describe viewer
-    action_wizard_screen.py Tool parameter input form
-    announcement_screen.py  YAML editor + git push
+    action_wizard_screen.py Tool parameter input form (tag dropdowns, node pickers, dry-run)
+    jobs_screen.py          Live background-job output panel (toggled with b)
+    command_preview_screen.py  Pre-run command preview for destructive actions (helm upgrade)
+    confirm_screen.py       Generic boolean confirmation modal
+    node_picker_screen.py   Multi/single node selector modal used by wizard
+    pod_context_menu_screen.py  Right-click / Enter context menu for pod actions
+    announcement_screen.py  YAML editor + git push (save/push currently disabled)
     help_screen.py          Key binding reference
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
@@ -505,11 +679,12 @@ git push origin newcluster</code></pre>
     cluster_summary.py      Per-lab resource table (compact, one row per lab)
     pod_table.py            Pod DataTable with filter and column sort
     node_table.py           Node DataTable with column sort
-    actions_panel.py        Key hint bar
+    actions_panel.py        Key hint bar (all hints are clickable)
     status_bar.py           Bottom status line
   actions/
-    definitions.py          ActionDef registry (image-pull, cleanup, etc.)
-    runner.py               Async subprocess runner (yields lines)
+    definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
+  utils/
+    tag_fetcher.py          DockerHub tag fetching; kubectl node list
   styles/
     app.tcss                Textual CSS dark theme
 tools/lobot-tui.sh          Shell launcher (supports --dev flag)</code></pre>
