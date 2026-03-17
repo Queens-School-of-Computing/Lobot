@@ -140,8 +140,8 @@ class RepeatTimer(Timer):
                     .splitlines()[1:]
                 )
                 labs = {}
-                for l in node_info:
-                    parts = l.split()
+                for line in node_info:
+                    parts = line.split()
                     node = parts[0]
                     if 'lab=' in parts[5]:
                         lab = parts[5].split('lab=')[1]

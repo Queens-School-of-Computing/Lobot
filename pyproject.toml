@@ -5,10 +5,10 @@ target-version = "py314"
 [tool.ruff.lint]
 # Enable all pycodestyle & Pyflakes rules
 select = ["E", "F"]
+# Ignore line-too-long issues that linter can't fix
+ignore = ["E501"]
 
 [tool.ruff.format]
 preview = true
 quote-style = "preserve"
 skip-magic-trailing-comma = false
-# Ignore line-too-long issues that linter can't fix
-ignore = ["E501"]
