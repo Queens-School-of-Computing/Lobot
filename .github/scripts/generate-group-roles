@@ -87,15 +87,18 @@ def transform_payload(users_payload, groups_payload):
             group_name = parse_group_name(group)
             if group_name not in groups:
                 groups[group_name] = []
-            groups[group_name].append(user['Username'])
+
+            username = user['Username'].lower()
+            groups[group_name].append(username)
 
 
     roles = []
     for group in groups_payload:
         group_name = parse_group_name(group['Name'])
+        group_owner = group['Owner'].lower()
         role = {
             'name': group_name,
-            'user': group['Owner'],
+            'user': group_owner,
             'members': groups.get(group_name),
         }
 
