@@ -1,9 +1,9 @@
 """PodTable: DataTable widget showing pods filtered by namespace."""
 
 from textual.app import ComposeResult
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import DataTable, Static
-from textual.reactive import reactive
 
 from ..config import JUPYTERHUB_NAMESPACE
 from ..data.collector import ClusterStateUpdated

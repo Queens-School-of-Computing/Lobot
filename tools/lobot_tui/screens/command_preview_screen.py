@@ -1,9 +1,9 @@
 """CommandPreviewScreen: show exact command before running a destructive operation."""
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label, Static
-from textual.containers import Vertical, Horizontal
 
 
 class CommandPreviewScreen(ModalScreen[bool]):

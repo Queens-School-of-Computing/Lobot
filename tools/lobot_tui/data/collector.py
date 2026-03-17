@@ -9,21 +9,20 @@ from textual.widget import Widget
 
 from ..config import (
     CONTROL_PLANE,
-    JUPYTERHUB_NAMESPACE,
-    PODS_INTERVAL,
-    NODES_INTERVAL,
     DEV_MODE,
+    JUPYTERHUB_NAMESPACE,
+    NODES_INTERVAL,
+    PODS_INTERVAL,
     SERVICE_HOST,
     SERVICE_PORT,
 )
-from .models import ClusterState, ResourceSummary, NodeInfo, PodInfo
+from .models import ClusterState, NodeInfo, PodInfo, ResourceSummary
 from .parsers import (
-    _run_kubectl,
-    _parse_pods,
-    _parse_nodes,
     _merge_nodes_and_pods,
+    _parse_nodes,
+    _parse_pods,
+    _run_kubectl,
 )
-
 
 # ---------------------------------------------------------------------------
 # Message emitted to the app when new data is ready

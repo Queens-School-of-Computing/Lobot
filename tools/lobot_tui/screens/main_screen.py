@@ -4,7 +4,6 @@ import asyncio
 import json
 import socket
 from datetime import datetime
-from pathlib import Path
 from typing import Callable
 
 from textual.app import ComposeResult
@@ -13,15 +12,15 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import DataTable, Input, Label, Static
 
+from ..actions.definitions import ACTIONS_BY_KEY
 from ..config import (
-    CONTROL_PLANE,
     IS_DEV,
     JUPYTERHUB_NAMESPACE,
     NS_FILTERS_FILE,
-    TOOLS_DIR,
     TOOLS_LOCKED,
 )
 from ..data.collector import ClusterStateUpdated, DataCollector
+from ..data.job_manager import JobCompleted
 from ..data.models import NodeInfo, PodInfo
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
 from ..widgets.cluster_summary import ResourceTableWidget
@@ -33,14 +32,11 @@ from .action_wizard_screen import ActionWizardScreen
 from .announcement_screen import AnnouncementScreen
 from .command_preview_screen import CommandPreviewScreen
 from .console_screen import ConsoleScreen
-from .help_screen import HelpScreen
 from .exec_screen import ExecScreen
+from .help_screen import HelpScreen
 from .jobs_screen import JobsScreen
 from .logs_screen import LogsScreen
 from .pod_detail_screen import PodDetailScreen
-from ..actions.definitions import ACTIONS_BY_KEY
-from ..data.job_manager import JobCompleted
-
 
 _NAMESPACES_DEFAULT = [JUPYTERHUB_NAMESPACE, "all"]
 
@@ -226,7 +222,7 @@ class MainScreen(Screen):
         elapsed = int((datetime.now() - job.start_time).total_seconds())
         mins, secs = divmod(elapsed, 60)
         elapsed_str = f"{mins}m{secs:02d}s" if mins else f"{secs}s"
-        panel.set_job_status(f"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]")
+        panel.set_job_status(rf"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]")
 
     # ── Double-keypress confirmation ───────────────────────────────────────
 
@@ -473,7 +469,7 @@ class MainScreen(Screen):
         if self.app.job_manager.is_running:
             job = self.app.job_manager.current_job
             self.notify(
-                f"{job.title} is running — press \[b] to view it.",
+                rf"{job.title} is running — press \[b] to view it.",
                 title="Job in progress",
                 severity="warning",
                 timeout=4.0,
@@ -555,14 +551,14 @@ class MainScreen(Screen):
             pass
         if job.status == "done":
             self.notify(
-                f"{job.title} finished — press \[b] to view output.",
+                rf"{job.title} finished — press \[b] to view output.",
                 title="Job completed",
                 timeout=6.0,
             )
         else:
             rc = job.returncode if job.returncode is not None else "?"
             self.notify(
-                f"{job.title} failed (exit {rc}) — press \[b] to view output.",
+                rf"{job.title} failed (exit {rc}) — press \[b] to view output.",
                 title="Job failed",
                 severity="error",
                 timeout=8.0,

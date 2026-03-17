@@ -9,8 +9,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from ..config import CONTROL_PLANE, MAX_TAG_LEN
-from .models import ResourceSummary, NodeInfo, PodInfo
-
+from .models import NodeInfo, PodInfo, ResourceSummary
 
 # ---------------------------------------------------------------------------
 # String helpers

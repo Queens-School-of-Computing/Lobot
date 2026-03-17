@@ -2,7 +2,6 @@
 
 import asyncio
 from datetime import datetime
-from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding

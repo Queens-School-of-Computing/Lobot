@@ -1,9 +1,9 @@
 """ConfirmScreen: generic modal for destructive actions."""
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
-from textual.containers import Vertical, Horizontal
 
 
 class ConfirmScreen(ModalScreen[bool]):

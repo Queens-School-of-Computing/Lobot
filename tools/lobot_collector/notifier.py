@@ -12,15 +12,15 @@ from typing import Optional
 
 from .config import (
     EMAIL_ENABLED,
-    SMTP_SERVER,
-    SMTP_PORT,
-    SMTP_USE_TLS,
-    SMTP_USERNAME,
-    SMTP_PASSWORD,
     FROM_EMAIL,
-    TO_EMAIL,
     OUTPUT_FILE,
     PODS_INTERVAL,
+    SMTP_PASSWORD,
+    SMTP_PORT,
+    SMTP_SERVER,
+    SMTP_USE_TLS,
+    SMTP_USERNAME,
+    TO_EMAIL,
 )
 
 logger = logging.getLogger(__name__)

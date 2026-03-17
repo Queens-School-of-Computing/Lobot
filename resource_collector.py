@@ -1,16 +1,15 @@
-from collections import defaultdict
 import datetime
-from math import floor
-from threading import Timer
-from subprocess import check_output
-import logging
-from logging.handlers import SysLogHandler
-from traceback import format_exc
-import sys
-import os
-import pandas as pd
-from io import StringIO
 import json
+import logging
+import sys
+from io import StringIO
+from logging.handlers import SysLogHandler
+from math import floor
+from subprocess import check_output
+from threading import Timer
+from traceback import format_exc
+
+import pandas as pd
 
 output_folder = 'resource_collector_data'
 output_file = '/opt/Lobot/resource_collector_data/current.json'
@@ -141,7 +140,7 @@ class RepeatTimer(Timer):
                         # pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>')
                         pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem} mem, {pod_gpu} gpu')
                     pod_usage.append(
-                        f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.'
+                        "NOTICE: If you select more resources than are available, your workload will be pending until resources are available."
                     )
                     data[lab] = {
                         'time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

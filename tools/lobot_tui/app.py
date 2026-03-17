@@ -2,6 +2,7 @@
 
 import asyncio
 from pathlib import Path
+
 from textual.app import App
 
 from .config import APP_TITLE, DEV_MODE, SERVICE_HOST, SERVICE_PORT
