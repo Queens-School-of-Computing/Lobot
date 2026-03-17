@@ -1,8 +1,6 @@
-import os
 import json
+import os
 import sys
-import yaml
-
 from pathlib import Path
 
 input_file = os.getenv('INPUT_FILE', './members-payload.json')
@@ -150,10 +148,10 @@ def read_payload(path, root_property):
     try:
         content = Path(path).read_text()
         return json.loads(content)[root_property]
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"No payload file found at '{path}' -- quitting")
         sys.exit(1)
-    except KeyError as e:
+    except KeyError:
         print(f"Payload missing root property '{root_property}' -- quitting")
         sys.exit(1)
 

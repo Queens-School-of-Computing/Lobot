@@ -1,19 +1,17 @@
 """Action definitions for lobot-tui."""
 
-from dataclasses import dataclass, field
-from typing import Callable, Optional
+from dataclasses import dataclass
+from typing import Callable
 
 from ..config import (
     CONTROL_PLANE,
-    TOOLS_DIR,
-    REPO_DIR,
-    HELM_CONFIG,
-    HELM_CONFIG_ENV,
-    JUPYTERHUB_NAMESPACE,
-    JUPYTERHUB_RELEASE,
+    JUPYTERHUB_API_URL,
     JUPYTERHUB_CHART,
     JUPYTERHUB_CHART_VERSION,
-    JUPYTERHUB_API_URL,
+    JUPYTERHUB_NAMESPACE,
+    JUPYTERHUB_RELEASE,
+    REPO_DIR,
+    TOOLS_DIR,
 )
 
 

@@ -2,7 +2,6 @@
 
 import asyncio
 from datetime import datetime
-from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -13,10 +12,10 @@ from ..config import LOG_DIR
 from ..data import command_log
 from ..data.models import PodInfo
 
-_FOOTER_LIVE = "[dim]Streaming — \[Esc/q] back  \[s] save  (scroll up to pause)[/]"
-_FOOTER_PAUSED = "[yellow]⏸ Paused — \[l] resume stream  \[s] save  \[Esc/q] back[/]"
-_FOOTER_ENDED = "[dim]Stream ended — \[Esc/q] back  \[s] save[/]"
-_FOOTER_ENDED_PAUSED = "[dim]Stream ended (was paused) — \[Esc/q] back  \[s] save[/]"
+_FOOTER_LIVE = r"[dim]Streaming — \[Esc/q] back  \[s] save  (scroll up to pause)[/]"
+_FOOTER_PAUSED = r"[yellow]⏸ Paused — \[l] resume stream  \[s] save  \[Esc/q] back[/]"
+_FOOTER_ENDED = r"[dim]Stream ended — \[Esc/q] back  \[s] save[/]"
+_FOOTER_ENDED_PAUSED = r"[dim]Stream ended (was paused) — \[Esc/q] back  \[s] save[/]"
 
 
 class LogsScreen(Screen):
@@ -43,7 +42,7 @@ class LogsScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Label(
             f" [bold cyan]LOGS[/]  {self._pod.name}  ns:{self._pod.namespace}  "
-            f"[dim]\[Esc/q] back  \[s] save[/]",
+            rf"[dim]\[Esc/q] back  \[s] save[/]",
             id="screen-header",
             markup=True,
         )

@@ -133,7 +133,7 @@ class AnnouncementScreen(ModalScreen):
             prod, dev = await loop.run_in_executor(None, _fetch_from_url, url)
             self.query_one("#input-prod", Input).value = prod
             self.query_one("#input-dev", Input).value = dev
-            footer.update(f"[dim]Loaded from GitHub  ·  Ctrl+S to save and push[/]")
+            footer.update("[dim]Loaded from GitHub  ·  Ctrl+S to save and push[/]")
         except Exception as exc:
             # Fall back to local file
             prod, dev = _load_local_fields()

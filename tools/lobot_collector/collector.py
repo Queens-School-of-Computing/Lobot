@@ -6,13 +6,13 @@ from datetime import datetime
 
 from lobot_tui.data.models import ClusterState
 from lobot_tui.data.parsers import (
-    _run_kubectl,
-    _parse_pods,
-    _parse_nodes,
     _merge_nodes_and_pods,
+    _parse_nodes,
+    _parse_pods,
+    _run_kubectl,
 )
 
-from .config import PODS_INTERVAL, NODES_INTERVAL, JUPYTERHUB_NAMESPACE
+from .config import JUPYTERHUB_NAMESPACE, NODES_INTERVAL, PODS_INTERVAL
 
 logger = logging.getLogger(__name__)
 

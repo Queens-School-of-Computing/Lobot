@@ -17,9 +17,9 @@ The script reads:
 """
 
 import argparse
+import re
 import subprocess
 import sys
-import re
 from pathlib import Path
 
 CONFIG_ENV = Path('/opt/Lobot/config-env.yaml')
@@ -158,8 +158,8 @@ def get_current_image():
 
         raw = urlopen(CONFIG_YAML_BK_URL, timeout=5).read().decode()
         cfg = yaml.safe_load(raw)
-        tag = cfg['singleuser']['image']['tag']
-        print(f"  (image tag read from GitHub config.yaml.bk)")
+        tag = cfg["singleuser"]["image"]["tag"]
+        print("  (image tag read from GitHub config.yaml.bk)")
         return tag, tag
     except Exception:
         pass

@@ -51,7 +51,7 @@ class JobsScreen(Screen):
 
     def _update_header(self, job: "BackgroundJob | None") -> None:
         if job is None:
-            text = " [bold cyan]JOBS[/]  [dim]No active job  Esc/q/\[b] close[/]"
+            text = r" [bold cyan]JOBS[/]  [dim]No active job  Esc/q/\[b] close[/]"
         else:
             elapsed = int((datetime.now() - job.start_time).total_seconds())
             status_tag = {
@@ -60,9 +60,9 @@ class JobsScreen(Screen):
                 "failed": "[red]✗ Failed[/]",
             }.get(job.status, "")
             if job.status == "running":
-                hint = "\[b] background  \[k] kill (confirm)  \[s] save"
+                hint = r"\[b] background  \[k] kill (confirm)  \[s] save"
             else:
-                hint = "Esc/q/\[b] close  \[s] save"
+                hint = r"Esc/q/\[b] close  \[s] save"
             text = (
                 f" [bold cyan]JOBS[/]  {status_tag}  [dim]{job.title}  "
                 f"{elapsed}s elapsed  {hint}[/]"
@@ -72,17 +72,17 @@ class JobsScreen(Screen):
     def _update_footer(self, job: "BackgroundJob | None") -> None:
         footer = self.query_one("#screen-footer", Label)
         if job is None:
-            footer.update("[dim]Esc/q/\[b] close[/]")
+            footer.update(r"[dim]Esc/q/\[b] close[/]")
         elif job.status == "running":
             footer.update(
-                "[dim]\[b] background — job keeps running in dashboard  "
-                "\[k] kill job (press twice to confirm)[/]"
+                r"[dim]\[b] background — job keeps running in dashboard  "
+                r"\[k] kill job (press twice to confirm)[/]"
             )
         elif job.status == "done":
-            footer.update("[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
+            footer.update(r"[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
         else:
             rc = job.returncode if job.returncode is not None else "?"
-            footer.update(f"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
+            footer.update(rf"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
 
     def _poll_output(self) -> None:
         job = self.app.job_manager.current_job
@@ -144,7 +144,7 @@ class JobsScreen(Screen):
                 self._kill_timer.stop()
             self._kill_timer = self.set_timer(3.0, self._clear_kill_pending)
             self.query_one("#screen-footer", Label).update(
-                "[bold red]Press \[k] again within 3 seconds to confirm kill — or wait to cancel[/]"
+                r"[bold red]Press \[k] again within 3 seconds to confirm kill — or wait to cancel[/]"
             )
 
     def _clear_kill_pending(self) -> None:

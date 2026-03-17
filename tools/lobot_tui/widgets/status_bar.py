@@ -1,6 +1,7 @@
 """StatusBar: bottom status line with timestamps and live indicator."""
 
 from datetime import datetime
+
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Label

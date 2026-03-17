@@ -3,9 +3,9 @@
 import subprocess
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Label, Static
-from textual.containers import Vertical, Horizontal, ScrollableContainer
 
 from ..config import CONTROL_PLANE
 

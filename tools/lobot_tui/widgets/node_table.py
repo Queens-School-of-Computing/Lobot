@@ -8,18 +8,18 @@ from textual.widgets import DataTable
 from ..data.collector import ClusterStateUpdated
 from ..data.models import NodeInfo
 from .render_utils import (
+    filter_highlight,
+    fmt_cpu,
+    fmt_gpu,
+    fmt_ram_gb,
+    plain_text,
     render_bar,
     render_bar_text,
     render_gpu_bar,
     render_gpu_bar_text,
-    fmt_cpu,
-    fmt_ram_gb,
-    fmt_gpu,
+    row_bg_for_node,
     status_badge,
     status_badge_text,
-    row_bg_for_node,
-    plain_text,
-    filter_highlight,
 )
 
 # Fixed-width columns (excluding NAME which expands)

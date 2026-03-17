@@ -1,14 +1,15 @@
 """ActionWizardScreen: parameter input form before running a tool."""
 
+import re as _re
+
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Input, Label, Select, SelectionList, Static
-from textual.containers import Vertical, Horizontal
 
 from ..actions.definitions import ActionDef, ActionField
 from ..config import CONTROL_PLANE, TOOLS_LOCKED
-import re as _re
 from ..utils.tag_fetcher import fetch_dockerhub_tags, get_worker_nodes
 
 # Sentinel used by Select when nothing is chosen

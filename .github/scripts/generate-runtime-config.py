@@ -1,9 +1,7 @@
-import os
 import json
+import os
 import re
 import sys
-import yaml
-
 from pathlib import Path
 
 input_file = os.getenv('INPUT_FILE', './members-payload.json')
@@ -50,10 +48,10 @@ def read_payload(path, root_property):
 
         return payload[root_property]
 
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"No payload file found at '{path}' -- quitting")
         sys.exit(1)
-    except KeyError as e:
+    except KeyError:
         print(f"Payload missing root property '{root_property}' -- quitting")
         sys.exit(1)
 
@@ -113,7 +111,7 @@ def extract_resources(payload, resource_names):
         if resource_not_allowed:
             continue
 
-        if not res in resources:
+        if res not in resources:
             resources[res] = []
 
         # Since GitHub usernames are case-insensitive,
