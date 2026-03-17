@@ -193,7 +193,7 @@ class AnnouncementScreen(ModalScreen):
             "--porcelain",
             ANNOUNCEMENT_YAML,
         ])
-        if rc_status == 0 and not any(l.strip() for l in status_lines):
+        if rc_status == 0 and not any(x.strip() for x in status_lines):
             footer.update("[dim]No changes — file already up to date. Pushing anyway…[/]")
         else:
             rc, lines = await self._run_git([

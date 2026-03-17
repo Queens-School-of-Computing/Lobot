@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import yaml
 from pathlib import Path
 
 input_file = os.getenv('INPUT_FILE', './members-payload.json')

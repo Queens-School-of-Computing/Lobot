@@ -52,8 +52,8 @@ class RepeatTimer(Timer):
                     .splitlines()[1:]
                 )
                 labs = {}
-                for l in node_info:
-                    parts = l.split()
+                for line in node_info:
+                    parts = line.split()
                     node = parts[0]
                     if 'lab=' in parts[5]:
                         lab = parts[5].split('lab=')[1]
@@ -150,7 +150,7 @@ class RepeatTimer(Timer):
                         'usage': pod_usage,
                     }
                 json.dump(data, open(output_file, 'w'))
-            except:
+            except:  # noqa: E722 - we actually want to catch any error type
                 _, value, traceback = sys.exc_info()
                 print(value, self.error_counter)
                 self.error_counter += 1

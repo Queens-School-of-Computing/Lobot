@@ -2,6 +2,7 @@ import json
 import os
 import re
 import sys
+import yaml
 from pathlib import Path
 
 input_file = os.getenv('INPUT_FILE', './members-payload.json')
@@ -107,7 +108,7 @@ def extract_resources(payload, resource_names):
     resources = {}
     for member in payload:
         res = member['Membership']
-        resource_not_allowed = not res in resource_names
+        resource_not_allowed = res not in resource_names
         if resource_not_allowed:
             continue
 
