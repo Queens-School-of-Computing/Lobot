@@ -26,10 +26,10 @@ _USERNAME_MIN = 14
 _USERNAME_MAX = 30
 
 PHASE_MARKUP = {
-    "Running":   "[green]Running[/]",
-    "Pending":   "[yellow]Pending[/]",
-    "Failed":    "[red]Failed[/]",
-    "Succeeded": "[dim]Done[/]",
+    "Running":   "[#3fb950]● Running[/]",
+    "Pending":   "[#d29922]◌ Pending[/]",
+    "Failed":    "[#f85149]✖ Failed[/]",
+    "Succeeded": "[dim]✓ Done[/]",
 }
 
 def _left_trunc(text: str, width: int) -> str:
@@ -83,7 +83,7 @@ class PodTableWidget(Widget):
     _sort_rev: bool = False
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="pod-datatable", cursor_type="row", zebra_stripes=True)
+        yield DataTable(id="pod-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
 
     def on_mount(self) -> None:
         self._setup_columns()

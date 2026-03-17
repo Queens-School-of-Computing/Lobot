@@ -2,7 +2,7 @@
 
 /* ── App shell ── */
 Screen {
-    background: #0d1117;
+    background: #090d13;
     color: #c9d1d9;
 }
 
@@ -20,32 +20,32 @@ Screen {
     height: 1fr;
     layout: horizontal;
     min-height: 10;
-    max-height: 18;
+    max-height: 22;
 }
 
 #summary-panel {
     width: 2fr;
-    border: solid #30363d;
+    border: heavy #30363d;
     border-title-color: #58a6ff;
     border-title-align: left;
     padding: 0;
 }
 
 #summary-panel:focus-within {
-    border: solid #e3b341;
+    border: heavy #e3b341;
     border-title-color: #e3b341;
 }
 
 #nodes-panel {
     width: 3fr;
-    border: solid #30363d;
+    border: heavy #30363d;
     border-title-color: #58a6ff;
     border-title-align: left;
     padding: 0;
 }
 
 #nodes-panel:focus-within {
-    border: solid #e3b341;
+    border: heavy #e3b341;
     border-title-color: #e3b341;
 }
 
@@ -53,7 +53,7 @@ Screen {
 /* ── Pod table ── */
 #pods-panel {
     height: 2fr;
-    border: solid #30363d;
+    border: heavy #30363d;
     border-title-color: #58a6ff;
     border-title-align: left;
     padding: 0;
@@ -61,7 +61,7 @@ Screen {
 }
 
 #pods-panel:focus-within {
-    border: solid #e3b341;
+    border: heavy #e3b341;
     border-title-color: #e3b341;
 }
 
@@ -153,13 +153,14 @@ DataTable {
 
 DataTable > .datatable--header {
     background: #161b22;
-    color: #58a6ff;
+    color: #79c0ff;
     text-style: bold;
 }
 
 DataTable > .datatable--cursor {
-    background: #1f6feb;
-    color: #ffffff;
+    background: #0a1e35;
+    color: #58a6ff;
+    text-style: bold;
 }
 
 DataTable > .datatable--hover {
@@ -176,6 +177,13 @@ DataTable > .datatable--hover {
 
 .bar-crit {
     color: #f85149;
+}
+
+/* Sparkline — pod count history in the resource summary panel */
+#pod-sparkline {
+    height: 3;
+    background: #090d13;
+    color: #3fb950;
 }
 
 /* ── Modal screens ── */

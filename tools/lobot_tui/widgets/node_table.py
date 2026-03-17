@@ -7,14 +7,21 @@ from textual.widgets import DataTable
 
 from ..data.collector import ClusterStateUpdated
 from ..data.models import NodeInfo
+from .render_utils import (
+    render_bar, render_bar_text,
+    render_gpu_bar, render_gpu_bar_text,
+    fmt_cpu, fmt_ram_gb, fmt_gpu,
+    status_badge, status_badge_text,
+    row_bg_for_node, plain_text, filter_highlight,
+)
 
 # Fixed-width columns (excluding NAME which expands)
 _FIXED_COLS = [
     ("RESOURCE", 20),
-    ("STATUS", 10),
-    ("CPU",     9),
-    ("RAM",    15),
-    ("GPU",     7),
+    ("STATUS",   10),
+    ("CPU",      15),
+    ("RAM",      15),
+    ("GPU",      14),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1  # including NAME
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
@@ -38,18 +45,6 @@ _SORT_KEYS = [
 ]
 
 
-def _status_markup(node: NodeInfo) -> str:
-    if node.is_control_plane:
-        return "[dim]ctrl-plane[/]"
-    if node.status == "Ready" and node.schedulable:
-        return "[green]Ready[/]"
-    if node.status == "Ready" and not node.schedulable:
-        return "[yellow]Cordoned[/]"
-    if node.status == "NotReady":
-        return "[red]NotReady[/]"
-    return "[dim]Unknown[/]"
-
-
 class NodeTableWidget(Widget):
     """Node list with status and resource utilisation."""
 
@@ -66,7 +61,7 @@ class NodeTableWidget(Widget):
     _filter_node: "str | None" = None   # node name actively filtering pods
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="node-datatable", cursor_type="row", zebra_stripes=True)
+        yield DataTable(id="node-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
 
     def on_mount(self) -> None:
         self._setup_columns()
@@ -119,7 +114,7 @@ class NodeTableWidget(Widget):
         self._rebuild_table()
 
     def toggle_filter(self) -> None:
-        """Toggle pod filter on/off for currently selected node (called by `.` hotkey)."""
+        """Toggle pod filter on/off for currently selected node (called by `n` hotkey)."""
         node = self.selected_node
         if node is None:
             return
@@ -161,31 +156,50 @@ class NodeTableWidget(Widget):
         self._sorted_nodes = nodes
 
         for node in nodes:
-            status = _status_markup(node)
-            if node.is_control_plane:
-                cpu_str = "[dim]–[/]"
-                ram_str = "[dim]–[/]"
-                gpu_str = "[dim]–[/]"
-            else:
-                cpu_str = f"{node.cpu_requested}/{node.cpu_allocatable}"
-                ram_str = f"{node.ram_requested_gb:.1f}/{node.ram_allocatable_gb:.1f}G"
-                if node.gpu_allocatable > 0:
-                    gpu_str = f"{node.gpu_requested}/{node.gpu_allocatable}"
-                else:
-                    gpu_str = "–"
+            bg = row_bg_for_node(node)
+            tint = bg is not None
 
-            # Highlight the node currently being used to filter pods
-            name_display = node.name
+            # Status badge
+            status_cell = status_badge_text(node, bg) if tint else status_badge(node)
+
+            # Name with filter highlight
             if self._filter_node and node.name == self._filter_node:
-                name_display = f"[bold cyan]{node.name}[/]"
+                name_cell = filter_highlight(node.name, bg)
+            else:
+                name_cell = plain_text(node.name, bg)
+
+            res_val = node.resource or ("ctrl" if node.is_control_plane else "–")
+            resource_cell = plain_text(res_val, bg)
+
+            if node.is_control_plane:
+                cpu_cell = plain_text("–", bg)
+                ram_cell = plain_text("–", bg)
+                gpu_cell = plain_text("–", bg)
+            else:
+                cpu_val = fmt_cpu(node.cpu_requested, node.cpu_allocatable)
+                ram_val = fmt_ram_gb(node.ram_requested_gb, node.ram_allocatable_gb)
+                if tint:
+                    cpu_cell = render_bar_text(node.cpu_requested, node.cpu_allocatable, 7, cpu_val, bg)
+                    ram_cell = render_bar_text(node.ram_requested_gb, node.ram_allocatable_gb, 7, ram_val, bg)
+                    if node.gpu_allocatable > 0:
+                        gpu_cell = render_gpu_bar_text(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable), bg)
+                    else:
+                        gpu_cell = plain_text("–", bg)
+                else:
+                    cpu_cell = render_bar(node.cpu_requested, node.cpu_allocatable, 7, cpu_val)
+                    ram_cell = render_bar(node.ram_requested_gb, node.ram_allocatable_gb, 7, ram_val)
+                    if node.gpu_allocatable > 0:
+                        gpu_cell = render_gpu_bar(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable))
+                    else:
+                        gpu_cell = f"[dim]{'–':>14}[/]"
 
             table.add_row(
-                name_display,
-                node.resource or ("ctrl" if node.is_control_plane else "–"),
-                status,
-                cpu_str,
-                ram_str,
-                gpu_str,
+                name_cell,
+                resource_cell,
+                status_cell,
+                cpu_cell,
+                ram_cell,
+                gpu_cell,
                 key=node.name,
             )
 

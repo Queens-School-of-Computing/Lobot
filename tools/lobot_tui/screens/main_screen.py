@@ -126,6 +126,7 @@ class MainScreen(Screen):
         self._pending_key: str | None = None
         self._pending_timer = None
         self._ns_filters: dict[str, str] = _load_ns_filters()
+        self._last_cluster_state = None
 
     def compose(self) -> ComposeResult:
         hostname = socket.gethostname()
@@ -170,10 +171,30 @@ class MainScreen(Screen):
 
     def _tick_clock(self) -> None:
         hostname = socket.gethostname()
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        now = datetime.now().strftime("%H:%M:%S")
+        state = self._last_cluster_state
+
+        if state:
+            total_pods  = len(state.pods)
+            total_nodes = sum(1 for n in state.nodes if not n.is_control_plane)
+            ready_nodes = sum(1 for n in state.nodes
+                              if not n.is_control_plane
+                              and n.status == "Ready" and n.schedulable)
+            gpu_total   = sum(r.gpu_total for r in state.resources.values())
+            gpu_used    = sum(r.gpu_used  for r in state.resources.values())
+            stats = (
+                f"  [dim]│[/]  "
+                f"[#79c0ff]Pods[/] [white]{total_pods}[/]  "
+                f"[#79c0ff]Nodes[/] [white]{ready_nodes}/{total_nodes}[/]  "
+                f"[#79c0ff]GPU[/] [white]{gpu_used}/{gpu_total}[/]"
+            )
+        else:
+            stats = ""
+
+        badge = "[bold yellow] DEV [/]" if IS_DEV else "[bold green] PROD [/]"
         try:
             self.query_one("#top-bar", Label).update(
-                f" [bold cyan]LOBOT[/]  {hostname}  {'[bold yellow]DEV[/]' if IS_DEV else '[bold green]PROD[/]'}  [dim]{now}[/]"
+                f" [bold #58a6ff]LOBOT[/]  [dim]{hostname}[/]  {badge}  [dim]{now}[/]{stats}"
             )
         except Exception:
             pass
@@ -252,6 +273,7 @@ class MainScreen(Screen):
     # ── ClusterStateUpdated ────────────────────────────────────────────────
 
     def on_cluster_state_updated(self, event: ClusterStateUpdated) -> None:
+        self._last_cluster_state = event.state
         for widget_id in ["resource-table", "node-table", "pod-table", "status-bar"]:
             try:
                 self.query_one(f"#{widget_id}").post_message(event)

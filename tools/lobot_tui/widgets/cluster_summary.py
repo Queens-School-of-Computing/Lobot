@@ -1,34 +1,27 @@
 """ResourceTableWidget: DataTable showing resource group utilisation."""
 
+from collections import deque
+
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Sparkline
 
 from ..data.collector import ClusterStateUpdated
 from ..data.models import ResourceSummary
+from .render_utils import render_bar, fmt_cpu, fmt_ram_gb, fmt_gpu
 
 # Fixed-width columns (excluding RESOURCE which expands)
+# CPU/RAM: bar_w=7 + " " + val=7 = 15.  GPU: bar_w=8 + " " + val=5 = 14.
 _FIXED_COLS = [
     ("#",    3),
-    ("CPU",  9),
+    ("CPU", 15),
     ("RAM", 15),
-    ("GPU",  6),
+    ("GPU", 14),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
 _RESOURCE_MIN = 10
-
-
-def _util_color(used: float, total: float) -> str:
-    if total <= 0:
-        return "dim"
-    ratio = used / total
-    if ratio >= 0.90:
-        return "red"
-    elif ratio >= 0.75:
-        return "yellow"
-    return "green"
 
 
 class ResourceTableWidget(Widget):
@@ -44,8 +37,13 @@ class ResourceTableWidget(Widget):
     _sorted_resources: list = []    # ordered list for cursor mapping
     _filter_resource: "str | None" = None
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._pod_history: deque = deque(maxlen=60)
+
     def compose(self) -> ComposeResult:
-        yield DataTable(id="resource-datatable", cursor_type="row", zebra_stripes=True)
+        yield DataTable(id="resource-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
+        yield Sparkline([], id="pod-sparkline", summary_function=max)
 
     def on_mount(self) -> None:
         self._setup_columns()
@@ -71,6 +69,12 @@ class ResourceTableWidget(Widget):
             self.query_one(DataTable).clear()
             return
         self._all_resources = event.state.resources
+        total_pods = sum(r.pod_count for r in event.state.resources.values())
+        self._pod_history.append(float(total_pods))
+        try:
+            self.query_one("#pod-sparkline", Sparkline).data = list(self._pod_history)
+        except Exception:
+            pass
         self._rebuild_table()
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -126,17 +130,10 @@ class ResourceTableWidget(Widget):
         for res in sorted_resources:
             pods_str = str(res.pod_count)
 
-            cpu_c = _util_color(res.cpu_used, res.cpu_total)
-            cpu_str = f"[{cpu_c}]{res.cpu_used}/{res.cpu_total}[/]"
-
-            ram_c = _util_color(res.ram_used_gb, res.ram_total_gb)
-            ram_str = f"[{ram_c}]{res.ram_used_gb:.1f}/{res.ram_total_gb:.1f}G[/]"
-
-            if res.has_gpu:
-                gpu_c = _util_color(res.gpu_used, res.gpu_total)
-                gpu_str = f"[{gpu_c}]{res.gpu_used}/{res.gpu_total}[/]"
-            else:
-                gpu_str = "[dim]–[/]"
+            cpu_str = render_bar(res.cpu_used, res.cpu_total, 7, fmt_cpu(res.cpu_used, res.cpu_total))
+            ram_str = render_bar(res.ram_used_gb, res.ram_total_gb, 7, fmt_ram_gb(res.ram_used_gb, res.ram_total_gb))
+            gpu_str = render_bar(res.gpu_used, res.gpu_total, 8, fmt_gpu(res.gpu_used, res.gpu_total)) \
+                      if res.has_gpu else f"[dim]{'–':>14}[/]"
 
             name_display = res.name
             if self._filter_resource and res.name == self._filter_resource:
