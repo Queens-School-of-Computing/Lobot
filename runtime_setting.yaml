@@ -26,6 +26,7 @@ nodeaccess:
   devlab:
   - steven-hh-ding
   digilab:
+  - drdoog
   - group-csai801g14
   - group-csai801g24
   - group-csai801g37
@@ -53,7 +54,6 @@ nodeaccess:
   lobot_a16:
   - aaronvisser
   - adenjwong
-  - drdoog
   - esraaashraf12012
   - gholami7
   - group-devtesting
