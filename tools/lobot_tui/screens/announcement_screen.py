@@ -38,10 +38,10 @@ def _get_announcement_url() -> str:
 
 def _parse_yaml_block(content: str, key: str) -> str:
     """Extract the text value of a YAML block scalar key (> or |)."""
-    pattern = rf'^{re.escape(key)}:\s*[>|]\s*\n((?:[ \t]+\S[^\n]*\n?)*)'
+    pattern = rf"^{re.escape(key)}:\s*[>|]\s*\n((?:[ \t]+\S[^\n]*\n?)*)"
     match = re.search(pattern, content, re.MULTILINE)
     if not match:
-        plain = re.search(rf'^{re.escape(key)}:\s*(.+)', content, re.MULTILINE)
+        plain = re.search(rf"^{re.escape(key)}:\s*(.+)", content, re.MULTILINE)
         return plain.group(1).strip() if plain else ""
     block = match.group(1)
     min_indent = min(

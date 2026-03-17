@@ -202,7 +202,7 @@ class ActionWizardScreen(ModalScreen):
 
             # Sort by trailing YYYYMMDD(-N)? date code, newest first
             def _date_key(tag: str) -> str:
-                m = _re.search(r'(\d{8})(?:-\d+)?$', tag)
+                m = _re.search(r"(\d{8})(?:-\d+)?$", tag)
                 return m.group(1) if m else tag
 
             tags.sort(key=_date_key, reverse=True)
