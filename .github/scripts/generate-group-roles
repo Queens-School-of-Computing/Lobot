@@ -87,8 +87,8 @@ def transform_payload(users_payload, groups_payload):
             group_name = parse_group_name(group)
             if group_name not in groups:
                 groups[group_name] = []
-            username = parse_username(user['Username'])
-            groups[group_name].append(username)
+            groups[group_name].append(user['Username'])
+
 
     roles = []
     for group in groups_payload:
@@ -106,11 +106,6 @@ def transform_payload(users_payload, groups_payload):
         roles.append(role)
 
     return roles
-
-def parse_username(s):
-    """To avoid conflicts caused by inconsistent casing,
-    we downcase all usernames"""
-    return s.lower()
 
 def parse_group_name(s):
     """ Enforces correct "shape" of group name, and crashes if not fixable """
