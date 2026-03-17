@@ -22,7 +22,7 @@ jobs:
       - run: pip install -r ./requirements.txt
 
       - name: Update group-roles.yaml
-        run: ./.github/scripts/generate-group-roles
+        run: python3 ./.github/scripts/generate-group-roles.py
         env:
           INPUT_FILE: ./members-payload.json
           OUTPUT_FILE: ./group-roles.yaml
