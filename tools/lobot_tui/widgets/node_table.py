@@ -19,9 +19,9 @@ from .render_utils import (
 _FIXED_COLS = [
     ("RESOURCE", 20),
     ("STATUS",   10),
-    ("CPU",      15),
-    ("RAM",      15),
-    ("GPU",      14),
+    ("CPU",      18),
+    ("RAM",      18),
+    ("GPU",      29),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1  # including NAME
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
@@ -179,19 +179,19 @@ class NodeTableWidget(Widget):
                 cpu_val = fmt_cpu(node.cpu_requested, node.cpu_allocatable)
                 ram_val = fmt_ram_gb(node.ram_requested_gb, node.ram_allocatable_gb)
                 if tint:
-                    cpu_cell = render_bar_text(node.cpu_requested, node.cpu_allocatable, 7, cpu_val, bg)
-                    ram_cell = render_bar_text(node.ram_requested_gb, node.ram_allocatable_gb, 7, ram_val, bg)
+                    cpu_cell = render_bar_text(node.cpu_requested, node.cpu_allocatable, 10, cpu_val, bg)
+                    ram_cell = render_bar_text(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val, bg)
                     if node.gpu_allocatable > 0:
                         gpu_cell = render_gpu_bar_text(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable), bg)
                     else:
                         gpu_cell = plain_text("–", bg)
                 else:
-                    cpu_cell = render_bar(node.cpu_requested, node.cpu_allocatable, 7, cpu_val)
-                    ram_cell = render_bar(node.ram_requested_gb, node.ram_allocatable_gb, 7, ram_val)
+                    cpu_cell = render_bar(node.cpu_requested, node.cpu_allocatable, 10, cpu_val)
+                    ram_cell = render_bar(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val)
                     if node.gpu_allocatable > 0:
                         gpu_cell = render_gpu_bar(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable))
                     else:
-                        gpu_cell = f"[dim]{'–':>14}[/]"
+                        gpu_cell = f"[dim]{'–':>29}[/]"
 
             table.add_row(
                 name_cell,

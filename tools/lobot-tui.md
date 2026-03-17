@@ -198,7 +198,71 @@ python3 -m lobot_tui
 
 **Panel focus:** The active panel is highlighted with an amber border. Press `Tab` to cycle focus between the three data panels (Resources → Nodes → Pods).
 
-The **status bar** shows a green `● Live` indicator when data is fresh. If pod data is stale by more than 30 seconds it shows `⚠ Stale` in amber. Errors are shown in red. The source tag next to the indicator shows `svc` (cyan) when the TUI is reading from the lobot-collector service, or `kubectl` (dim) when falling back to direct kubectl polling.
+The **status bar** shows an animated Braille spinner (`⠋⠙⠹…`) next to `Live` when data is fresh. The spinner stops and is replaced by `⚠ Stale` (amber) or `✗ <error>` (red) when data becomes stale or unavailable. The source tag next to the indicator shows `svc` (cyan) when the TUI is reading from the lobot-collector service, or `kubectl` (dim) when falling back to direct kubectl polling.
+
+The **top bar** shows a live cluster summary: `Pods N  Nodes ready/total  GPU used/total`. The pod count reflects jupyter-* pods only (user workloads). This updates with every data refresh.
+
+---
+
+## Visual Design
+
+lobot-tui uses a btop-inspired dark theme with colored progress bars and status badges throughout. All rendering helpers live in `widgets/render_utils.py`.
+
+### Progress bars (CPU / RAM)
+
+CPU and RAM columns display a colored block bar followed by a right-justified `used/total` value:
+
+```
+███████░░░░░░░  128/512
+```
+
+- Bar width: 7 characters. Value field: 7 characters. Total column width: 15.
+- Color thresholds: green (`#00dd55`) below 75 %, amber (`#f0a800`) at 75–89 %, red (`#ff3333`) at ≥ 90 %.
+- Characters used: `█` (U+2588 FULL BLOCK, filled) and `░` (U+2591 LIGHT SHADE, empty) — present in all major terminal fonts including Windows.
+
+### GPU bar
+
+The GPU column uses a fixed 23-character bar where each segment represents one physical GPU, separated by `│` dividers:
+
+```
+█████│█████│░░░░░│░░░░░   2/4
+```
+
+- Each segment is `(23 − (gpu_total − 1)) ÷ gpu_total` characters wide. This gives exact integer widths for the common GPU counts 1, 2, 3, 4, 6, and 8.
+- Segments with filled GPUs use bright color; unused segments use dim.
+- For nodes with >23 GPUs (e.g. time-sliced 96-GPU nodes), ratio mode is used instead of segments. A minimum of 1 filled block is always shown when at least 1 GPU is in use.
+- No-GPU nodes show a dim dash.
+- Total column width: 29 (23 bar + 1 space + 5 value field).
+
+### Row tinting (node table)
+
+Cordoned nodes receive a faint amber background tint (`#1a1500`). NotReady nodes receive a faint red tint (`#1a0505`). These tints are applied to all cells in the row using `rich.text.Text` objects with an `on <bg>` style, which preserves bar colors inside the tinted row.
+
+### Status badges (node table)
+
+| Status | Badge |
+|--------|-------|
+| Ready and schedulable | `● Ready` (green) |
+| Ready but cordoned | `◆ Cordoned` (amber) |
+| NotReady | `✖ NotReady` (red) |
+| Control plane | `● ctrl` (dim) |
+
+### Phase icons (pod table)
+
+| Phase | Icon |
+|-------|------|
+| Running | `● Running` (green) |
+| Pending | `◌ Pending` (amber) |
+| Failed | `✖ Failed` (red) |
+| Succeeded | `✓ Done` (dim) |
+
+### Row selection
+
+Selected rows use a very light blue background (`#0a1e35`) with bold text. `cursor_foreground_priority="renderable"` is set on all DataTable widgets so that bar and badge colors in the selected row are never overridden by the cursor CSS color.
+
+### Sparkline (resource panel)
+
+A 3-row Sparkline widget at the bottom of the resource panel charts the total pod count over the last 60 data updates (~5 minutes at 5s refresh). This gives a quick visual of pod churn over recent time.
 
 ---
 
@@ -264,6 +328,7 @@ Focus the resource table with `Tab`.
 |-----|--------|
 | `↑` / `↓` | Navigate rows |
 | `r` | Toggle resource pod-filter — press once to filter the pod table to the selected resource group, press again to clear. While active, navigating to a different resource group auto-updates the filter. |
+| Click header | Sort by column (click again to reverse) |
 
 > **Resource filter**: when active, the filtered resource name is highlighted in bold cyan in the resource table and the pod panel header shows `resource:<name> (r)`. Node and resource filters are independent and can both be active simultaneously. Switching namespace does **not** clear the resource filter.
 
@@ -546,11 +611,12 @@ tools/lobot_tui/
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
   widgets/
-    cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle
+    render_utils.py         Shared rendering helpers: colored block bars, GPU segment bars, status badges, row tinting
+    cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle and column sort
     pod_table.py            Pod DataTable with text filter, node filter, resource filter, and column sort
     node_table.py           Node DataTable with column sort and node filter toggle
     actions_panel.py        Key hint bar (all hints are clickable)
-    status_bar.py           Bottom status line (shows svc/kubectl source tag)
+    status_bar.py           Bottom status line (animated spinner, shows svc/kubectl source tag)
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/

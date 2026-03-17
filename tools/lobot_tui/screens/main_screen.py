@@ -175,7 +175,7 @@ class MainScreen(Screen):
         state = self._last_cluster_state
 
         if state:
-            total_pods  = len(state.pods)
+            total_pods  = sum(1 for p in state.pods if p.name.startswith("jupyter-"))
             total_nodes = sum(1 for n in state.nodes if not n.is_control_plane)
             ready_nodes = sum(1 for n in state.nodes
                               if not n.is_control_plane

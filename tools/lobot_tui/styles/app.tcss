@@ -157,6 +157,11 @@ DataTable > .datatable--header {
     text-style: bold;
 }
 
+DataTable > .datatable--odd-row,
+DataTable > .datatable--even-row {
+    padding-top: 1;
+}
+
 DataTable > .datatable--cursor {
     background: #0a1e35;
     color: #58a6ff;

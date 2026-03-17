@@ -2,8 +2,8 @@
 
 from rich.text import Text
 
-_FILLED   = "▉"
-_EMPTY    = "▉"
+_FILLED   = "▀"
+_EMPTY    = "▀"
 _COLOR_OK   = "#00dd55"   # vivid green
 _COLOR_WARN = "#f0a800"   # vivid amber
 _COLOR_CRIT = "#ff3333"   # vivid red
@@ -86,33 +86,60 @@ def render_bar_text(used: float, total: float, bar_w: int, val_str: str,
     return t
 
 
-_GPU_BAR_W = 8   # fixed visual width for all GPU bars in the node table
+_GPU_BAR_W  = 23   # bar_w=23 gives exact equal segments for GPU counts 1,2,3,4,6,8
+                   # avail = 23-(n-1): n=4→20÷4=5, n=6→18÷6=3, n=8→16÷8=2  (all exact)
+_GPU_FILLED = "▀"  # upper half-block: aligns with text, space below
+_GPU_EMPTY  = "▀"  # same char, dim — clearly a GPU slot, just empty
+
+
+def _gpu_bar_segments(gpu_used: int, gpu_total: int, color: str, base: str = ""):
+    """
+    Yield (text, style) pairs filling exactly _GPU_BAR_W chars.
+
+    Each GPU gets one equal-width segment separated by a 1-char │ divider.
+    Any remainder (gpu_total 5 or 7) becomes trailing space — segments stay equal.
+    For gpu_total > _GPU_BAR_W (e.g. 96 time-sliced): ratio mode.
+    """
+    dim = f"{_COLOR_DIM} {base}".strip()
+    clr = f"{color} {base}".strip()
+    bg  = base or ""
+
+    if gpu_total > _GPU_BAR_W:
+        ratio  = min(1.0, max(0.0, gpu_used / gpu_total))
+        filled = int(round(ratio * _GPU_BAR_W))
+        if gpu_used > 0 and filled == 0:
+            filled = 1  # always show at least one segment if any GPU is in use
+        empty  = _GPU_BAR_W - filled
+        yield (_FILLED * filled, clr)
+        yield (_EMPTY  * empty,  dim)
+        return
+
+    avail = _GPU_BAR_W - (gpu_total - 1)   # chars available for segments
+    seg_w = avail // gpu_total             # equal width for every segment
+    pad   = avail % gpu_total              # trailing spaces (only for counts 5, 7)
+
+    for i in range(gpu_total):
+        if i > 0:
+            yield (" ", bg)
+        ch = _GPU_FILLED if i < gpu_used else _GPU_EMPTY
+        yield (ch * seg_w, clr if i < gpu_used else dim)
+
+    if pad:
+        yield (" " * pad, bg)
 
 
 def render_gpu_bar(used: float, total: float, val_str: str) -> str:
-    """
-    GPU bar: always _GPU_BAR_W chars wide.
-    For nodes with <= _GPU_BAR_W GPUs: each segment = 1 GPU (segment_w chars each).
-    For nodes with > _GPU_BAR_W GPUs (e.g. time-sliced 96): ratio mode.
-    Visible width = _GPU_BAR_W + 1 + len(val_str)
-    """
+    """GPU bar with fixed _GPU_BAR_W width. Visible width = _GPU_BAR_W + 1 + len(val_str)."""
     col_width = _GPU_BAR_W + 1 + len(val_str)
     if total <= 0:
         return f"[{_COLOR_DIM}]{'–':>{col_width}}[/]"
-    ratio = min(1.0, max(0.0, used / total))
-    color = _pct_color(ratio)
+    color     = _pct_color(min(1.0, max(0.0, used / total)))
     gpu_total = int(round(total))
     gpu_used  = int(round(used))
-    if gpu_total > _GPU_BAR_W:
-        # More GPUs than bar width — ratio mode
-        filled = int(round(ratio * _GPU_BAR_W))
-        empty  = _GPU_BAR_W - filled
-    else:
-        seg_w  = _GPU_BAR_W // gpu_total
-        filled = gpu_used * seg_w
-        empty  = (gpu_total - gpu_used) * seg_w
-    pad = _GPU_BAR_W - filled - empty
-    bar = f"[{color}]{_FILLED * filled}[/][{_COLOR_DIM}]{_EMPTY * empty}[/]{' ' * pad}"
+    bar = "".join(
+        f"[{style}]{ch}[/]" if style else ch
+        for ch, style in _gpu_bar_segments(gpu_used, gpu_total, color)
+    )
     return f"{bar} [{_COLOR_DIM}]{val_str}[/]"
 
 
@@ -121,27 +148,16 @@ def render_gpu_bar_text(used: float, total: float, val_str: str,
     """Like render_gpu_bar() but returns a rich.text.Text for tinted rows."""
     col_width = _GPU_BAR_W + 1 + len(val_str)
     base = f"on {row_bg}" if row_bg else ""
-    t = Text(no_wrap=True)
+    t    = Text(no_wrap=True)
     if total <= 0:
         t.append(f"{'–':>{col_width}}", style=f"{_COLOR_DIM} {base}".strip())
         return t
-    ratio = min(1.0, max(0.0, used / total))
-    color = _pct_color(ratio)
+    color     = _pct_color(min(1.0, max(0.0, used / total)))
     gpu_total = int(round(total))
     gpu_used  = int(round(used))
-    if gpu_total > _GPU_BAR_W:
-        filled = int(round(ratio * _GPU_BAR_W))
-        empty  = _GPU_BAR_W - filled
-    else:
-        seg_w  = _GPU_BAR_W // gpu_total
-        filled = gpu_used * seg_w
-        empty  = (gpu_total - gpu_used) * seg_w
-    pad = _GPU_BAR_W - filled - empty
-    t.append(_FILLED * filled,  style=f"{color} {base}".strip())
-    t.append(_EMPTY  * empty,   style=f"{_COLOR_DIM} {base}".strip())
-    if pad:
-        t.append(" " * pad,     style=base or "")
-    t.append(" " + val_str,     style=f"{_COLOR_DIM} {base}".strip())
+    for ch, style in _gpu_bar_segments(gpu_used, gpu_total, color, base):
+        t.append(ch, style=style)
+    t.append(" " + val_str, style=f"{_COLOR_DIM} {base}".strip())
     return t
 
 

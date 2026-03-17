@@ -9,19 +9,28 @@ from textual.widgets import DataTable, Sparkline
 
 from ..data.collector import ClusterStateUpdated
 from ..data.models import ResourceSummary
-from .render_utils import render_bar, fmt_cpu, fmt_ram_gb, fmt_gpu
+from .render_utils import render_bar, render_gpu_bar, fmt_cpu, fmt_ram_gb, fmt_gpu
 
 # Fixed-width columns (excluding RESOURCE which expands)
-# CPU/RAM: bar_w=7 + " " + val=7 = 15.  GPU: bar_w=8 + " " + val=5 = 14.
+# CPU/RAM: bar_w=7 + " " + val=7 = 15.  GPU: bar_w=23 + " " + val=5 = 29.
 _FIXED_COLS = [
     ("#",    3),
-    ("CPU", 15),
-    ("RAM", 15),
-    ("GPU", 14),
+    ("CPU", 18),
+    ("RAM", 18),
+    ("GPU", 29),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
 _RESOURCE_MIN = 10
+
+# Sort key functions indexed by column (0=RESOURCE, then _FIXED_COLS order)
+_SORT_KEYS = [
+    lambda r: r.name,
+    lambda r: r.pod_count,
+    lambda r: r.cpu_used / r.cpu_total if r.cpu_total > 0 else 0,
+    lambda r: r.ram_used_gb / r.ram_total_gb if r.ram_total_gb > 0 else 0,
+    lambda r: r.gpu_used / r.gpu_total if r.gpu_total > 0 else 0,
+]
 
 
 class ResourceTableWidget(Widget):
@@ -36,6 +45,8 @@ class ResourceTableWidget(Widget):
     _all_resources: dict = {}       # resource_name -> ResourceSummary
     _sorted_resources: list = []    # ordered list for cursor mapping
     _filter_resource: "str | None" = None
+    _sort_col: int = -1
+    _sort_rev: bool = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -75,6 +86,18 @@ class ResourceTableWidget(Widget):
             self.query_one("#pod-sparkline", Sparkline).data = list(self._pod_history)
         except Exception:
             pass
+        self._rebuild_table()
+
+    def on_data_table_header_selected(self, event: DataTable.HeaderSelected) -> None:
+        """Toggle sort when a column header is clicked."""
+        idx = event.column_index
+        if idx >= len(_SORT_KEYS):
+            return
+        if self._sort_col == idx:
+            self._sort_rev = not self._sort_rev
+        else:
+            self._sort_col = idx
+            self._sort_rev = False
         self._rebuild_table()
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -121,19 +144,26 @@ class ResourceTableWidget(Widget):
 
         table.clear()
 
-        sorted_resources = sorted(
-            self._all_resources.values(),
-            key=lambda r: (0 if r.name.startswith("lobot_") else 1, r.name),
-        )
+        if self._sort_col >= 0:
+            sorted_resources = sorted(
+                self._all_resources.values(),
+                key=_SORT_KEYS[self._sort_col],
+                reverse=self._sort_rev,
+            )
+        else:
+            sorted_resources = sorted(
+                self._all_resources.values(),
+                key=lambda r: (0 if r.name.startswith("lobot_") else 1, r.name),
+            )
         self._sorted_resources = sorted_resources
 
         for res in sorted_resources:
             pods_str = str(res.pod_count)
 
-            cpu_str = render_bar(res.cpu_used, res.cpu_total, 7, fmt_cpu(res.cpu_used, res.cpu_total))
-            ram_str = render_bar(res.ram_used_gb, res.ram_total_gb, 7, fmt_ram_gb(res.ram_used_gb, res.ram_total_gb))
-            gpu_str = render_bar(res.gpu_used, res.gpu_total, 8, fmt_gpu(res.gpu_used, res.gpu_total)) \
-                      if res.has_gpu else f"[dim]{'–':>14}[/]"
+            cpu_str = render_bar(res.cpu_used, res.cpu_total, 10, fmt_cpu(res.cpu_used, res.cpu_total))
+            ram_str = render_bar(res.ram_used_gb, res.ram_total_gb, 10, fmt_ram_gb(res.ram_used_gb, res.ram_total_gb))
+            gpu_str = render_gpu_bar(res.gpu_used, res.gpu_total, fmt_gpu(res.gpu_used, res.gpu_total)) \
+                      if res.has_gpu else f"[dim]{'–':>29}[/]"
 
             name_display = res.name
             if self._filter_resource and res.name == self._filter_resource:
