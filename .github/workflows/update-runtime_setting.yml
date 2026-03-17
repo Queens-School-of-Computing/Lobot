@@ -22,7 +22,7 @@ jobs:
       - run: pip install -r ./requirements.txt
 
       - name: Update runtime_setting.yaml
-        run: ./.github/scripts/generate-runtime-config
+        run: python3 ./.github/scripts/generate-runtime-config.py
         env:
           INPUT_FILE: ./members-payload.json
           OUTPUT_FILE: ./runtime_setting.yaml
