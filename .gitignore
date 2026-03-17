@@ -6,3 +6,7 @@
 
 # Local session memory file
 tools/LOBOT-MEMORY.md
+
+# Local IDE files
+.DS_Store
+.vscode.desktop
