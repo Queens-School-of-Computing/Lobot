@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+# Enable all pycodestyle & Pyflakes rules
+[tool.ruff.lint]
+select = ["E", "F"]
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = false
