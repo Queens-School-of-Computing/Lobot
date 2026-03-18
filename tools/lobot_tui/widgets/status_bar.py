@@ -57,9 +57,7 @@ class StatusBarWidget(Widget):
         try:
             spin = _SPINNER[self._spinner_idx]
             source_tag = "[cyan]svc[/]" if self._last_source == "service" else "[dim]kubectl[/]"
-            self.query_one("#status-live", Label).update(
-                f"[#3fb950]{spin} Live[/] {source_tag}  "
-            )
+            self.query_one("#status-live", Label).update(f"[#3fb950]{spin} Live[/] {source_tag}  ")
         except Exception:
             pass
 
@@ -87,6 +85,4 @@ class StatusBarWidget(Widget):
 
         pods_ts = _fmt_time(state.last_pods_update)
         nodes_ts = _fmt_time(state.last_nodes_update)
-        ts_label.update(
-            f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}[/]"
-        )
+        ts_label.update(f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}[/]")

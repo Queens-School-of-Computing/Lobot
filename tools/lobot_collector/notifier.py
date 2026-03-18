@@ -11,9 +11,16 @@ from email.mime.text import MIMEText
 from typing import Optional
 
 from .config import (
-    EMAIL_ENABLED, SMTP_SERVER, SMTP_PORT, SMTP_USE_TLS,
-    SMTP_USERNAME, SMTP_PASSWORD, FROM_EMAIL, TO_EMAIL,
-    OUTPUT_FILE, PODS_INTERVAL,
+    EMAIL_ENABLED,
+    SMTP_SERVER,
+    SMTP_PORT,
+    SMTP_USE_TLS,
+    SMTP_USERNAME,
+    SMTP_PASSWORD,
+    FROM_EMAIL,
+    TO_EMAIL,
+    OUTPUT_FILE,
+    PODS_INTERVAL,
 )
 
 logger = logging.getLogger(__name__)
@@ -95,6 +102,4 @@ async def send_error_email(
     body += "\nThe collector is still running and will retry.\n"
 
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(
-        _executor, _smtp_send, f"{error_type} (#{error_count})", body
-    )
+    await loop.run_in_executor(_executor, _smtp_send, f"{error_type} (#{error_count})", body)

@@ -9,8 +9,8 @@ _COLOR_WARN = "#f0a800"   # vivid amber
 _COLOR_CRIT = "#ff3333"   # vivid red
 _COLOR_DIM  = "#3a404e"   # near-invisible text on dark bg
 
-_BG_CORDONED = "#1a1500"   # very dark amber for cordoned rows
-_BG_NOTREADY = "#1a0505"   # very dark red for NotReady rows
+_BG_CORDONED = "#1a1500"  # very dark amber for cordoned rows
+_BG_NOTREADY = "#1a0505"  # very dark red for NotReady rows
 
 
 def _pct_color(ratio: float) -> str:
@@ -24,6 +24,7 @@ def _pct_color(ratio: float) -> str:
 # ── Value formatters ───────────────────────────────────────────────────────────
 # Return a single right-justified string of fixed width.
 # CPU/RAM: 7 chars.  GPU: 5 chars.
+
 
 def fmt_cpu(used: float, total: float) -> str:
     """'used/total' right-justified in 7 chars. e.g. '  2/256', '128/512'"""
@@ -51,6 +52,7 @@ def fmt_gpu(used: float, total: float) -> str:
 # CPU/RAM: bar_w=7, val=7  → col_width=15
 # GPU:     bar_w=4, val=5  → col_width=10
 
+
 def render_bar(used: float, total: float, bar_w: int, val_str: str) -> str:
     """
     Wide bar followed by dim used/total text.
@@ -59,30 +61,31 @@ def render_bar(used: float, total: float, bar_w: int, val_str: str) -> str:
     col_width = bar_w + 1 + len(val_str)
     if total <= 0 or bar_w <= 0:
         return f"[{_COLOR_DIM}]{'–':>{col_width}}[/]"
-    ratio  = min(1.0, max(0.0, used / total))
-    color  = _pct_color(ratio)
+    ratio = min(1.0, max(0.0, used / total))
+    color = _pct_color(ratio)
     filled = int(round(ratio * bar_w))
-    empty  = bar_w - filled
-    bar    = f"[{color}]{_FILLED * filled}[/][{_COLOR_DIM}]{_EMPTY * empty}[/]"
+    empty = bar_w - filled
+    bar = f"[{color}]{_FILLED * filled}[/][{_COLOR_DIM}]{_EMPTY * empty}[/]"
     return f"{bar} [{_COLOR_DIM}]{val_str}[/]"
 
 
-def render_bar_text(used: float, total: float, bar_w: int, val_str: str,
-                    row_bg: "str | None" = None) -> Text:
+def render_bar_text(
+    used: float, total: float, bar_w: int, val_str: str, row_bg: "str | None" = None
+) -> Text:
     """Like render_bar() but returns a rich.text.Text — needed for tinted rows."""
     col_width = bar_w + 1 + len(val_str)
-    base  = f"on {row_bg}" if row_bg else ""
+    base = f"on {row_bg}" if row_bg else ""
     t = Text(no_wrap=True)
     if total <= 0 or bar_w <= 0:
         t.append(f"{'–':>{col_width}}", style=f"{_COLOR_DIM} {base}".strip())
         return t
-    ratio  = min(1.0, max(0.0, used / total))
-    color  = _pct_color(ratio)
+    ratio = min(1.0, max(0.0, used / total))
+    color = _pct_color(ratio)
     filled = int(round(ratio * bar_w))
-    empty  = bar_w - filled
+    empty = bar_w - filled
     t.append(_FILLED * filled, style=f"{color} {base}".strip())
-    t.append(_EMPTY  * empty,  style=f"{_COLOR_DIM} {base}".strip())
-    t.append(" " + val_str,    style=f"{_COLOR_DIM} {base}".strip())
+    t.append(_EMPTY * empty, style=f"{_COLOR_DIM} {base}".strip())
+    t.append(" " + val_str, style=f"{_COLOR_DIM} {base}".strip())
     return t
 
 
@@ -143,8 +146,9 @@ def render_gpu_bar(used: float, total: float, val_str: str) -> str:
     return f"{bar} [{_COLOR_DIM}]{val_str}[/]"
 
 
-def render_gpu_bar_text(used: float, total: float, val_str: str,
-                        row_bg: "str | None" = None) -> Text:
+def render_gpu_bar_text(
+    used: float, total: float, val_str: str, row_bg: "str | None" = None
+) -> Text:
     """Like render_gpu_bar() but returns a rich.text.Text for tinted rows."""
     col_width = _GPU_BAR_W + 1 + len(val_str)
     base = f"on {row_bg}" if row_bg else ""
@@ -162,6 +166,7 @@ def render_gpu_bar_text(used: float, total: float, val_str: str,
 
 
 # ── Status badges ──────────────────────────────────────────────────────────────
+
 
 def status_badge(node) -> str:
     """Return a Rich markup status badge for a NodeInfo (plain string version)."""
@@ -181,19 +186,20 @@ def status_badge_text(node, row_bg: "str | None" = None) -> Text:
     base = f"on {row_bg}" if row_bg else ""
     t = Text(no_wrap=True)
     if node.is_control_plane:
-        t.append("● ctrl",     style=f"dim {base}".strip())
+        t.append("● ctrl", style=f"dim {base}".strip())
     elif node.status == "Ready" and node.schedulable:
-        t.append("● Ready",    style=f"#00dd55 {base}".strip())
+        t.append("● Ready", style=f"#00dd55 {base}".strip())
     elif node.status == "Ready" and not node.schedulable:
         t.append("◆ Cordoned", style=f"#f0a800 {base}".strip())
     elif node.status == "NotReady":
         t.append("✖ NotReady", style=f"#ff3333 {base}".strip())
     else:
-        t.append("? Unknown",  style=f"dim {base}".strip())
+        t.append("? Unknown", style=f"dim {base}".strip())
     return t
 
 
 # ── Row helpers ────────────────────────────────────────────────────────────────
+
 
 def row_bg_for_node(node) -> "str | None":
     """Return tint background for cordoned/NotReady nodes, or None."""

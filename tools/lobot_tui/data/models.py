@@ -36,18 +36,18 @@ class ResourceSummary:
 
 @dataclass
 class PodInfo:
-    name: str               # full pod name, e.g. jupyter-username
-    username: str           # display name: stripped jupyter- prefix, -2d→-
+    name: str  # full pod name, e.g. jupyter-username
+    username: str  # display name: stripped jupyter- prefix, -2d→-
     namespace: str
     node: str
-    resource: str           # from node label lab=<value>
-    image: str              # full image string
-    image_tag: str          # tag portion only
+    resource: str  # from node label lab=<value>
+    image: str  # full image string
+    image_tag: str  # tag portion only
     cpu_requested: float
     ram_requested_gb: float
     gpu_requested: int
     age: str
-    phase: str              # Running / Pending / Failed / Unknown
+    phase: str  # Running / Pending / Failed / Unknown
     start_time: Optional[str] = None
 
 
@@ -55,8 +55,8 @@ class PodInfo:
 class NodeInfo:
     name: str
     resource: str
-    status: str             # Ready / NotReady / Unknown
-    schedulable: bool       # False = cordoned
+    status: str  # Ready / NotReady / Unknown
+    schedulable: bool  # False = cordoned
     cpu_allocatable: int
     cpu_requested: int
     ram_allocatable_gb: float
@@ -85,8 +85,8 @@ class NodeInfo:
 @dataclass
 class ClusterState:
     resources: dict = field(default_factory=dict)  # resource_name -> ResourceSummary
-    pods: list = field(default_factory=list)        # list[PodInfo]
-    nodes: list = field(default_factory=list)       # list[NodeInfo]
+    pods: list = field(default_factory=list)  # list[PodInfo]
+    nodes: list = field(default_factory=list)  # list[NodeInfo]
     last_pods_update: Optional[datetime] = None
     last_nodes_update: Optional[datetime] = None
     pods_error: Optional[str] = None
@@ -104,7 +104,9 @@ class ClusterState:
     def from_dict(cls, d: dict) -> "ClusterState":
         """Reconstruct ClusterState from a dict produced by to_dict()."""
         # Accept both "resources" (new) and "labs" (old wire format) keys
-        resources = {k: ResourceSummary(**v) for k, v in (d.get("resources") or d.get("labs", {})).items()}
+        resources = {
+            k: ResourceSummary(**v) for k, v in (d.get("resources") or d.get("labs", {})).items()
+        }
         pods = [PodInfo(**p) for p in d.get("pods", [])]
         nodes = [NodeInfo(**n) for n in d.get("nodes", [])]
         lpu = d.get("last_pods_update")

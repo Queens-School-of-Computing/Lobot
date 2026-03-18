@@ -8,32 +8,45 @@ from textual.widgets import DataTable
 from ..data.collector import ClusterStateUpdated
 from ..data.models import NodeInfo
 from .render_utils import (
-    render_bar, render_bar_text,
-    render_gpu_bar, render_gpu_bar_text,
-    fmt_cpu, fmt_ram_gb, fmt_gpu,
-    status_badge, status_badge_text,
-    row_bg_for_node, plain_text, filter_highlight,
+    render_bar,
+    render_bar_text,
+    render_gpu_bar,
+    render_gpu_bar_text,
+    fmt_cpu,
+    fmt_ram_gb,
+    fmt_gpu,
+    status_badge,
+    status_badge_text,
+    row_bg_for_node,
+    plain_text,
+    filter_highlight,
 )
 
 # Fixed-width columns (excluding NAME which expands)
 _FIXED_COLS = [
     ("RESOURCE", 20),
-    ("STATUS",   10),
-    ("CPU",      18),
-    ("RAM",      18),
-    ("GPU",      29),
+    ("STATUS", 10),
+    ("CPU", 18),
+    ("RAM", 18),
+    ("GPU", 29),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1  # including NAME
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
 _NAME_MIN = 16
 
+
 # Sort key functions indexed by column (0=NAME, then _FIXED_COLS order)
 def _status_order(n: NodeInfo) -> int:
-    if n.is_control_plane:         return 0
-    if n.status == "Ready" and n.schedulable:   return 1
-    if n.status == "Ready" and not n.schedulable: return 2
-    if n.status == "NotReady":     return 3
+    if n.is_control_plane:
+        return 0
+    if n.status == "Ready" and n.schedulable:
+        return 1
+    if n.status == "Ready" and not n.schedulable:
+        return 2
+    if n.status == "NotReady":
+        return 3
     return 4
+
 
 _SORT_KEYS = [
     lambda n: n.name,
@@ -50,6 +63,7 @@ class NodeTableWidget(Widget):
 
     class NodeFilterChanged(Message):
         """Posted when the user toggles a node filter (Enter on a row)."""
+
         def __init__(self, node_name: "str | None") -> None:
             super().__init__()
             self.node_name = node_name  # None = filter cleared
@@ -58,10 +72,15 @@ class NodeTableWidget(Widget):
     _sorted_nodes: list = []
     _sort_col: int = -1
     _sort_rev: bool = False
-    _filter_node: "str | None" = None   # node name actively filtering pods
+    _filter_node: "str | None" = None  # node name actively filtering pods
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="node-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
+        yield DataTable(
+            id="node-datatable",
+            cursor_type="row",
+            zebra_stripes=True,
+            cursor_foreground_priority="renderable",
+        )
 
     def on_mount(self) -> None:
         self._setup_columns()
@@ -182,14 +201,23 @@ class NodeTableWidget(Widget):
                     cpu_cell = render_bar_text(node.cpu_requested, node.cpu_allocatable, 10, cpu_val, bg)
                     ram_cell = render_bar_text(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val, bg)
                     if node.gpu_allocatable > 0:
-                        gpu_cell = render_gpu_bar_text(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable), bg)
+                        gpu_cell = render_gpu_bar_text(
+                            node.gpu_requested,
+                            node.gpu_allocatable,
+                            fmt_gpu(node.gpu_requested, node.gpu_allocatable),
+                            bg,
+                        )
                     else:
                         gpu_cell = plain_text("–", bg)
                 else:
                     cpu_cell = render_bar(node.cpu_requested, node.cpu_allocatable, 10, cpu_val)
                     ram_cell = render_bar(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val)
                     if node.gpu_allocatable > 0:
-                        gpu_cell = render_gpu_bar(node.gpu_requested, node.gpu_allocatable, fmt_gpu(node.gpu_requested, node.gpu_allocatable))
+                        gpu_cell = render_gpu_bar(
+                            node.gpu_requested,
+                            node.gpu_allocatable,
+                            fmt_gpu(node.gpu_requested, node.gpu_allocatable),
+                        )
                     else:
                         gpu_cell = f"[dim]{'–':>29}[/]"
 

@@ -18,14 +18,11 @@ interval = 5
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = SysLogHandler(
-    facility=SysLogHandler.LOG_DAEMON,
-    address='/dev/log'
-)
+handler = SysLogHandler(facility=SysLogHandler.LOG_DAEMON, address='/dev/log')
 
 formatter = logging.Formatter(
     fmt="%(asctime)s - %(filename)s:%(funcName)s:%(lineno)d %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 handler.setFormatter(formatter)
 # logger.addHandler(handler)
@@ -43,63 +40,87 @@ class RepeatTimer(Timer):
             self.function(*self.args, **self.kwargs)
             try:
                 data = {}
-                content = check_output(['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']).decode()
+                content = check_output(
+                    ['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']
+                ).decode()
                 df = pd.read_csv(StringIO(content))
                 df = df.fillna(0)
-                node_info = check_output(['kubectl', 'get', 'nodes', '--show-labels']).decode().splitlines()[1:]
+                node_info = (
+                    check_output(['kubectl', 'get', 'nodes', '--show-labels'])
+                    .decode()
+                    .splitlines()[1:]
+                )
                 labs = {}
                 for l in node_info:
                     parts = l.split()
                     node = parts[0]
                     if 'lab=' in parts[5]:
                         lab = parts[5].split('lab=')[1]
-                        lab = lab[:lab.index(',')].strip()
+                        lab = lab[: lab.index(',')].strip()
                         labs[node] = lab
-                df['lab']=df.apply(lambda row: labs.get(row['node'], ''), axis=1)
+                df['lab'] = df.apply(lambda row: labs.get(row['node'], ''), axis=1)
                 for lab in set(labs.values()):
-                    mem = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'memory')]
-                    mem_total = floor(round(sum(mem['Allocatable'])/1073741824.0,0))
-                    mem_free = floor(mem_total -  round(sum(mem['Requested'])/1073741824.0,0))
+                    mem = df.loc[
+                        (df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'memory')
+                    ]
+                    mem_total = floor(round(sum(mem['Allocatable']) / 1073741824.0, 0))
+                    mem_free = floor(mem_total - round(sum(mem['Requested']) / 1073741824.0, 0))
 
-                    cpus = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'cpu')]
+                    cpus = df.loc[
+                        (df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'cpu')
+                    ]
                     cpus_total = sum(cpus['Allocatable'])
-                    cpus_free = cpus_total -  sum(cpus['Requested'])
-                    gpus = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'nvidia.com/gpu')]
+                    cpus_free = cpus_total - sum(cpus['Requested'])
+                    gpus = df.loc[
+                        (df['lab'] == lab)
+                        & (df['Kind'] == 'node')
+                        & (df['resource'] == 'nvidia.com/gpu')
+                    ]
                     gpus_total = sum(gpus['Allocatable'])
-                    gpus_free = gpus_total -  sum(gpus['Requested'])
-                    pods = set(df.loc[(df['lab'] == lab) & (df['pod'].str.contains('jupyter-'))]['pod'])
+                    gpus_free = gpus_total - sum(gpus['Requested'])
+                    pods = set(
+                        df.loc[(df['lab'] == lab) & (df['pod'].str.contains('jupyter-'))]['pod']
+                    )
                     cpus_total = floor(cpus_total)
                     cpus_free = floor(cpus_free)
                     gpus_total = floor(gpus_total)
                     gpus_free = floor(gpus_free)
                     current_dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     if lab == "gandslab":
-                    	summary = f'GOAL&SWIMS Labs available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    	summary_title = f'GOAL&SWIMS Labs available resources as of {current_dt}'
+                        summary = f'GOAL&SWIMS Labs available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'GOAL&SWIMS Labs available resources as of {current_dt}'
                     elif lab == "lobot_a5000":
-                    	summary = f'Lobot [A5000] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    	summary_title = f'Lobot [A5000] available resources as of {current_dt}'
+                        summary = f'Lobot [A5000] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'Lobot [A5000] available resources as of {current_dt}'
                     elif lab == "lobot_a16":
-                    	summary = f'Lobot [A16] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    	summary_title = f'Lobot [A16] available resources as of {current_dt}'
+                        summary = f'Lobot [A16] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'Lobot [A16] available resources as of {current_dt}'
                     elif lab == "lobot_a40":
                         summary = f'Lobot [A40] available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
                         summary_title = f'Lobot [A40] available resources as of {current_dt}'
                     elif lab == "edemsmithbusiness":
-                    	summary = f'Smith School of Business (Edem) available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    	summary_title = f'Smith School of Business (Edem) available resources as of {current_dt}'
-                    else: 
-                    	summary = f'{lab} available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
-                    	summary_title = f'{lab} available resources as of {current_dt}'
+                        summary = f'Smith School of Business (Edem) available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'Smith School of Business (Edem) available resources as of {current_dt}'
+                    else:
+                        summary = f'{lab} available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
+                        summary_title = f'{lab} available resources as of {current_dt}'
                     summary_details = f'CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total}'
-                    #summary = summary.capitalize()
+                    # summary = summary.capitalize()
                     pod_usage = []
                     for pod in pods:
-                        pod_cpu = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'cpu')]['Requested'])
-                        pod_mem = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'memory')]['Requested'])
-                        pod_gpu = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'nvidia.com/gpu')]['Requested'])
+                        pod_cpu = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'cpu')]['Requested']
+                        )
+                        pod_mem = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'memory')]['Requested']
+                        )
+                        pod_gpu = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'nvidia.com/gpu')][
+                                'Requested'
+                            ]
+                        )
                         if len(pod_mem) > 0:
-                            pod_mem = round(pod_mem[0]/1073741824,0)
+                            pod_mem = round(pod_mem[0] / 1073741824, 0)
                         else:
                             pod_mem = 0
                         pod_mem = floor(pod_mem)
@@ -115,29 +136,30 @@ class RepeatTimer(Timer):
                         pod_gpu = floor(pod_gpu)
                         pod = pod.replace('jupyter-', '')
                         pod = pod.replace('-2d', '-')
-                        #pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>') 
+                        # pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>')
                         pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem} mem, {pod_gpu} gpu')
-                    pod_usage.append(f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.')
+                    pod_usage.append(
+                        f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.'
+                    )
                     data[lab] = {
-                            'time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'summary': summary,
-                            'summary_title': summary_title,
-                            'summary_details': summary_details,
-                            'usage': pod_usage
-                            }
+                        'time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'summary': summary,
+                        'summary_title': summary_title,
+                        'summary_details': summary_details,
+                        'usage': pod_usage,
+                    }
                 json.dump(data, open(output_file, 'w'))
             except:
                 _, value, traceback = sys.exc_info()
                 print(value, self.error_counter)
                 self.error_counter += 1
                 if self.error_counter > self.error_threshold:
-                    logger.error(
-                        f'{value} happened more than {self.error_threshold} times')
+                    logger.error(f'{value} happened more than {self.error_threshold} times')
                     logger.error(format_exc())
                     break
 
 
-class run_once():
+class run_once:
     logger.info('Starting resource collector...')
 
 
@@ -145,4 +167,3 @@ if __name__ == '__main__':
     # every 15 seconds
     timer = RepeatTimer(interval, run_once)
     timer.start()
-

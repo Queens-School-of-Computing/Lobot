@@ -14,9 +14,10 @@ def _get_nodes() -> list:
     """Return list of all node names from kubectl, sorted."""
     try:
         result = subprocess.run(
-            ["kubectl", "get", "nodes", "--no-headers",
-             "-o", "custom-columns=NAME:.metadata.name"],
-            capture_output=True, text=True, timeout=10,
+            ["kubectl", "get", "nodes", "--no-headers", "-o", "custom-columns=NAME:.metadata.name"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return sorted(n.strip() for n in result.stdout.splitlines() if n.strip())
     except Exception:

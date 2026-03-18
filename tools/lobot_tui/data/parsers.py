@@ -16,6 +16,7 @@ from .models import ResourceSummary, NodeInfo, PodInfo
 # String helpers
 # ---------------------------------------------------------------------------
 
+
 def _pod_username(pod_name: str) -> str:
     """Strip jupyter- prefix and unescape -2d→- (mirrors resource_collector.py:116-117)."""
     name = pod_name.removeprefix("jupyter-")
@@ -29,7 +30,7 @@ def _parse_image_tag(image: str) -> str:
     else:
         tag = "latest"
     if len(tag) > MAX_TAG_LEN:
-        return "…" + tag[-(MAX_TAG_LEN - 1):]
+        return "…" + tag[-(MAX_TAG_LEN - 1) :]
     return tag
 
 
@@ -59,13 +60,14 @@ def _age_string(start_time_str: Optional[str]) -> str:
 # Resource unit parsers
 # ---------------------------------------------------------------------------
 
+
 def _parse_cpu_request(raw: str) -> float:
     """Parse k8s CPU request string (e.g. '4', '500m') to fractional cores."""
     try:
         if raw.endswith("m"):
             return round(int(raw[:-1]) / 1000, 3)
         return float(raw)
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return 0.0
 
 
@@ -86,14 +88,14 @@ def _parse_memory_request_gb(raw: str) -> float:
             return int(raw[:-1]) / 1024
         else:
             return float(raw) / 1_073_741_824
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return 0.0
 
 
 def _parse_gpu_request(raw: str) -> int:
     try:
         return int(raw)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return 0
 
 
@@ -101,10 +103,12 @@ def _parse_gpu_request(raw: str) -> int:
 # Async kubectl runner
 # ---------------------------------------------------------------------------
 
+
 async def _run_kubectl(*args) -> tuple[str, str, int]:
     """Run kubectl with given args, return (stdout, stderr, returncode)."""
     proc = await asyncio.create_subprocess_exec(
-        "kubectl", *args,
+        "kubectl",
+        *args,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -115,6 +119,7 @@ async def _run_kubectl(*args) -> tuple[str, str, int]:
 # ---------------------------------------------------------------------------
 # kubectl output parsers
 # ---------------------------------------------------------------------------
+
 
 def _parse_pods(json_str: str, namespace: str, node_resource_map: dict) -> list:
     """Parse kubectl get pods -o json output into PodInfo list."""
@@ -157,21 +162,23 @@ def _parse_pods(json_str: str, namespace: str, node_resource_map: dict) -> list:
             resource = node_resource_map.get(node, "")
             age = _age_string(start_time)
 
-            pods.append(PodInfo(
-                name=name,
-                username=username,
-                namespace=ns,
-                node=node,
-                resource=resource,
-                image=image,
-                image_tag=image_tag,
-                cpu_requested=cpu,
-                ram_requested_gb=ram_gb,
-                gpu_requested=gpu,
-                age=age,
-                phase=phase,
-                start_time=start_time,
-            ))
+            pods.append(
+                PodInfo(
+                    name=name,
+                    username=username,
+                    namespace=ns,
+                    node=node,
+                    resource=resource,
+                    image=image,
+                    image_tag=image_tag,
+                    cpu_requested=cpu,
+                    ram_requested_gb=ram_gb,
+                    gpu_requested=gpu,
+                    age=age,
+                    phase=phase,
+                    start_time=start_time,
+                )
+            )
         except Exception:
             continue
 
@@ -227,19 +234,21 @@ def _parse_nodes(json_str: str) -> tuple[dict, list]:
             gpu_allocatable = _parse_gpu_request(alloc.get("nvidia.com/gpu", "0"))
 
             node_resource_map[name] = resource
-            partial_nodes.append(NodeInfo(
-                name=name,
-                resource=resource,
-                status=ready_status,
-                schedulable=schedulable,
-                cpu_allocatable=cpu_allocatable,
-                cpu_requested=0,  # filled by _merge_nodes_and_pods
-                ram_allocatable_gb=ram_allocatable_gb,
-                ram_requested_gb=0,
-                gpu_allocatable=gpu_allocatable,
-                gpu_requested=0,
-                is_control_plane=is_ctrl,
-            ))
+            partial_nodes.append(
+                NodeInfo(
+                    name=name,
+                    resource=resource,
+                    status=ready_status,
+                    schedulable=schedulable,
+                    cpu_allocatable=cpu_allocatable,
+                    cpu_requested=0,  # filled by _merge_nodes_and_pods
+                    ram_allocatable_gb=ram_allocatable_gb,
+                    ram_requested_gb=0,
+                    gpu_allocatable=gpu_allocatable,
+                    gpu_requested=0,
+                    is_control_plane=is_ctrl,
+                )
+            )
         except Exception:
             continue
 
@@ -303,9 +312,12 @@ def _merge_nodes_and_pods(partial_nodes: list, pods: list) -> tuple[list, dict]:
         if resource_name not in resources:
             resources[resource_name] = ResourceSummary(
                 name=resource_name,
-                cpu_free=0, cpu_total=0,
-                ram_free_gb=0, ram_total_gb=0,
-                gpu_free=0, gpu_total=0,
+                cpu_free=0,
+                cpu_total=0,
+                ram_free_gb=0,
+                ram_total_gb=0,
+                gpu_free=0,
+                gpu_total=0,
             )
         s = resources[resource_name]
         jupyter_cpu = round(node_cpu_jupyter.get(node.name, 0))

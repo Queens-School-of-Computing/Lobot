@@ -69,12 +69,11 @@ def _load_local_fields() -> tuple[str, str]:
 
 def _build_yaml(prod: str, dev: str) -> str:
     """Reconstruct announcement.yaml from the two field values."""
+
     def block(text: str) -> str:
         return f"  {text.strip()}" if text.strip() else "  "
-    return (
-        f"{PROD_KEY}: >\n{block(prod)}\n"
-        f"{DEV_KEY}: >\n{block(dev)}\n"
-    )
+
+    return f"{PROD_KEY}: >\n{block(prod)}\n{DEV_KEY}: >\n{block(dev)}\n"
 
 
 class AnnouncementScreen(ModalScreen):
@@ -141,13 +140,9 @@ class AnnouncementScreen(ModalScreen):
             self.query_one("#input-prod", Input).value = prod
             self.query_one("#input-dev", Input).value = dev
             if prod or dev:
-                footer.update(
-                    f"[yellow]GitHub unavailable ({exc}) — loaded from local file[/]"
-                )
+                footer.update(f"[yellow]GitHub unavailable ({exc}) — loaded from local file[/]")
             else:
-                footer.update(
-                    f"[yellow]Could not load values ({exc}) — fields are empty[/]"
-                )
+                footer.update(f"[yellow]Could not load values ({exc}) — fields are empty[/]")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-cancel":
@@ -178,9 +173,7 @@ class AnnouncementScreen(ModalScreen):
         rc, lines = await self._run_git(["git", "rev-parse", "--show-toplevel"])
         if rc != 0:
             detail = lines[0] if lines else "no output"
-            footer.update(
-                f"[red]Not a git repository: {REPO_DIR}\n{detail}[/]"
-            )
+            footer.update(f"[red]Not a git repository: {REPO_DIR}\n{detail}[/]")
             return
 
         footer.update("[yellow]Committing and pushing…[/]")

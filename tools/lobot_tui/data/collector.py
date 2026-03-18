@@ -8,20 +8,27 @@ from textual.message import Message
 from textual.widget import Widget
 
 from ..config import (
-    CONTROL_PLANE, JUPYTERHUB_NAMESPACE,
-    PODS_INTERVAL, NODES_INTERVAL, DEV_MODE,
-    SERVICE_HOST, SERVICE_PORT,
+    CONTROL_PLANE,
+    JUPYTERHUB_NAMESPACE,
+    PODS_INTERVAL,
+    NODES_INTERVAL,
+    DEV_MODE,
+    SERVICE_HOST,
+    SERVICE_PORT,
 )
 from .models import ClusterState, ResourceSummary, NodeInfo, PodInfo
 from .parsers import (
     _run_kubectl,
-    _parse_pods, _parse_nodes, _merge_nodes_and_pods,
+    _parse_pods,
+    _parse_nodes,
+    _merge_nodes_and_pods,
 )
 
 
 # ---------------------------------------------------------------------------
 # Message emitted to the app when new data is ready
 # ---------------------------------------------------------------------------
+
 
 class ClusterStateUpdated(Message):
     def __init__(self, state: ClusterState, source: str = "kubectl") -> None:
@@ -34,6 +41,7 @@ class ClusterStateUpdated(Message):
 # Mock data for local dev/testing (LOBOT_TUI_DEV=1)
 # ---------------------------------------------------------------------------
 
+
 def _mock_state() -> ClusterState:
     now = datetime.now()
     resources = {
@@ -44,18 +52,90 @@ def _mock_state() -> ClusterState:
         "riselab": ResourceSummary("riselab", 183, 256, 688, 1008, 5, 7, pod_count=5),
     }
     pods = [
-        PodInfo("jupyter-ruslanamruddin", "ruslanamruddin", "jhub", "newcluster-gpu1", "lobot_a40",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 10, 128, 1, "2d3h", "Running"),
-        PodInfo("jupyter-busvp52", "busvp52", "jhub", "newcluster-gpu1", "lobot_a40",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 16, 128, 1, "1d1h", "Running"),
-        PodInfo("jupyter-qscautodrivegroup2", "qscautodrivegroup2", "jhub", "newcluster-gpu2", "lobot_a40",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 8, 64, 1, "5h12m", "Running"),
-        PodInfo("jupyter-ryanz8", "ryanz8", "jhub", "newcluster-gpu3", "miblab",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 64, 512, 4, "3d", "Running"),
-        PodInfo("jupyter-maxhao56", "maxhao56", "jhub", "newcluster-gpu4", "riselab",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 10, 64, 2, "4h", "Running"),
-        PodInfo("jupyter-pending-2duser", "pending-user", "jhub", "", "lobot_a5000",
-                "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn", "13.0.2cudnn…", 8, 64, 1, "2m", "Pending"),
+        PodInfo(
+            "jupyter-ruslanamruddin",
+            "ruslanamruddin",
+            "jhub",
+            "newcluster-gpu1",
+            "lobot_a40",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            10,
+            128,
+            1,
+            "2d3h",
+            "Running",
+        ),
+        PodInfo(
+            "jupyter-busvp52",
+            "busvp52",
+            "jhub",
+            "newcluster-gpu1",
+            "lobot_a40",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            16,
+            128,
+            1,
+            "1d1h",
+            "Running",
+        ),
+        PodInfo(
+            "jupyter-qscautodrivegroup2",
+            "qscautodrivegroup2",
+            "jhub",
+            "newcluster-gpu2",
+            "lobot_a40",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            8,
+            64,
+            1,
+            "5h12m",
+            "Running",
+        ),
+        PodInfo(
+            "jupyter-ryanz8",
+            "ryanz8",
+            "jhub",
+            "newcluster-gpu3",
+            "miblab",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            64,
+            512,
+            4,
+            "3d",
+            "Running",
+        ),
+        PodInfo(
+            "jupyter-maxhao56",
+            "maxhao56",
+            "jhub",
+            "newcluster-gpu4",
+            "riselab",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            10,
+            64,
+            2,
+            "4h",
+            "Running",
+        ),
+        PodInfo(
+            "jupyter-pending-2duser",
+            "pending-user",
+            "jhub",
+            "",
+            "lobot_a5000",
+            "queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn",
+            "13.0.2cudnn…",
+            8,
+            64,
+            1,
+            "2m",
+            "Pending",
+        ),
     ]
     nodes = [
         NodeInfo("newcluster-gpu1", "lobot_a40", "Ready", True, 64, 26, 503, 256, 2, 2),
@@ -65,14 +145,18 @@ def _mock_state() -> ClusterState:
         NodeInfo(CONTROL_PLANE, "", "Ready", True, 16, 2, 32, 4, 0, 0, is_control_plane=True),
     ]
     return ClusterState(
-        resources=resources, pods=pods, nodes=nodes,
-        last_pods_update=now, last_nodes_update=now,
+        resources=resources,
+        pods=pods,
+        nodes=nodes,
+        last_pods_update=now,
+        last_nodes_update=now,
     )
 
 
 # ---------------------------------------------------------------------------
 # DataCollector — direct kubectl polling (used when service is unavailable)
 # ---------------------------------------------------------------------------
+
 
 class DataCollector:
     """
@@ -133,7 +217,9 @@ class DataCollector:
                 pod_resource_counts: dict = {}
                 for pod in self._state.pods:
                     if pod.name.startswith("jupyter-"):
-                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                        pod_resource_counts[pod.resource] = (
+                            pod_resource_counts.get(pod.resource, 0) + 1
+                        )
                 for resource_name, resource in self._state.resources.items():
                     resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:
@@ -141,9 +227,7 @@ class DataCollector:
             self._poster.post_message(ClusterStateUpdated(self._state))
 
     async def _fetch_nodes(self) -> None:
-        stdout, stderr, rc = await _run_kubectl(
-            "get", "nodes", "-o", "json"
-        )
+        stdout, stderr, rc = await _run_kubectl("get", "nodes", "-o", "json")
         async with self._lock:
             if rc == 0:
                 node_resource_map, partial_nodes = _parse_nodes(stdout)
@@ -157,7 +241,9 @@ class DataCollector:
                 pod_resource_counts: dict = {}
                 for pod in self._state.pods:
                     if pod.name.startswith("jupyter-"):
-                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                        pod_resource_counts[pod.resource] = (
+                            pod_resource_counts.get(pod.resource, 0) + 1
+                        )
                 for resource_name, resource in self._state.resources.items():
                     resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:
@@ -175,6 +261,7 @@ class DataCollector:
 # ---------------------------------------------------------------------------
 # ServiceCollector — polls lobot-collector /api/state on the same interval
 # ---------------------------------------------------------------------------
+
 
 class ServiceCollector:
     """
@@ -216,10 +303,7 @@ class ServiceCollector:
                 # Connection: close tells HTTP/1.1 server to close after response,
                 # so read(-1) sees EOF instead of blocking on keep-alive.
                 writer.write(
-                    b"GET /api/state HTTP/1.1\r\n"
-                    b"Host: localhost\r\n"
-                    b"Connection: close\r\n"
-                    b"\r\n"
+                    b"GET /api/state HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
                 )
                 await writer.drain()
                 # Skip HTTP response headers, capture Content-Length if present
@@ -231,9 +315,7 @@ class ServiceCollector:
                     if line.lower().startswith(b"content-length:"):
                         content_length = int(line.split(b":", 1)[1].strip())
                 if content_length is not None:
-                    body = await asyncio.wait_for(
-                        reader.readexactly(content_length), timeout=10.0
-                    )
+                    body = await asyncio.wait_for(reader.readexactly(content_length), timeout=10.0)
                 else:
                     body = await asyncio.wait_for(reader.read(-1), timeout=10.0)
                 state = ClusterState.from_dict(json.loads(body))

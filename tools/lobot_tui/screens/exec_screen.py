@@ -34,8 +34,14 @@ class ExecScreen(Screen):
 
     def on_mount(self) -> None:
         cmd = [
-            "kubectl", "exec", "-it", self._pod.name,
-            "-n", self._pod.namespace, "--", "/bin/bash",
+            "kubectl",
+            "exec",
+            "-it",
+            self._pod.name,
+            "-n",
+            self._pod.namespace,
+            "--",
+            "/bin/bash",
         ]
         with self.app.suspend():
             os.system("clear")

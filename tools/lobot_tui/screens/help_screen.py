@@ -94,8 +94,11 @@ class HelpScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="help-dialog"):
-            yield Label("[bold cyan]LOBOT TUI — Help[/]  [dim][Esc/q/?] close[/]",
-                        id="help-title", markup=True)
+            yield Label(
+                "[bold cyan]LOBOT TUI — Help[/]  [dim][Esc/q/?] close[/]",
+                id="help-title",
+                markup=True,
+            )
             yield Markdown(HELP_TEXT)
 
     def action_close(self) -> None:

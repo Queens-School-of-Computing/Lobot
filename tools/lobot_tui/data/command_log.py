@@ -20,12 +20,14 @@ def record(command: str, lines: list, exit_code: int | None) -> None:
     """Record a completed command to the in-process deque and the daily log file."""
     ts_full = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ts_short = datetime.now().strftime("%H:%M:%S")
-    _log.appendleft({
-        "ts": ts_short,
-        "command": command,
-        "lines": lines,
-        "exit_code": exit_code,
-    })
+    _log.appendleft(
+        {
+            "ts": ts_short,
+            "command": command,
+            "lines": lines,
+            "exit_code": exit_code,
+        }
+    )
 
     # Append to the persistent daily log file (never raises — can't break the TUI)
     try:

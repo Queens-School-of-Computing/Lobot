@@ -11,14 +11,14 @@ from ..data.models import PodInfo
 
 # Fixed-width columns (excluding USERNAME which expands)
 _FIXED_COLS = [
-    ("RESOURCE",  20),
-    ("NODE",      23),
+    ("RESOURCE", 20),
+    ("NODE", 23),
     ("IMAGE TAG", 66),
-    ("CPU",        5),
-    ("RAM",        6),
-    ("GPU",        4),
-    ("AGE",        8),
-    ("STATUS",    10),
+    ("CPU", 5),
+    ("RAM", 6),
+    ("GPU", 4),
+    ("AGE", 8),
+    ("STATUS", 10),
 ]
 _NUM_COLS = len(_FIXED_COLS) + 1  # including USERNAME
 _FIXED_SUM = sum(w for _, w in _FIXED_COLS)
@@ -26,17 +26,18 @@ _USERNAME_MIN = 14
 _USERNAME_MAX = 30
 
 PHASE_MARKUP = {
-    "Running":   "[#3fb950]● Running[/]",
-    "Pending":   "[#d29922]◌ Pending[/]",
-    "Failed":    "[#f85149]✖ Failed[/]",
+    "Running": "[#3fb950]● Running[/]",
+    "Pending": "[#d29922]◌ Pending[/]",
+    "Failed": "[#f85149]✖ Failed[/]",
     "Succeeded": "[dim]✓ Done[/]",
 }
+
 
 def _left_trunc(text: str, width: int) -> str:
     """Truncate from the left so the tail (date) is always visible."""
     if len(text) <= width:
         return text
-    return "…" + text[-(width - 1):]
+    return "…" + text[-(width - 1) :]
 
 
 def _fmt_cpu(v: float) -> str:
@@ -75,15 +76,20 @@ class PodTableWidget(Widget):
 
     filter_text: reactive[str] = reactive("")
     namespace: reactive[str] = reactive(JUPYTERHUB_NAMESPACE)
-    node_filter: reactive[str] = reactive("")       # node name to filter by, "" = all
-    resource_filter: reactive[str] = reactive("")   # resource name to filter by, "" = all
+    node_filter: reactive[str] = reactive("")  # node name to filter by, "" = all
+    resource_filter: reactive[str] = reactive("")  # resource name to filter by, "" = all
     _all_pods: list = []
     _current_pods: list = []
-    _sort_col: int = -1   # -1 = no sort
+    _sort_col: int = -1  # -1 = no sort
     _sort_rev: bool = False
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="pod-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
+        yield DataTable(
+            id="pod-datatable",
+            cursor_type="row",
+            zebra_stripes=True,
+            cursor_foreground_priority="renderable",
+        )
 
     def on_mount(self) -> None:
         self._setup_columns()
@@ -153,9 +159,11 @@ class PodTableWidget(Widget):
         f = self.filter_text.strip().lower()
         if f:
             terms = [t.strip() for t in f.split("|") if t.strip()]
+
             def _matches(p: "PodInfo") -> bool:
                 haystack = f"{p.name} {p.node} {p.resource} {p.image_tag} {p.phase}".lower()
                 return any(t in haystack for t in terms)
+
             self._current_pods = [p for p in ns_pods if _matches(p)]
         else:
             self._current_pods = list(ns_pods)
@@ -163,9 +171,7 @@ class PodTableWidget(Widget):
         if self._sort_col >= 0:
             key_fn = _SORT_KEYS[self._sort_col]
             try:
-                self._current_pods = sorted(
-                    self._current_pods, key=key_fn, reverse=self._sort_rev
-                )
+                self._current_pods = sorted(self._current_pods, key=key_fn, reverse=self._sort_rev)
             except Exception:
                 pass
 

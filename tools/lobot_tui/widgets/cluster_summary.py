@@ -12,7 +12,7 @@ from .render_utils import render_bar, render_gpu_bar, fmt_cpu, fmt_ram_gb, fmt_g
 # Fixed-width columns (excluding RESOURCE which expands)
 # CPU/RAM: bar_w=7 + " " + val=7 = 15.  GPU: bar_w=23 + " " + val=5 = 29.
 _FIXED_COLS = [
-    ("#",    3),
+    ("#", 3),
     ("CPU", 18),
     ("RAM", 18),
     ("GPU", 29),
@@ -36,18 +36,24 @@ class ResourceTableWidget(Widget):
 
     class ResourceFilterChanged(Message):
         """Posted when the user toggles a resource filter (via `r` hotkey)."""
+
         def __init__(self, resource_name: "str | None") -> None:
             super().__init__()
             self.resource_name = resource_name  # None = filter cleared
 
-    _all_resources: dict = {}       # resource_name -> ResourceSummary
-    _sorted_resources: list = []    # ordered list for cursor mapping
+    _all_resources: dict = {}  # resource_name -> ResourceSummary
+    _sorted_resources: list = []  # ordered list for cursor mapping
     _filter_resource: "str | None" = None
     _sort_col: int = -1
     _sort_rev: bool = False
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="resource-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
+        yield DataTable(
+            id="resource-datatable",
+            cursor_type="row",
+            zebra_stripes=True,
+            cursor_foreground_priority="renderable",
+        )
 
     def on_mount(self) -> None:
         self._setup_columns()

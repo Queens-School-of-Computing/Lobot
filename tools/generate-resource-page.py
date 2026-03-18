@@ -22,11 +22,11 @@ import sys
 import re
 from pathlib import Path
 
-CONFIG_ENV  = Path('/opt/Lobot/config-env.yaml')
+CONFIG_ENV = Path('/opt/Lobot/config-env.yaml')
 ASSETS_HTML = Path('.')
-IMAGE_REPO  = 'queensschoolofcomputingdocker/gpu-jupyter-latest'
+IMAGE_REPO = 'queensschoolofcomputingdocker/gpu-jupyter-latest'
 
-CPU_STEPS    = [2, 4, 8, 10, 16, 24, 32, 48, 64, 96, 128]
+CPU_STEPS = [2, 4, 8, 10, 16, 24, 32, 48, 64, 96, 128]
 RAM_STEPS_GB = [8, 16, 32, 64, 96, 128, 192, 256, 384, 512, 768, 1024]
 
 
@@ -34,10 +34,15 @@ def main():
     parser = argparse.ArgumentParser(
         description='Generate a JupyterHub spawn form HTML from local hardware info.'
     )
-    parser.add_argument('--lab', '-l', required=True,
-                        help='Lab name (used as the filename and JupyterHub resource key)')
-    parser.add_argument('--output', '-o',
-                        help='Output path (default: /opt/Lobot/assets/html/<lab>.html)')
+    parser.add_argument(
+        '--lab',
+        '-l',
+        required=True,
+        help='Lab name (used as the filename and JupyterHub resource key)',
+    )
+    parser.add_argument(
+        '--output', '-o', help='Output path (default: /opt/Lobot/assets/html/<lab>.html)'
+    )
     args = parser.parse_args()
 
     info = get_hardware_info()
@@ -56,12 +61,13 @@ def main():
     out_path.write_text(html)
 
     gpu_mem = f" ({info['gpu_mem_gb']}G)" if info['gpu_mem_gb'] else ''
-    gpu_str = f"{info['gpu_count']}x {info['gpu_model']}{gpu_mem}" \
-              if info['gpu_count'] else 'none'
+    gpu_str = f"{info['gpu_count']}x {info['gpu_model']}{gpu_mem}" if info['gpu_count'] else 'none'
 
     print(f"\nWritten: {out_path}")
     print(f"  Lab:  {args.lab}")
-    print(f"  CPU:  {info['cpu_count']} cores ({info['cpu_model']})  →  options: {info['cpu_options']}")
+    print(
+        f"  CPU:  {info['cpu_count']} cores ({info['cpu_model']})  →  options: {info['cpu_options']}"
+    )
     print(f"  RAM:  {info['ram_gb']} GB   →  options: {info['ram_options']} GB")
     print(f"  GPU:  {gpu_str}")
 
@@ -89,17 +95,23 @@ def get_hardware_info():
     # --- GPU (optional) ---
     gpu_count, gpu_model, gpu_mem_gb = 0, '', None
     try:
-        smi = subprocess.run(
-            ['nvidia-smi', '--query-gpu=name,memory.total', '--format=csv,noheader'],
-            capture_output=True, text=True, check=True
-        ).stdout.strip().splitlines()
+        smi = (
+            subprocess.run(
+                ['nvidia-smi', '--query-gpu=name,memory.total', '--format=csv,noheader'],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            .stdout.strip()
+            .splitlines()
+        )
         gpu_count = len(smi)
         if smi:
             name, mem = smi[0].split(',', 1)
             gpu_model = name.strip().removeprefix('NVIDIA ').strip()
-            mem_mib   = int(re.search(r'\d+', mem).group())
+            mem_mib = int(re.search(r'\d+', mem).group())
             gpu_mem_gb = _round_gpu_mem(mem_mib)
-    except (FileNotFoundError, subprocess.CalledProcessError):
+    except FileNotFoundError, subprocess.CalledProcessError:
         pass  # No GPU or nvidia-smi not available
 
     # --- Option lists ---
@@ -112,20 +124,19 @@ def get_hardware_info():
         ram_options.append(ram_gb)
 
     return {
-        'cpu_count':   cpu_count,
-        'cpu_model':   cpu_model,
+        'cpu_count': cpu_count,
+        'cpu_model': cpu_model,
         'cpu_options': cpu_options,
-        'ram_gb':      ram_gb,
+        'ram_gb': ram_gb,
         'ram_options': ram_options,
-        'gpu_count':   gpu_count,
-        'gpu_model':   gpu_model,
-        'gpu_mem_gb':  gpu_mem_gb,
+        'gpu_count': gpu_count,
+        'gpu_model': gpu_model,
+        'gpu_mem_gb': gpu_mem_gb,
     }
 
 
 CONFIG_YAML_BK_URL = (
-    'https://raw.githubusercontent.com/'
-    'Queens-School-of-Computing/Lobot/newcluster/config.yaml.bk'
+    'https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/config.yaml.bk'
 )
 
 
@@ -143,6 +154,7 @@ def get_current_image():
     # 2. Fall back to config.yaml.bk from GitHub
     try:
         from urllib.request import urlopen
+
         raw = urlopen(CONFIG_YAML_BK_URL, timeout=5).read().decode()
         cfg = yaml.safe_load(raw)
         tag = cfg['singleuser']['image']['tag']
@@ -156,13 +168,15 @@ def get_current_image():
 
 
 def render_html(lab, info, image_tag, image_label):
-    image_full   = f'{IMAGE_REPO}:{image_tag}'
+    image_full = f'{IMAGE_REPO}:{image_tag}'
     cpu_hw_label = info['cpu_model']
 
     cpu_options_html = '\n'.join(
         '                <option value="{v}" select="selected">{n} cores</option>'.format(
-            v=f'{c}.0', n=c) if i == 0 else
-        '                <option value="{v}">{n} cores</option>'.format(v=f'{c}.0', n=c)
+            v=f'{c}.0', n=c
+        )
+        if i == 0
+        else '                <option value="{v}">{n} cores</option>'.format(v=f'{c}.0', n=c)
         for i, c in enumerate(info['cpu_options'])
     )
 
@@ -171,10 +185,9 @@ def render_html(lab, info, image_tag, image_label):
         model_str = info['gpu_model'] + mem_label
         gpu_options_html = (
             "                <option value=\"0\" selected=\"selected\">"
-            "I don't need a GPU for now.</option>\n" +
-            '\n'.join(
-                '                <option value="{g}">{g}x {m}</option>'.format(
-                    g=g, m=model_str)
+            "I don't need a GPU for now.</option>\n"
+            + '\n'.join(
+                '                <option value="{g}">{g}x {m}</option>'.format(g=g, m=model_str)
                 for g in range(1, info['gpu_count'] + 1)
             )
         )
@@ -185,9 +198,9 @@ def render_html(lab, info, image_tag, image_label):
         )
 
     ram_options_html = '\n'.join(
-        '                <option value="{v}" select="selected">{v} RAM</option>'.format(
-            v=f'{r}G') if i == 0 else
-        '                <option value="{v}">{v} RAM</option>'.format(v=f'{r}G')
+        '                <option value="{v}" select="selected">{v} RAM</option>'.format(v=f'{r}G')
+        if i == 0
+        else '                <option value="{v}">{v} RAM</option>'.format(v=f'{r}G')
         for i, r in enumerate(info['ram_options'])
     )
 
@@ -255,14 +268,15 @@ def render_html(lab, info, image_tag, image_label):
         "  </div>\n"
     )
 
-    return (template
-            .replace('__LAB__',          lab)
-            .replace('__IMAGE_FULL__',   image_full)
-            .replace('__IMAGE_LABEL__',  image_label)
-            .replace('__CPU_HW_LABEL__', cpu_hw_label)
-            .replace('__CPU_OPTIONS__',  cpu_options_html)
-            .replace('__GPU_OPTIONS__',  gpu_options_html)
-            .replace('__RAM_OPTIONS__',  ram_options_html))
+    return (
+        template.replace('__LAB__', lab)
+        .replace('__IMAGE_FULL__', image_full)
+        .replace('__IMAGE_LABEL__', image_label)
+        .replace('__CPU_HW_LABEL__', cpu_hw_label)
+        .replace('__CPU_OPTIONS__', cpu_options_html)
+        .replace('__GPU_OPTIONS__', gpu_options_html)
+        .replace('__RAM_OPTIONS__', ram_options_html)
+    )
 
 
 if __name__ == '__main__':
