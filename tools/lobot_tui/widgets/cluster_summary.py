@@ -153,10 +153,17 @@ class ResourceTableWidget(Widget):
         for res in sorted_resources:
             pods_str = str(res.pod_count)
 
-            cpu_str = render_bar(res.cpu_used, res.cpu_total, 10, fmt_cpu(res.cpu_used, res.cpu_total))
-            ram_str = render_bar(res.ram_used_gb, res.ram_total_gb, 10, fmt_ram_gb(res.ram_used_gb, res.ram_total_gb))
-            gpu_str = render_gpu_bar(res.gpu_used, res.gpu_total, fmt_gpu(res.gpu_used, res.gpu_total)) \
-                      if res.has_gpu else f"[dim]{'–':>29}[/]"
+            cpu_str = render_bar(
+                res.cpu_used, res.cpu_total, 10, fmt_cpu(res.cpu_used, res.cpu_total)
+            )
+            ram_str = render_bar(
+                res.ram_used_gb, res.ram_total_gb, 10, fmt_ram_gb(res.ram_used_gb, res.ram_total_gb)
+            )
+            gpu_str = (
+                render_gpu_bar(res.gpu_used, res.gpu_total, fmt_gpu(res.gpu_used, res.gpu_total))
+                if res.has_gpu
+                else f"[dim]{'–':>29}[/]"
+            )
 
             name_display = res.name
             if self._filter_resource and res.name == self._filter_resource:

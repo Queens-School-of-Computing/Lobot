@@ -122,9 +122,11 @@ class RepeatTimer(Timer):
             self.function(*self.args, **self.kwargs)
             try:
                 data = {}
-                content = check_output(
-                    ['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']
-                ).decode()
+                content = check_output([
+                    '/opt/Lobot/kubectl-view-allocations',
+                    '-o',
+                    'csv',
+                ]).decode()
 
                 # Validate the content before parsing
                 if not content or 'error' in content.lower() or len(content.strip()) < 10:

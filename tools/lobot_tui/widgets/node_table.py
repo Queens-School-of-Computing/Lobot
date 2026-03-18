@@ -198,8 +198,12 @@ class NodeTableWidget(Widget):
                 cpu_val = fmt_cpu(node.cpu_requested, node.cpu_allocatable)
                 ram_val = fmt_ram_gb(node.ram_requested_gb, node.ram_allocatable_gb)
                 if tint:
-                    cpu_cell = render_bar_text(node.cpu_requested, node.cpu_allocatable, 10, cpu_val, bg)
-                    ram_cell = render_bar_text(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val, bg)
+                    cpu_cell = render_bar_text(
+                        node.cpu_requested, node.cpu_allocatable, 10, cpu_val, bg
+                    )
+                    ram_cell = render_bar_text(
+                        node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val, bg
+                    )
                     if node.gpu_allocatable > 0:
                         gpu_cell = render_gpu_bar_text(
                             node.gpu_requested,
@@ -211,7 +215,9 @@ class NodeTableWidget(Widget):
                         gpu_cell = plain_text("–", bg)
                 else:
                     cpu_cell = render_bar(node.cpu_requested, node.cpu_allocatable, 10, cpu_val)
-                    ram_cell = render_bar(node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val)
+                    ram_cell = render_bar(
+                        node.ram_requested_gb, node.ram_allocatable_gb, 10, ram_val
+                    )
                     if node.gpu_allocatable > 0:
                         gpu_cell = render_gpu_bar(
                             node.gpu_requested,

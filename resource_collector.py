@@ -40,9 +40,11 @@ class RepeatTimer(Timer):
             self.function(*self.args, **self.kwargs)
             try:
                 data = {}
-                content = check_output(
-                    ['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']
-                ).decode()
+                content = check_output([
+                    '/opt/Lobot/kubectl-view-allocations',
+                    '-o',
+                    'csv',
+                ]).decode()
                 df = pd.read_csv(StringIO(content))
                 df = df.fillna(0)
                 node_info = (
