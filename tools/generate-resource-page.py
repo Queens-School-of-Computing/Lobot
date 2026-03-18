@@ -96,7 +96,8 @@ def get_hardware_info():
     gpu_count, gpu_model, gpu_mem_gb = 0, '', None
     try:
         smi = (
-            subprocess.run(
+            subprocess
+            .run(
                 ['nvidia-smi', '--query-gpu=name,memory.total', '--format=csv,noheader'],
                 capture_output=True,
                 text=True,
@@ -269,7 +270,8 @@ def render_html(lab, info, image_tag, image_label):
     )
 
     return (
-        template.replace('__LAB__', lab)
+        template
+        .replace('__LAB__', lab)
         .replace('__IMAGE_FULL__', image_full)
         .replace('__IMAGE_LABEL__', image_label)
         .replace('__CPU_HW_LABEL__', cpu_hw_label)

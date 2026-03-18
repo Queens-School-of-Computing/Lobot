@@ -187,15 +187,21 @@ class AnnouncementScreen(ModalScreen):
             return
 
         # Check if there is anything to commit
-        rc_status, status_lines = await self._run_git(
-            ["git", "status", "--porcelain", ANNOUNCEMENT_YAML]
-        )
+        rc_status, status_lines = await self._run_git([
+            "git",
+            "status",
+            "--porcelain",
+            ANNOUNCEMENT_YAML,
+        ])
         if rc_status == 0 and not any(l.strip() for l in status_lines):
             footer.update("[dim]No changes — file already up to date. Pushing anyway…[/]")
         else:
-            rc, lines = await self._run_git(
-                ["git", "commit", "-m", "chore: update announcement via lobot-tui"]
-            )
+            rc, lines = await self._run_git([
+                "git",
+                "commit",
+                "-m",
+                "chore: update announcement via lobot-tui",
+            ])
             command_log.record("git commit", lines, rc)
             if rc != 0:
                 detail = lines[0] if lines else "no output"
