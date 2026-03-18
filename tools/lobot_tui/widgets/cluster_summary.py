@@ -1,11 +1,9 @@
 """ResourceTableWidget: DataTable showing resource group utilisation."""
 
-from collections import deque
-
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable, Sparkline
+from textual.widgets import DataTable
 
 from ..data.collector import ClusterStateUpdated
 from ..data.models import ResourceSummary
@@ -48,13 +46,8 @@ class ResourceTableWidget(Widget):
     _sort_col: int = -1
     _sort_rev: bool = False
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._pod_history: deque = deque(maxlen=60)
-
     def compose(self) -> ComposeResult:
         yield DataTable(id="resource-datatable", cursor_type="row", zebra_stripes=True, cursor_foreground_priority="renderable")
-        yield Sparkline([], id="pod-sparkline", summary_function=max)
 
     def on_mount(self) -> None:
         self._setup_columns()
@@ -80,12 +73,6 @@ class ResourceTableWidget(Widget):
             self.query_one(DataTable).clear()
             return
         self._all_resources = event.state.resources
-        total_pods = sum(r.pod_count for r in event.state.resources.values())
-        self._pod_history.append(float(total_pods))
-        try:
-            self.query_one("#pod-sparkline", Sparkline).data = list(self._pod_history)
-        except Exception:
-            pass
         self._rebuild_table()
 
     def on_data_table_header_selected(self, event: DataTable.HeaderSelected) -> None:

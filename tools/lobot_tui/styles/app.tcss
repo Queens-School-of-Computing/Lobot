@@ -184,13 +184,6 @@ DataTable > .datatable--hover {
     color: #f85149;
 }
 
-/* Sparkline — pod count history in the resource summary panel */
-#pod-sparkline {
-    height: 3;
-    background: #090d13;
-    color: #3fb950;
-}
-
 /* ── Modal screens ── */
 ConfirmScreen {
     align: center middle;
