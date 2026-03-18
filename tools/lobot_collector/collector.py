@@ -81,9 +81,7 @@ class ClusterCollector:
             await asyncio.sleep(NODES_INTERVAL)
 
     async def _fetch_pods(self) -> None:
-        stdout, stderr, rc = await _run_kubectl(
-            "get", "pods", "--all-namespaces", "-o", "json"
-        )
+        stdout, stderr, rc = await _run_kubectl("get", "pods", "--all-namespaces", "-o", "json")
         async with self._lock:
             if rc == 0:
                 self._state.pods = _parse_pods(stdout, "all", self._node_resource_map)
@@ -95,7 +93,9 @@ class ClusterCollector:
                 pod_resource_counts: dict = {}
                 for pod in self._state.pods:
                     if pod.name.startswith("jupyter-"):
-                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                        pod_resource_counts[pod.resource] = (
+                            pod_resource_counts.get(pod.resource, 0) + 1
+                        )
                 for resource_name, resource in self._state.resources.items():
                     resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:
@@ -118,7 +118,9 @@ class ClusterCollector:
                 pod_resource_counts: dict = {}
                 for pod in self._state.pods:
                     if pod.name.startswith("jupyter-"):
-                        pod_resource_counts[pod.resource] = pod_resource_counts.get(pod.resource, 0) + 1
+                        pod_resource_counts[pod.resource] = (
+                            pod_resource_counts.get(pod.resource, 0) + 1
+                        )
                 for resource_name, resource in self._state.resources.items():
                     resource.pod_count = pod_resource_counts.get(resource_name, 0)
             else:

@@ -56,8 +56,8 @@ class JobsScreen(Screen):
             elapsed = int((datetime.now() - job.start_time).total_seconds())
             status_tag = {
                 "running": "[yellow]● Running[/]",
-                "done":    "[green]✓ Done[/]",
-                "failed":  "[red]✗ Failed[/]",
+                "done": "[green]✓ Done[/]",
+                "failed": "[red]✗ Failed[/]",
             }.get(job.status, "")
             if job.status == "running":
                 hint = "\[b] background  \[k] kill (confirm)  \[s] save"
@@ -79,21 +79,17 @@ class JobsScreen(Screen):
                 "\[k] kill job (press twice to confirm)[/]"
             )
         elif job.status == "done":
-            footer.update(
-                "[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save[/]"
-            )
+            footer.update("[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
         else:
             rc = job.returncode if job.returncode is not None else "?"
-            footer.update(
-                f"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save[/]"
-            )
+            footer.update(f"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
 
     def _poll_output(self) -> None:
         job = self.app.job_manager.current_job
         if job is None:
             return
         log = self.query_one(RichLog)
-        new_lines = job.output_lines[self._last_line:]
+        new_lines = job.output_lines[self._last_line :]
         for line in new_lines:
             log.write(line)
         self._last_line = len(job.output_lines)
@@ -105,12 +101,14 @@ class JobsScreen(Screen):
         """Update display when the job finishes (message re-broadcast from app)."""
         job = event.job
         log = self.query_one(RichLog)
-        new_lines = job.output_lines[self._last_line:]
+        new_lines = job.output_lines[self._last_line :]
         for line in new_lines:
             log.write(line)
         self._last_line = len(job.output_lines)
         log.write("")
-        log.write(f"[exit {job.returncode}]" if job.returncode is not None else "[failed to launch]")
+        log.write(
+            f"[exit {job.returncode}]" if job.returncode is not None else "[failed to launch]"
+        )
         self._update_header(job)
         self._update_footer(job)
 
@@ -158,6 +156,7 @@ class JobsScreen(Screen):
 
     def action_save_output(self) -> None:
         from datetime import datetime as _dt
+
         job = self.app.job_manager.current_job
         if not job or not job.output_lines:
             return

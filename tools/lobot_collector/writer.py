@@ -22,8 +22,16 @@ def write_current_json(state: ClusterState) -> None:
     for pod in state.pods:
         if not pod.resource or not pod.name.startswith("jupyter-"):
             continue
-        cpu_disp = int(pod.cpu_requested) if pod.cpu_requested == int(pod.cpu_requested) else pod.cpu_requested
-        ram_disp = int(pod.ram_requested_gb) if pod.ram_requested_gb == int(pod.ram_requested_gb) else f"{round(pod.ram_requested_gb * 1024)}M"
+        cpu_disp = (
+            int(pod.cpu_requested)
+            if pod.cpu_requested == int(pod.cpu_requested)
+            else pod.cpu_requested
+        )
+        ram_disp = (
+            int(pod.ram_requested_gb)
+            if pod.ram_requested_gb == int(pod.ram_requested_gb)
+            else f"{round(pod.ram_requested_gb * 1024)}M"
+        )
         entry = f"{pod.username} == {cpu_disp} cores, {ram_disp} mem, {pod.gpu_requested} gpu"
         pod_usage_by_resource.setdefault(pod.resource, []).append(entry)
 

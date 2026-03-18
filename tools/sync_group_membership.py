@@ -60,7 +60,9 @@ def ensure_user(api_url: str, token: str, name: str, verbose: bool = False) -> N
         r.raise_for_status()
 
 
-def add_users_to_group(api_url: str, token: str, name: str, users: List[str], verbose: bool = False) -> None:
+def add_users_to_group(
+    api_url: str, token: str, name: str, users: List[str], verbose: bool = False
+) -> None:
     if not users:
         return
     headers = {
@@ -79,7 +81,9 @@ def add_users_to_group(api_url: str, token: str, name: str, users: List[str], ve
     r.raise_for_status()
 
 
-def remove_users_from_group(api_url: str, token: str, name: str, users: List[str], verbose: bool = False) -> None:
+def remove_users_from_group(
+    api_url: str, token: str, name: str, users: List[str], verbose: bool = False
+) -> None:
     if not users:
         return
     headers = {
@@ -188,7 +192,10 @@ def main(argv: List[str]) -> int:
 
     token = args.token or os.environ.get("JUPYTERHUB_API_TOKEN")
     if not token:
-        print("ERROR: API token not provided. Use --token or set JUPYTERHUB_API_TOKEN.", file=sys.stderr)
+        print(
+            "ERROR: API token not provided. Use --token or set JUPYTERHUB_API_TOKEN.",
+            file=sys.stderr,
+        )
         return 1
 
     api_url = args.api_url.rstrip("/")

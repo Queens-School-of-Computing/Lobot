@@ -34,14 +34,11 @@ TO_EMAIL = 'aaron@cs.queensu.ca'  # Change this to your email address
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = SysLogHandler(
-    facility=SysLogHandler.LOG_DAEMON,
-    address='/dev/log'
-)
+handler = SysLogHandler(facility=SysLogHandler.LOG_DAEMON, address='/dev/log')
 
 formatter = logging.Formatter(
     fmt="%(asctime)s - %(filename)s:%(funcName)s:%(lineno)d %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 handler.setFormatter(formatter)
 # logger.addHandler(handler)
@@ -54,21 +51,21 @@ def send_notification_email(subject, body):
     """Send a general notification email."""
     if not EMAIL_ENABLED:
         return
-    
+
     try:
         msg = MIMEMultipart()
         msg['From'] = FROM_EMAIL
         msg['To'] = TO_EMAIL
         msg['Subject'] = f'Resource Collector: {subject}'
-        
+
         msg.attach(MIMEText(body, 'plain'))
-        
+
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         if SMTP_USE_TLS:
             server.starttls()
         if SMTP_USERNAME and SMTP_PASSWORD:
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        
+
         server.send_message(msg)
         server.quit()
         logger.info(f"Notification email sent to {TO_EMAIL}: {subject}")
@@ -80,13 +77,13 @@ def send_error_email(subject, error_message, traceback_info=None):
     """Send an email notification when an error occurs."""
     if not EMAIL_ENABLED:
         return
-    
+
     try:
         msg = MIMEMultipart()
         msg['From'] = FROM_EMAIL
         msg['To'] = TO_EMAIL
         msg['Subject'] = f'Resource Collector Error: {subject}'
-        
+
         body = f"""
 Resource Collector encountered an error:
 
@@ -96,17 +93,17 @@ Error: {error_message}
 """
         if traceback_info:
             body += f"\nFull Traceback:\n{traceback_info}\n"
-        
+
         body += "\nThe resource collector is still running and will retry on the next interval.\n"
-        
+
         msg.attach(MIMEText(body, 'plain'))
-        
+
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         if SMTP_USE_TLS:
             server.starttls()
         if SMTP_USERNAME and SMTP_PASSWORD:
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        
+
         server.send_message(msg)
         server.quit()
         logger.info(f"Error notification email sent to {TO_EMAIL}")
@@ -125,36 +122,52 @@ class RepeatTimer(Timer):
             self.function(*self.args, **self.kwargs)
             try:
                 data = {}
-                content = check_output(['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']).decode()
-                
+                content = check_output(
+                    ['/opt/Lobot/kubectl-view-allocations', '-o', 'csv']
+                ).decode()
+
                 # Validate the content before parsing
                 if not content or 'error' in content.lower() or len(content.strip()) < 10:
                     raise ValueError(f"Invalid kubectl-view-allocations output: {content[:200]}")
-                
+
                 df = pd.read_csv(StringIO(content))
                 df = df.fillna(0)
-                node_info = check_output(['kubectl', 'get', 'nodes', '--show-labels']).decode().splitlines()[1:]
+                node_info = (
+                    check_output(['kubectl', 'get', 'nodes', '--show-labels'])
+                    .decode()
+                    .splitlines()[1:]
+                )
                 labs = {}
                 for l in node_info:
                     parts = l.split()
                     node = parts[0]
                     if 'lab=' in parts[5]:
                         lab = parts[5].split('lab=')[1]
-                        lab = lab[:lab.index(',')].strip()
+                        lab = lab[: lab.index(',')].strip()
                         labs[node] = lab
-                df['lab']=df.apply(lambda row: labs.get(row['node'], ''), axis=1)
+                df['lab'] = df.apply(lambda row: labs.get(row['node'], ''), axis=1)
                 for lab in set(labs.values()):
-                    mem = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'memory')]
-                    mem_total = floor(round(sum(mem['Allocatable'])/1073741824.0,0))
-                    mem_free = floor(mem_total -  round(sum(mem['Requested'])/1073741824.0,0))
+                    mem = df.loc[
+                        (df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'memory')
+                    ]
+                    mem_total = floor(round(sum(mem['Allocatable']) / 1073741824.0, 0))
+                    mem_free = floor(mem_total - round(sum(mem['Requested']) / 1073741824.0, 0))
 
-                    cpus = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'cpu')]
+                    cpus = df.loc[
+                        (df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'cpu')
+                    ]
                     cpus_total = sum(cpus['Allocatable'])
-                    cpus_free = cpus_total -  sum(cpus['Requested'])
-                    gpus = df.loc[(df['lab'] == lab) & (df['Kind'] == 'node') & (df['resource'] == 'nvidia.com/gpu')]
+                    cpus_free = cpus_total - sum(cpus['Requested'])
+                    gpus = df.loc[
+                        (df['lab'] == lab)
+                        & (df['Kind'] == 'node')
+                        & (df['resource'] == 'nvidia.com/gpu')
+                    ]
                     gpus_total = sum(gpus['Allocatable'])
-                    gpus_free = gpus_total -  sum(gpus['Requested'])
-                    pods = set(df.loc[(df['lab'] == lab) & (df['pod'].str.contains('jupyter-'))]['pod'])
+                    gpus_free = gpus_total - sum(gpus['Requested'])
+                    pods = set(
+                        df.loc[(df['lab'] == lab) & (df['pod'].str.contains('jupyter-'))]['pod']
+                    )
                     cpus_total = floor(cpus_total)
                     cpus_free = floor(cpus_free)
                     gpus_total = floor(gpus_total)
@@ -178,18 +191,26 @@ class RepeatTimer(Timer):
                     elif lab == "edemsmithbusiness":
                         summary = f'Smith School of Business (Edem) available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
                         summary_title = f'Smith School of Business (Edem) available resources as of {current_dt}'
-                    else: 
+                    else:
                         summary = f'{lab} available resources CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total} [{current_dt}]'
                         summary_title = f'{lab} available resources as of {current_dt}'
                     summary_details = f'CPU Cores: {cpus_free} of {cpus_total}, MEMORY GB: {mem_free} of {mem_total}, GPU: {gpus_free} of {gpus_total}'
-                    #summary = summary.capitalize()
+                    # summary = summary.capitalize()
                     pod_usage = []
                     for pod in pods:
-                        pod_cpu = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'cpu')]['Requested'])
-                        pod_mem = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'memory')]['Requested'])
-                        pod_gpu = list(df.loc[(df['pod'] == pod)  & (df['resource'] == 'nvidia.com/gpu')]['Requested'])
+                        pod_cpu = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'cpu')]['Requested']
+                        )
+                        pod_mem = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'memory')]['Requested']
+                        )
+                        pod_gpu = list(
+                            df.loc[(df['pod'] == pod) & (df['resource'] == 'nvidia.com/gpu')][
+                                'Requested'
+                            ]
+                        )
                         if len(pod_mem) > 0:
-                            pod_mem = round(pod_mem[0]/1073741824,0)
+                            pod_mem = round(pod_mem[0] / 1073741824, 0)
                         else:
                             pod_mem = 0
                         pod_mem = floor(pod_mem)
@@ -205,16 +226,18 @@ class RepeatTimer(Timer):
                         pod_gpu = floor(pod_gpu)
                         pod = pod.replace('jupyter-', '')
                         pod = pod.replace('-2d', '-')
-                        #pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>') 
+                        # pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem}GB mem, {pod_gpu} gpu <a href="http://github.com/{pod}">{pod}</a>')
                         pod_usage.append(f'{pod} == {pod_cpu} cores, {pod_mem} mem, {pod_gpu} gpu')
-                    pod_usage.append(f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.')
+                    pod_usage.append(
+                        f'NOTICE: If you select more resources than are available, your workload will be pending until resources are available.'
+                    )
                     data[lab] = {
-                            'time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'summary': summary,
-                            'summary_title': summary_title,
-                            'summary_details': summary_details,
-                            'usage': pod_usage
-                            }
+                        'time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'summary': summary,
+                        'summary_title': summary_title,
+                        'summary_details': summary_details,
+                        'usage': pod_usage,
+                    }
                 json.dump(data, open(output_file, 'w'))
                 # Reset error counter on success
                 self.error_counter = 0
@@ -222,35 +245,39 @@ class RepeatTimer(Timer):
                 error_type = type(e).__name__
                 error_message = str(e)
                 traceback_str = format_exc()
-                
+
                 self.error_counter += 1
                 logger.error(f'{error_type}: {error_message} (error #{self.error_counter})')
                 logger.error(traceback_str)
-                
+
                 # Send email notification with cooldown to avoid spam
                 current_time = datetime.datetime.now()
                 should_send_email = False
-                
+
                 if self.last_error_email_time is None:
                     should_send_email = True
                 else:
-                    time_since_last_email = (current_time - self.last_error_email_time).total_seconds() / 60
+                    time_since_last_email = (
+                        current_time - self.last_error_email_time
+                    ).total_seconds() / 60
                     if time_since_last_email >= self.email_cooldown_minutes:
                         should_send_email = True
-                
+
                 if should_send_email:
                     send_error_email(
                         subject=f"{error_type} (error #{self.error_counter})",
                         error_message=error_message,
-                        traceback_info=traceback_str
+                        traceback_info=traceback_str,
                     )
                     self.last_error_email_time = current_time
-                
+
                 # NEVER break - just continue to the next iteration
-                logger.info(f"Continuing execution despite error. Will retry in {self.interval} seconds.")
+                logger.info(
+                    f"Continuing execution despite error. Will retry in {self.interval} seconds."
+                )
 
 
-class run_once():
+class run_once:
     logger.info('Starting resource collector...')
 
 
@@ -296,11 +323,11 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
     atexit.register(lambda: send_shutdown_email("Process exit"))
-    
+
     # Send startup notification
     logger.info('Starting resource collector...')
     send_startup_email()
-    
+
     # every 15 seconds
     timer = RepeatTimer(interval, run_once)
     timer.start()

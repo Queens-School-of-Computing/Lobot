@@ -36,8 +36,7 @@ class ActionScreen(Screen):
         if len(self._argv) > 6:
             cmd_display += " …"
         yield Label(
-            f" [bold cyan]{self._title}[/]  [dim]{cmd_display}[/]  "
-            f"[dim][Esc/q] back  [s] save[/]",
+            f" [bold cyan]{self._title}[/]  [dim]{cmd_display}[/]  [dim][Esc/q] back  [s] save[/]",
             id="screen-header",
             markup=True,
         )

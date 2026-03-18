@@ -8,8 +8,7 @@ import requests
 import yaml
 
 GROUP_ROLES_URL_DEFAULT = (
-    "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/"
-    "newcluster/group-roles.yaml"
+    "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/newcluster/group-roles.yaml"
 )
 
 
@@ -129,7 +128,10 @@ def main(argv: List[str]) -> int:
 
     token = args.token or os.environ.get("JUPYTERHUB_API_TOKEN")
     if not token:
-        print("ERROR: API token not provided. Use --token or set JUPYTERHUB_API_TOKEN.", file=sys.stderr)
+        print(
+            "ERROR: API token not provided. Use --token or set JUPYTERHUB_API_TOKEN.",
+            file=sys.stderr,
+        )
         return 1
 
     api_url = args.api_url.rstrip("/")

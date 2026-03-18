@@ -7,5 +7,5 @@ target-version = "py314"
 select = ["E", "F"]
 
 [tool.ruff.format]
-quote-style = "single"
+quote-style = "preserve"
 skip-magic-trailing-comma = false

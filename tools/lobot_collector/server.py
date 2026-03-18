@@ -28,11 +28,13 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
     """GET /api/events — SSE stream; current state sent immediately, then on every update."""
     collector: ClusterCollector = request.app["collector"]
 
-    response = web.StreamResponse(headers={
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "X-Accel-Buffering": "no",
-    })
+    response = web.StreamResponse(
+        headers={
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
     await response.prepare(request)
 
     queue = collector.subscribe()
@@ -43,7 +45,7 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
         while True:
             state = await queue.get()
             await _send_event(response, state)
-    except (ConnectionResetError, asyncio.CancelledError):
+    except ConnectionResetError, asyncio.CancelledError:
         pass
     finally:
         collector.unsubscribe(queue)

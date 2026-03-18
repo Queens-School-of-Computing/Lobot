@@ -36,7 +36,7 @@ class ConfirmScreen(ModalScreen[bool]):
                 yield Button("Confirm  (Enter/y)", variant="error", id="btn-confirm")
 
     def _confirm(self) -> None:
-        if self._confirmed:   # guard: Enter on focused button can double-fire
+        if self._confirmed:  # guard: Enter on focused button can double-fire
             return
         self._confirmed = True
         self.dismiss(True)

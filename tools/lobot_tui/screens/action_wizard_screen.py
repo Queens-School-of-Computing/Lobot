@@ -44,10 +44,7 @@ class ActionWizardScreen(ModalScreen):
         self._action = action
         self._locked = TOOLS_LOCKED
         # Pre-fetch nodes synchronously (kubectl is local, fast)
-        has_node_field = any(
-            f.field_type in ("node_exclude", "node_single")
-            for f in action.fields
-        )
+        has_node_field = any(f.field_type in ("node_exclude", "node_single") for f in action.fields)
         if has_node_field:
             # Workers only (for exclude lists — CP is auto-excluded by the scripts)
             self._worker_nodes = get_worker_nodes(CONTROL_PLANE, include_control_plane=False)
@@ -80,8 +77,9 @@ class ActionWizardScreen(ModalScreen):
                 elif f.field_type == "node_single":
                     yield from self._compose_node_single(f)
                 else:
-                    yield Label(f.label + (" *" if f.required else ""),
-                                classes="wizard-field-label")
+                    yield Label(
+                        f.label + (" *" if f.required else ""), classes="wizard-field-label"
+                    )
                     yield Input(
                         value=f.default,
                         placeholder=f.placeholder or f.default,
@@ -101,8 +99,9 @@ class ActionWizardScreen(ModalScreen):
                             classes="wizard-checkbox",
                         )
                     if has_dry_run:
-                        yield Checkbox("Dry run", value=True,
-                                       id="cb-dry-run", classes="wizard-checkbox")
+                        yield Checkbox(
+                            "Dry run", value=True, id="cb-dry-run", classes="wizard-checkbox"
+                        )
 
             if self._locked:
                 yield Label(
@@ -200,15 +199,19 @@ class ActionWizardScreen(ModalScreen):
             except Exception:
                 repo = f.default
             tags = await self._run_in_executor(fetch_dockerhub_tags, repo)
+
             # Sort by trailing YYYYMMDD(-N)? date code, newest first
             def _date_key(tag: str) -> str:
                 m = _re.search(r'(\d{8})(?:-\d+)?$', tag)
                 return m.group(1) if m else tag
+
             tags.sort(key=_date_key, reverse=True)
+
             def _label(tag: str, max_len: int = 80) -> str:
                 if len(tag) <= max_len:
                     return tag
-                return "…" + tag[-(max_len - 1):]
+                return "…" + tag[-(max_len - 1) :]
+
             options = [(_label(t), t) for t in tags]
 
             select.set_options(options)
@@ -230,6 +233,7 @@ class ActionWizardScreen(ModalScreen):
     async def _run_in_executor(self, fn, *args):
         """Run a blocking function in a thread pool and return the result."""
         import asyncio
+
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, fn, *args)
 

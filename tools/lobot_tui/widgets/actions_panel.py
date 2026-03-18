@@ -8,44 +8,45 @@ from textual.widgets import Label
 
 # (text, css_class, action_key)  — key=None for non-clickable prefixes
 _ROW1_LEFT = [
-    ("[bold dim]PODS[/]",                   "hint-prefix",  None),
-    ("[bold cyan](l)[/] logs",              "hint-pod",     "l"),
-    ("[bold cyan](x)[/] exec",              "hint-pod",     "x"),
-    ("[bold cyan](d)[/] describe",          "hint-pod",     "d"),
-    ("[bold cyan](X)[/] delete",            "hint-pod",     "X"),
-    ("[bold cyan](f)[/] filter",            "hint-pod",     "f"),
-    ("[bold cyan](N)[/] ns",               "hint-pod",     "N"),
+    ("[bold dim]PODS[/]", "hint-prefix", None),
+    ("[bold cyan](l)[/] logs", "hint-pod", "l"),
+    ("[bold cyan](x)[/] exec", "hint-pod", "x"),
+    ("[bold cyan](d)[/] describe", "hint-pod", "d"),
+    ("[bold cyan](X)[/] delete", "hint-pod", "X"),
+    ("[bold cyan](f)[/] filter", "hint-pod", "f"),
+    ("[bold cyan](N)[/] ns", "hint-pod", "N"),
 ]
 
 _ROW1_RIGHT = [
-    ("[bold dim]TOOLS[/]",                  "hint-prefix",  None),
-    ("[bold yellow](1)[/] image-pull",      "hint-tool",    "1"),
-    ("[bold yellow](2)[/] image-cleanup",   "hint-tool",    "2"),
-    ("[bold yellow](3)[/] apply-config",    "hint-tool",    "3"),
+    ("[bold dim]TOOLS[/]", "hint-prefix", None),
+    ("[bold yellow](1)[/] image-pull", "hint-tool", "1"),
+    ("[bold yellow](2)[/] image-cleanup", "hint-tool", "2"),
+    ("[bold yellow](3)[/] apply-config", "hint-tool", "3"),
 ]
 
 _ROW2_LEFT = [
-    ("[bold dim]NODES[/]",                  "hint-prefix",  None),
-    ("[bold cyan](n)[/] node filter",       "hint-node",    "n"),
-    ("[bold cyan](r)[/] resource filter",   "hint-node",    "r"),
-    ("[bold cyan](c)[/] cordon",            "hint-node",    "c"),
-    ("[bold cyan](u)[/] uncordon",          "hint-node",    "u"),
-    ("[bold cyan](w)[/] drain",             "hint-node",    "w"),
+    ("[bold dim]NODES[/]", "hint-prefix", None),
+    ("[bold cyan](n)[/] node filter", "hint-node", "n"),
+    ("[bold cyan](r)[/] resource filter", "hint-node", "r"),
+    ("[bold cyan](c)[/] cordon", "hint-node", "c"),
+    ("[bold cyan](u)[/] uncordon", "hint-node", "u"),
+    ("[bold cyan](w)[/] drain", "hint-node", "w"),
 ]
 
 _ROW2_RIGHT = [
-    ("[bold yellow](4)[/] sync-groups",     "hint-tool",    "4"),
-    ("[bold yellow](5)[/] helm upgrade",    "hint-tool",    "5"),
-    ("[bold yellow](6)[/] announce",        "hint-tool",    "6"),
-    ("[bold yellow](`)[/] console",         "hint-tool",    "`"),
-    ("[bold yellow](b)[/] jobs",            "hint-tool",    "b"),
-    ("[bold dim](?)[/] help",               "hint-global",  "?"),
-    ("[bold dim](q)[/] quit",               "hint-global",  "q"),
+    ("[bold yellow](4)[/] sync-groups", "hint-tool", "4"),
+    ("[bold yellow](5)[/] helm upgrade", "hint-tool", "5"),
+    ("[bold yellow](6)[/] announce", "hint-tool", "6"),
+    ("[bold yellow](`)[/] console", "hint-tool", "`"),
+    ("[bold yellow](b)[/] jobs", "hint-tool", "b"),
+    ("[bold dim](?)[/] help", "hint-global", "?"),
+    ("[bold dim](q)[/] quit", "hint-global", "q"),
 ]
 
 
 class HintClicked(Message):
     """Posted by HintLabel when clicked. Bubbles up to MainScreen."""
+
     def __init__(self, key: str) -> None:
         super().__init__()
         self.key = key

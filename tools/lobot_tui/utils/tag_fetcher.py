@@ -7,8 +7,7 @@ import subprocess
 import urllib.request
 
 DOCKERHUB_TAGS_URL = (
-    "https://hub.docker.com/v2/repositories/{}/tags/"
-    "?page_size=100&ordering=-last_updated"
+    "https://hub.docker.com/v2/repositories/{}/tags/?page_size=100&ordering=-last_updated"
 )
 
 RUNTIME_SETTING_URL = (
@@ -35,9 +34,10 @@ def get_worker_nodes(control_plane: str, include_control_plane: bool = False) ->
     """
     try:
         result = subprocess.run(
-            ["kubectl", "get", "nodes", "--no-headers",
-             "-o", "custom-columns=NAME:.metadata.name"],
-            capture_output=True, text=True, timeout=10,
+            ["kubectl", "get", "nodes", "--no-headers", "-o", "custom-columns=NAME:.metadata.name"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         nodes = sorted(n.strip() for n in result.stdout.splitlines() if n.strip())
         if not include_control_plane:

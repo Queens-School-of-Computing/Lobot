@@ -23,8 +23,7 @@ class ConsoleScreen(Screen):
     def compose(self) -> ComposeResult:
         log_file = LOG_DIR / f"lobot-tui-{datetime.now().strftime('%Y-%m-%d')}.log"
         yield Label(
-            f" [bold cyan]CONSOLE[/]  [dim]command history  "
-            f"log: {log_file}  [Esc/q/`] back[/]",
+            f" [bold cyan]CONSOLE[/]  [dim]command history  log: {log_file}  [Esc/q/`] back[/]",
             id="screen-header",
             markup=True,
         )

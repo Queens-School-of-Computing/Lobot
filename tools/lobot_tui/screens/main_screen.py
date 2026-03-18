@@ -13,7 +13,14 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import DataTable, Input, Label, Static
 
-from ..config import CONTROL_PLANE, IS_DEV, JUPYTERHUB_NAMESPACE, NS_FILTERS_FILE, TOOLS_DIR, TOOLS_LOCKED
+from ..config import (
+    CONTROL_PLANE,
+    IS_DEV,
+    JUPYTERHUB_NAMESPACE,
+    NS_FILTERS_FILE,
+    TOOLS_DIR,
+    TOOLS_LOCKED,
+)
 from ..data.collector import ClusterStateUpdated, DataCollector
 from ..data.models import NodeInfo, PodInfo
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
@@ -68,8 +75,11 @@ async def _fetch_namespaces() -> list[str]:
     """Return sorted namespace list from kubectl, falling back to defaults."""
     try:
         proc = await asyncio.create_subprocess_exec(
-            "kubectl", "get", "namespaces",
-            "-o", "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}",
+            "kubectl",
+            "get",
+            "namespaces",
+            "-o",
+            "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL,
         )
@@ -149,7 +159,9 @@ class MainScreen(Screen):
                     markup=True,
                 )
                 initial_filter = self._ns_filters.get(self._namespaces[self._ns_idx], "")
-                yield Input(value=initial_filter, placeholder="type to filter…", id="pod-filter-input")
+                yield Input(
+                    value=initial_filter, placeholder="type to filter…", id="pod-filter-input"
+                )
                 yield Static("", id="pod-count-outer", markup=True)
             yield PodTableWidget(id="pod-table")
         yield ActionsPanelWidget(id="actions-panel")
@@ -175,13 +187,15 @@ class MainScreen(Screen):
         state = self._last_cluster_state
 
         if state:
-            total_pods  = sum(1 for p in state.pods if p.name.startswith("jupyter-"))
+            total_pods = sum(1 for p in state.pods if p.name.startswith("jupyter-"))
             total_nodes = sum(1 for n in state.nodes if not n.is_control_plane)
-            ready_nodes = sum(1 for n in state.nodes
-                              if not n.is_control_plane
-                              and n.status == "Ready" and n.schedulable)
-            gpu_total   = sum(r.gpu_total for r in state.resources.values())
-            gpu_used    = sum(r.gpu_used  for r in state.resources.values())
+            ready_nodes = sum(
+                1
+                for n in state.nodes
+                if not n.is_control_plane and n.status == "Ready" and n.schedulable
+            )
+            gpu_total = sum(r.gpu_total for r in state.resources.values())
+            gpu_used = sum(r.gpu_used for r in state.resources.values())
             stats = (
                 f"  [dim]│[/]  "
                 f"[#79c0ff]Pods[/] [white]{total_pods}[/]  "
@@ -212,9 +226,7 @@ class MainScreen(Screen):
         elapsed = int((datetime.now() - job.start_time).total_seconds())
         mins, secs = divmod(elapsed, 60)
         elapsed_str = f"{mins}m{secs:02d}s" if mins else f"{secs}s"
-        panel.set_job_status(
-            f"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]"
-        )
+        panel.set_job_status(f"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]")
 
     # ── Double-keypress confirmation ───────────────────────────────────────
 
@@ -263,7 +275,11 @@ class MainScreen(Screen):
         node_f = pod_table.node_filter
         resource_f = pod_table.resource_filter
         node_part = f"node:[bold cyan]{node_f}[/] [dim](n)[/]" if node_f else "[dim](n) node[/]"
-        resource_part = f"resource:[bold cyan]{resource_f}[/] [dim](r)[/]" if resource_f else "[dim](r) resource[/]"
+        resource_part = (
+            f"resource:[bold cyan]{resource_f}[/] [dim](r)[/]"
+            if resource_f
+            else "[dim](r) resource[/]"
+        )
         label = f"[bold]PODS[/]  ns:[cyan]{ns}[/]  {node_part}  {resource_part}  filter:"
         try:
             self.query_one("#pod-filter-label", Label).update(label)
@@ -349,6 +365,7 @@ class MainScreen(Screen):
 
     def action_toggle_node_filter(self) -> None:
         self.query_one("#node-table", NodeTableWidget).toggle_filter()
+
     def action_toggle_resource_filter(self) -> None:
         self.query_one("#resource-table", ResourceTableWidget).toggle_filter()
 
@@ -398,7 +415,8 @@ class MainScreen(Screen):
             return
         argv = ["kubectl", "delete", "pod", pod.name, "-n", pod.namespace]
         self._require_confirm(
-            "X", f"delete pod {pod.name}",
+            "X",
+            f"delete pod {pod.name}",
             lambda: self.app.push_screen(ActionScreen("delete-pod", argv, auto_close=True)),
         )
 
@@ -415,8 +433,11 @@ class MainScreen(Screen):
         if not node:
             return
         self._require_confirm(
-            "c", f"cordon {node.name}",
-            lambda: self.app.push_screen(ActionScreen("cordon", ["kubectl", "cordon", node.name], auto_close=True)),
+            "c",
+            f"cordon {node.name}",
+            lambda: self.app.push_screen(
+                ActionScreen("cordon", ["kubectl", "cordon", node.name], auto_close=True)
+            ),
         )
 
     def action_node_uncordon(self) -> None:
@@ -424,8 +445,11 @@ class MainScreen(Screen):
         if not node:
             return
         self._require_confirm(
-            "u", f"uncordon {node.name}",
-            lambda: self.app.push_screen(ActionScreen("uncordon", ["kubectl", "uncordon", node.name], auto_close=True)),
+            "u",
+            f"uncordon {node.name}",
+            lambda: self.app.push_screen(
+                ActionScreen("uncordon", ["kubectl", "uncordon", node.name], auto_close=True)
+            ),
         )
 
     def action_node_drain(self) -> None:
@@ -434,7 +458,8 @@ class MainScreen(Screen):
             return
         argv = ["kubectl", "drain", node.name, "--ignore-daemonsets", "--delete-emptydir-data"]
         self._require_confirm(
-            "w", f"DRAIN {node.name} — evicts all pods!",
+            "w",
+            f"DRAIN {node.name} — evicts all pods!",
             lambda: self.app.push_screen(ActionScreen("drain", argv, auto_close=True)),
         )
 

@@ -62,11 +62,11 @@ class PodContextMenuScreen(Screen):
     def compose(self) -> ComposeResult:
         with Vertical(id="context-menu"):
             yield Label(self._pod.name, id="context-title")
-            yield Button("(l)  Logs",         id="ctx-logs",     classes="ctx-btn")
-            yield Button("(x)  Exec into pod", id="ctx-exec",     classes="ctx-btn")
-            yield Button("(d)  Describe",      id="ctx-describe", classes="ctx-btn")
-            yield Button("(R)  Restart",       id="ctx-restart",  classes="ctx-btn")
-            yield Button("(X)  Delete",        id="ctx-delete",   classes="ctx-btn")
+            yield Button("(l)  Logs", id="ctx-logs", classes="ctx-btn")
+            yield Button("(x)  Exec into pod", id="ctx-exec", classes="ctx-btn")
+            yield Button("(d)  Describe", id="ctx-describe", classes="ctx-btn")
+            yield Button("(R)  Restart", id="ctx-restart", classes="ctx-btn")
+            yield Button("(X)  Delete", id="ctx-delete", classes="ctx-btn")
 
     def on_mount(self) -> None:
         # Start focus on first button so keyboard works immediately

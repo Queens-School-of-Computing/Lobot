@@ -16,13 +16,14 @@ class BackgroundJob:
     cwd: str | None
     start_time: datetime = field(default_factory=datetime.now)
     output_lines: list = field(default_factory=list)
-    status: str = "running"   # running | done | failed
+    status: str = "running"  # running | done | failed
     returncode: int | None = None
     _proc: object = field(default=None, repr=False)
 
 
 class JobCompleted(Message):
     """Posted to the app when a background job finishes."""
+
     def __init__(self, job: BackgroundJob) -> None:
         super().__init__()
         self.job = job

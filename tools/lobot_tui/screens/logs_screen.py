@@ -13,9 +13,9 @@ from ..config import LOG_DIR
 from ..data import command_log
 from ..data.models import PodInfo
 
-_FOOTER_LIVE         = "[dim]Streaming — \[Esc/q] back  \[s] save  (scroll up to pause)[/]"
-_FOOTER_PAUSED       = "[yellow]⏸ Paused — \[l] resume stream  \[s] save  \[Esc/q] back[/]"
-_FOOTER_ENDED        = "[dim]Stream ended — \[Esc/q] back  \[s] save[/]"
+_FOOTER_LIVE = "[dim]Streaming — \[Esc/q] back  \[s] save  (scroll up to pause)[/]"
+_FOOTER_PAUSED = "[yellow]⏸ Paused — \[l] resume stream  \[s] save  \[Esc/q] back[/]"
+_FOOTER_ENDED = "[dim]Stream ended — \[Esc/q] back  \[s] save[/]"
 _FOOTER_ENDED_PAUSED = "[dim]Stream ended (was paused) — \[Esc/q] back  \[s] save[/]"
 
 
@@ -93,10 +93,14 @@ class LogsScreen(Screen):
         footer.update("[dim]Connecting…[/]")
 
         cmd = [
-            "kubectl", "logs", "-f",
+            "kubectl",
+            "logs",
+            "-f",
             self._pod.name,
-            "-n", self._pod.namespace,
-            "--tail", "500",
+            "-n",
+            self._pod.namespace,
+            "--tail",
+            "500",
         ]
         try:
             self._proc = await asyncio.create_subprocess_exec(
