@@ -33,6 +33,7 @@ from .announcement_screen import AnnouncementScreen
 from .command_preview_screen import CommandPreviewScreen
 from .console_screen import ConsoleScreen
 from .exec_screen import ExecScreen
+from .guide_screen import GuideScreen
 from .help_screen import HelpScreen
 from .jobs_screen import JobsScreen
 from .logs_screen import LogsScreen
@@ -98,6 +99,7 @@ class MainScreen(Screen):
         ("q", "quit_app", "Quit"),
         ("R", "force_refresh", "Refresh"),
         ("question_mark", "show_help", "Help"),
+        ("G", "show_guide", "Guide"),
         ("grave_accent", "show_console", "Console"),
         ("b", "show_jobs", "Jobs"),
         ("1", "tool_1", "image-pull"),
@@ -331,6 +333,9 @@ class MainScreen(Screen):
 
     def action_show_help(self) -> None:
         self.app.push_screen(HelpScreen())
+
+    def action_show_guide(self) -> None:
+        self.app.push_screen(GuideScreen())
 
     def action_show_console(self) -> None:
         self.app.push_screen(ConsoleScreen())

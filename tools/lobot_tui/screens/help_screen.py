@@ -6,17 +6,20 @@ from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Label, Markdown
 
+from .guide_screen import GuideScreen
+
 HELP_TEXT = """
 # LOBOT TUI — Key Bindings
 
 ## Global
 | Key | Action |
 |-----|--------|
-| `q` | Quit |
+| `q` | Quit (press twice to confirm) |
 | `R` | Force refresh all data |
 | `Tab` | Cycle panel focus: Resources → Nodes → Pods |
 | `?` | This help screen |
 | `` ` `` | Command console (history + errors) |
+| `b` | Background jobs panel (live output of running tool) |
 | `Escape` | Return focus to pod table (from filter input) |
 
 ## Pod Table
@@ -29,19 +32,24 @@ HELP_TEXT = """
 | `l` | View pod logs (kubectl logs -f) |
 | `x` | Exec bash into pod (kubectl exec -it) |
 | `d` / `Enter` | Describe pod (kubectl describe pod) |
-| `X` | Delete pod (confirm required) |
+| `X` | Delete pod (press twice to confirm) |
 | `N` | Cycle namespace |
 | Click header | Sort by column (click again to reverse) |
 
 ## Node Table
 | Key | Action |
 |-----|--------|
-| `↑` / `↓` | Navigate rows |
+| `↑` / `↓` | Navigate rows (including disk sub-rows) |
+| `Space` / `→` | Expand disk sub-rows for selected node |
+| `←` | Collapse disk sub-rows for selected node |
+| Click row | Toggle disk sub-rows |
 | `n` | Toggle node filter — filter pods to selected node; navigate to update |
-| `c` | Cordon node (confirm required) |
-| `u` | Uncordon node (confirm required) |
-| `w` | Drain node (confirm required) |
+| `c` | Cordon node (press twice to confirm) |
+| `u` | Uncordon node (press twice to confirm) |
+| `w` | Drain node (press twice to confirm) |
 | Click header | Sort by column (click again to reverse) |
+
+> Node operations (`c`, `u`, `w`, `n`) always apply to the parent node regardless of which disk sub-row is selected. The control plane is protected from cordon/drain.
 
 ## Resource Table
 | Key | Action |
@@ -61,6 +69,17 @@ HELP_TEXT = """
 | `5` | helm upgrade — JupyterHub |
 | `6` | Edit announcement.yaml + push to GitHub |
 
+> Tool actions run as background jobs. Only one job runs at a time. Press `b` to return to the dashboard while the job continues.
+
+## Background Jobs Panel
+| Key | Action |
+|-----|--------|
+| `b` | Background the panel — return to dashboard, job keeps running |
+| `k` | Kill job (press twice within 3 seconds to confirm) |
+| `s` | Save output to /opt/Lobot/logs/lobot-tui-\\<name\\>-\\<timestamp\\>.log |
+
+> While a job is **running**: `Escape` and `q` have no effect. Once **finished**: `Escape` / `q` / `b` all close the panel.
+
 ## Logs / Action / Exec Screens
 | Key | Action |
 |-----|--------|
@@ -77,9 +96,13 @@ HELP_TEXT = """
 ## Announcement Editor
 | Key | Action |
 |-----|--------|
-| `Ctrl+S` | Save YAML and push to GitHub |
-| `Escape` | Back (without saving) |
+| `Escape` | Cancel without saving |
 
+> Save & push is not yet enabled — edit `announcement.yaml` manually for now.
+
+---
+
+Press `G` to open the full documentation guide (`lobot-tui.md`).
 """
 
 
@@ -90,12 +113,14 @@ class HelpScreen(ModalScreen):
         Binding("escape", "close", "Close", priority=True),
         Binding("q", "close", "Close", priority=True),
         Binding("question_mark", "close", "Close", priority=True),
+        Binding("G", "open_guide", "Full guide", priority=True),
     ]
 
     def compose(self) -> ComposeResult:
         with Vertical(id="help-dialog"):
             yield Label(
-                "[bold cyan]LOBOT TUI — Help[/]  [dim][Esc/q/?] close[/]",
+                "[bold cyan]LOBOT TUI — Help[/]  [dim][Esc/q/?] close[/]"
+                "  [dim][[G][/] [@click='screen.open_guide'][link]full guide ↗[/link][/]",
                 id="help-title",
                 markup=True,
             )
@@ -103,3 +128,7 @@ class HelpScreen(ModalScreen):
 
     def action_close(self) -> None:
         self.app.pop_screen()
+
+    def action_open_guide(self) -> None:
+        self.app.pop_screen()
+        self.app.push_screen(GuideScreen())
