@@ -32,6 +32,8 @@ JUPYTERHUB_CHART_VERSION = "4.0.0-beta.2"
 # ── Refresh intervals (seconds) ────────────────────────────────────────────────
 PODS_INTERVAL = 5
 NODES_INTERVAL = 10
+LONGHORN_INTERVAL = 30
+LONGHORN_NAMESPACE = "longhorn-system"
 
 # ── Display ───────────────────────────────────────────────────────────────────
 APP_TITLE = "LOBOT"

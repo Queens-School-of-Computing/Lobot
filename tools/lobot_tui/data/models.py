@@ -52,6 +52,20 @@ class PodInfo:
 
 
 @dataclass
+class DiskInfo:
+    name: str  # e.g. "disk-1"
+    path: str  # e.g. "/mnt/nvme0n1"
+    total_gb: float  # storageMaximum / 1_073_741_824
+    available_gb: float  # storageAvailable / 1_073_741_824
+    scheduled_gb: float  # storageScheduled / 1_073_741_824
+    schedulable: bool  # spec.disks.<name>.allowScheduling
+
+    @property
+    def used_gb(self) -> float:
+        return max(0.0, self.total_gb - self.available_gb)
+
+
+@dataclass
 class NodeInfo:
     name: str
     resource: str
@@ -91,11 +105,14 @@ class ClusterState:
     last_nodes_update: Optional[datetime] = None
     pods_error: Optional[str] = None
     nodes_error: Optional[str] = None
+    longhorn_disks: dict = field(default_factory=dict)  # {node_name: list[DiskInfo]}
+    last_longhorn_update: Optional[datetime] = None
+    service_error: Optional[str] = None  # set when lobot-collector itself is unreachable
 
     def to_dict(self) -> dict:
         """Serialize to a JSON-compatible dict (used for SSE wire format)."""
         d = dataclasses.asdict(self)
-        for key in ("last_pods_update", "last_nodes_update"):
+        for key in ("last_pods_update", "last_nodes_update", "last_longhorn_update"):
             if d[key] is not None:
                 d[key] = d[key].isoformat()
         return d
@@ -111,6 +128,11 @@ class ClusterState:
         nodes = [NodeInfo(**n) for n in d.get("nodes", [])]
         lpu = d.get("last_pods_update")
         lnu = d.get("last_nodes_update")
+        llu = d.get("last_longhorn_update")
+        raw_ld = d.get("longhorn_disks", {})
+        longhorn_disks = {
+            node_name: [DiskInfo(**disk) for disk in disks] for node_name, disks in raw_ld.items()
+        }
         return cls(
             resources=resources,
             pods=pods,
@@ -119,4 +141,7 @@ class ClusterState:
             last_nodes_update=datetime.fromisoformat(lnu) if lnu else None,
             pods_error=d.get("pods_error"),
             nodes_error=d.get("nodes_error"),
+            longhorn_disks=longhorn_disks,
+            last_longhorn_update=datetime.fromisoformat(llu) if llu else None,
+            service_error=d.get("service_error"),
         )

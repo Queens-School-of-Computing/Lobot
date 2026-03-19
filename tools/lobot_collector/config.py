@@ -15,6 +15,8 @@ OUTPUT_FILE = Path("/opt/Lobot/resource_collector_data/current.json")
 # ── Polling intervals (seconds) ────────────────────────────────────────────────
 PODS_INTERVAL = 5
 NODES_INTERVAL = 5
+LONGHORN_INTERVAL = 30
+LONGHORN_NAMESPACE = "longhorn-system"
 
 # ── Kubernetes ─────────────────────────────────────────────────────────────────
 JUPYTERHUB_NAMESPACE = "jhub"

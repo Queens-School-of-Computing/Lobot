@@ -7,12 +7,19 @@ from datetime import datetime
 from lobot_tui.data.models import ClusterState
 from lobot_tui.data.parsers import (
     _merge_nodes_and_pods,
+    _parse_longhorn_nodes,
     _parse_nodes,
     _parse_pods,
     _run_kubectl,
 )
 
-from .config import JUPYTERHUB_NAMESPACE, NODES_INTERVAL, PODS_INTERVAL
+from .config import (
+    JUPYTERHUB_NAMESPACE,
+    LONGHORN_INTERVAL,
+    LONGHORN_NAMESPACE,
+    NODES_INTERVAL,
+    PODS_INTERVAL,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +60,7 @@ class ClusterCollector:
         """Launch background polling tasks."""
         asyncio.ensure_future(self._poll_pods())
         asyncio.ensure_future(self._poll_nodes())
+        asyncio.ensure_future(self._poll_longhorn())
 
     # ── Internal helpers ──────────────────────────────────────────────────────
 
@@ -79,6 +87,11 @@ class ClusterCollector:
         while True:
             await self._fetch_nodes()
             await asyncio.sleep(NODES_INTERVAL)
+
+    async def _poll_longhorn(self) -> None:
+        while True:
+            await self._fetch_longhorn()
+            await asyncio.sleep(LONGHORN_INTERVAL)
 
     async def _fetch_pods(self) -> None:
         stdout, stderr, rc = await _run_kubectl("get", "pods", "--all-namespaces", "-o", "json")
@@ -126,4 +139,16 @@ class ClusterCollector:
             else:
                 self._state.nodes_error = stderr.strip() or "kubectl error"
                 logger.error("kubectl get nodes failed: %s", stderr.strip())
+            await self._notify()
+
+    async def _fetch_longhorn(self) -> None:
+        stdout, stderr, rc = await _run_kubectl(
+            "get", "nodes.longhorn.io", "-n", LONGHORN_NAMESPACE, "-o", "json"
+        )
+        async with self._lock:
+            if rc == 0:
+                self._state.longhorn_disks = _parse_longhorn_nodes(stdout)
+                self._state.last_longhorn_update = datetime.now()
+            else:
+                logger.warning("kubectl get nodes.longhorn.io failed: %s", stderr.strip())
             await self._notify()

@@ -37,7 +37,9 @@ class StatusBarWidget(Widget):
 
     _spinner_idx: int = 0
     _live: bool = False
-    _last_source: str = "kubectl"
+    _last_longhorn_update: "datetime | None" = None
+    _last_pods_update: "datetime | None" = None
+    _last_nodes_update: "datetime | None" = None
 
     def compose(self) -> ComposeResult:
         yield Label("", id="status-live")
@@ -57,33 +59,54 @@ class StatusBarWidget(Widget):
         self._spinner_idx = (self._spinner_idx + 1) % len(_SPINNER)
         try:
             spin = _SPINNER[self._spinner_idx]
-            source_tag = "[cyan]svc[/]" if self._last_source == "service" else "[dim]kubectl[/]"
-            self.query_one("#status-live", Label).update(f"[#3fb950]{spin} Live[/] {source_tag}  ")
+            self.query_one("#status-live", Label).update(f"[#3fb950]{spin} Live[/] [cyan]svc[/]  ")
         except Exception:
             pass
 
     def on_cluster_state_updated(self, event: ClusterStateUpdated) -> None:
         state = event.state
         live_label = self.query_one("#status-live", Label)
-        ts_label = self.query_one("#status-timestamps", Label)
+
+        if state.service_error:
+            self._live = False
+            live_label.update(f"[#f85149]✗ {state.service_error}[/]  ")
+            if "not running" in state.service_error:
+                self.query_one("#status-timestamps", Label).update(
+                    "[dim]→  sudo systemctl start lobot-collector[/]"
+                )
+            else:
+                self.query_one("#status-timestamps", Label).update(
+                    "[dim]→  sudo journalctl -u lobot-collector -n 20[/]"
+                )
+            return
 
         has_error = bool(state.pods_error or state.nodes_error)
         pods_stale = _is_stale(state.last_pods_update)
-        source_tag = "[cyan]svc[/]" if event.source == "service" else "[dim]kubectl[/]"
-        self._last_source = event.source
 
         if has_error:
             self._live = False
             err = state.pods_error or state.nodes_error
-            live_label.update(f"[#f85149]✗ {err[:40]}[/]  ")
+            live_label.update(f"[#f85149]✗ {err[:60]}[/]  ")
         elif pods_stale:
             self._live = False
-            live_label.update(f"[#d29922]⚠ Stale[/] {source_tag}  ")
+            live_label.update("[#d29922]⚠ Stale[/] [cyan]svc[/]  ")
         else:
             self._live = True
             spin = _SPINNER[self._spinner_idx]
-            live_label.update(f"[#3fb950]{spin} Live[/] {source_tag}  ")
+            live_label.update(f"[#3fb950]{spin} Live[/] [cyan]svc[/]  ")
 
-        pods_ts = _fmt_time(state.last_pods_update)
-        nodes_ts = _fmt_time(state.last_nodes_update)
-        ts_label.update(f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}[/]")
+        self._last_pods_update = state.last_pods_update
+        self._last_nodes_update = state.last_nodes_update
+        self._last_longhorn_update = state.last_longhorn_update
+        self._update_timestamps()
+
+    def _update_timestamps(self) -> None:
+        pods_ts = _fmt_time(self._last_pods_update)
+        nodes_ts = _fmt_time(self._last_nodes_update)
+        disk_ts = _fmt_time(self._last_longhorn_update)
+        try:
+            self.query_one("#status-timestamps", Label).update(
+                f"[dim]Pods:{pods_ts}  Nodes:{nodes_ts}  Disk:{disk_ts}[/]"
+            )
+        except Exception:
+            pass

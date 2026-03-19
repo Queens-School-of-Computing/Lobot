@@ -53,16 +53,24 @@ def fmt_gpu(used: float, total: float) -> str:
 # GPU:     bar_w=4, val=5  → col_width=10
 
 
-def render_bar(used: float, total: float, bar_w: int, val_str: str) -> str:
+def render_bar(
+    used: float,
+    total: float,
+    bar_w: int,
+    val_str: str,
+    color_ratio: "float | None" = None,
+) -> str:
     """
     Wide bar followed by dim used/total text.
     Visible width = bar_w + 1 + len(val_str)
+    color_ratio overrides the fill ratio for color selection — use to propagate
+    a worst-case child ratio to a parent aggregate bar.
     """
     col_width = bar_w + 1 + len(val_str)
     if total <= 0 or bar_w <= 0:
         return f"[{_COLOR_DIM}]{'–':>{col_width}}[/]"
     ratio = min(1.0, max(0.0, used / total))
-    color = _pct_color(ratio)
+    color = _pct_color(color_ratio if color_ratio is not None else ratio)
     filled = int(round(ratio * bar_w))
     empty = bar_w - filled
     bar = f"[{color}]{_FILLED * filled}[/][{_COLOR_DIM}]{_EMPTY * empty}[/]"
@@ -70,7 +78,12 @@ def render_bar(used: float, total: float, bar_w: int, val_str: str) -> str:
 
 
 def render_bar_text(
-    used: float, total: float, bar_w: int, val_str: str, row_bg: "str | None" = None
+    used: float,
+    total: float,
+    bar_w: int,
+    val_str: str,
+    row_bg: "str | None" = None,
+    color_ratio: "float | None" = None,
 ) -> Text:
     """Like render_bar() but returns a rich.text.Text — needed for tinted rows."""
     col_width = bar_w + 1 + len(val_str)
@@ -80,7 +93,7 @@ def render_bar_text(
         t.append(f"{'–':>{col_width}}", style=f"{_COLOR_DIM} {base}".strip())
         return t
     ratio = min(1.0, max(0.0, used / total))
-    color = _pct_color(ratio)
+    color = _pct_color(color_ratio if color_ratio is not None else ratio)
     filled = int(round(ratio * bar_w))
     empty = bar_w - filled
     t.append(_FILLED * filled, style=f"{color} {base}".strip())

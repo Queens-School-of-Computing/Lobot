@@ -19,7 +19,7 @@ from ..config import (
     NS_FILTERS_FILE,
     TOOLS_LOCKED,
 )
-from ..data.collector import ClusterStateUpdated, DataCollector
+from ..data.collector import ClusterStateUpdated, ServiceCollector
 from ..data.job_manager import JobCompleted
 from ..data.models import NodeInfo, PodInfo
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
@@ -123,7 +123,7 @@ class MainScreen(Screen):
         ("w", "node_drain", "Drain"),
     ]
 
-    def __init__(self, collector: DataCollector) -> None:
+    def __init__(self, collector: ServiceCollector) -> None:
         super().__init__()
         self._collector = collector
         self._ns_idx = 0
