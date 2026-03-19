@@ -66,7 +66,7 @@ def _parse_cpu_request(raw: str) -> float:
         if raw.endswith("m"):
             return round(int(raw[:-1]) / 1000, 3)
         return float(raw)
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError):  # fmt: skip
         return 0.0
 
 
@@ -87,14 +87,14 @@ def _parse_memory_request_gb(raw: str) -> float:
             return int(raw[:-1]) / 1024
         else:
             return float(raw) / 1_073_741_824
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError):  # fmt: skip
         return 0.0
 
 
 def _parse_gpu_request(raw: str) -> int:
     try:
         return int(raw)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError):  # fmt: skip
         return 0
 
 

@@ -54,7 +54,7 @@ class ServiceCollector:
             reader, writer = await asyncio.wait_for(
                 asyncio.open_connection(SERVICE_HOST, SERVICE_PORT), timeout=2.0
             )
-        except (ConnectionRefusedError, asyncio.TimeoutError, OSError):
+        except (ConnectionRefusedError, asyncio.TimeoutError, OSError):  # fmt: skip
             self._poster.post_message(
                 ClusterStateUpdated(
                     ClusterState(service_error="lobot-collector is not running"),
