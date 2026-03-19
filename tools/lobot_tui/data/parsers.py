@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from ..config import CONTROL_PLANE, MAX_TAG_LEN
-from .models import NodeInfo, PodInfo, ResourceSummary
+from .models import DiskInfo, NodeInfo, PodInfo, ResourceSummary
 
 # ---------------------------------------------------------------------------
 # String helpers
@@ -66,7 +66,7 @@ def _parse_cpu_request(raw: str) -> float:
         if raw.endswith("m"):
             return round(int(raw[:-1]) / 1000, 3)
         return float(raw)
-    except ValueError, AttributeError:
+    except (ValueError, AttributeError):
         return 0.0
 
 
@@ -87,14 +87,14 @@ def _parse_memory_request_gb(raw: str) -> float:
             return int(raw[:-1]) / 1024
         else:
             return float(raw) / 1_073_741_824
-    except ValueError, AttributeError:
+    except (ValueError, AttributeError):
         return 0.0
 
 
 def _parse_gpu_request(raw: str) -> int:
     try:
         return int(raw)
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return 0
 
 
@@ -330,3 +330,57 @@ def _merge_nodes_and_pods(partial_nodes: list, pods: list) -> tuple[list, dict]:
         s.gpu_free += max(0, node.gpu_allocatable - jupyter_gpu)
 
     return nodes, resources
+
+
+def _parse_longhorn_nodes(json_str: str) -> dict:
+    """
+    Parse `kubectl get nodes.longhorn.io -n longhorn-system -o json`.
+
+    Returns {node_name: [DiskInfo, ...]}. Returns {} on error.
+    Merges spec.disks (path, allowScheduling) with status.diskStatus
+    (storageMaximum, storageAvailable, storageScheduled) by disk name key.
+    Skips disks where storageMaximum == 0 (not yet initialised by Longhorn).
+
+    CRD fields map to Longhorn Prometheus metrics:
+      storageMaximum   → longhorn_disk_capacity_bytes
+      storageAvailable → complement of longhorn_disk_usage_bytes
+      storageScheduled → longhorn_disk_reservation_bytes
+    """
+    _BYTES_PER_GIB = 1_073_741_824
+    result: dict = {}
+    try:
+        data = json.loads(json_str)
+    except json.JSONDecodeError:
+        return result
+    for item in data.get("items", []):
+        try:
+            node_name = item.get("metadata", {}).get("name", "")
+            if not node_name:
+                continue
+            spec_disks = item.get("spec", {}).get("disks", {})
+            disk_status = item.get("status", {}).get("diskStatus", {})
+            disks = []
+            for disk_name, status in disk_status.items():
+                total_bytes = status.get("storageMaximum", 0)
+                if total_bytes == 0:
+                    continue  # not yet initialised
+                available_bytes = status.get("storageAvailable", 0)
+                scheduled_bytes = status.get("storageScheduled", 0)
+                spec = spec_disks.get(disk_name, {})
+                path = spec.get("path", "")
+                schedulable = spec.get("allowScheduling", False)
+                disks.append(
+                    DiskInfo(
+                        name=disk_name,
+                        path=path,
+                        total_gb=round(total_bytes / _BYTES_PER_GIB, 1),
+                        available_gb=round(available_bytes / _BYTES_PER_GIB, 1),
+                        scheduled_gb=round(scheduled_bytes / _BYTES_PER_GIB, 1),
+                        schedulable=schedulable,
+                    )
+                )
+            if disks:
+                result[node_name] = sorted(disks, key=lambda d: d.name)
+        except Exception:
+            continue
+    return result

@@ -112,7 +112,7 @@ def get_hardware_info():
             gpu_model = name.strip().removeprefix('NVIDIA ').strip()
             mem_mib = int(re.search(r'\d+', mem).group())
             gpu_mem_gb = _round_gpu_mem(mem_mib)
-    except FileNotFoundError, subprocess.CalledProcessError:
+    except (FileNotFoundError, subprocess.CalledProcessError):
         pass  # No GPU or nvidia-smi not available
 
     # --- Option lists ---

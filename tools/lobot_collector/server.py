@@ -45,7 +45,7 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
         while True:
             state = await queue.get()
             await _send_event(response, state)
-    except ConnectionResetError, asyncio.CancelledError:
+    except (ConnectionResetError, asyncio.CancelledError):
         pass
     finally:
         collector.unsubscribe(queue)
