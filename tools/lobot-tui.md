@@ -10,7 +10,8 @@ Designed for the control plane where a terminal is always available, including d
 
 - Real-time pod list with resource usage, image tag, resource group, node, age, and phase
 - Per-resource-group utilisation table (CPU, RAM, GPU) showing jupyter-* workload only, updated every 5 seconds
-- Per-node allocation table with cordon/schedulable status
+- Per-node allocation table with CPU, RAM, GPU, and Longhorn disk usage — cordon/schedulable status
+- Expandable per-disk sub-rows in the node table showing individual Longhorn disk detail
 - Stream pod logs, exec bash into a pod, describe or delete pods
 - Cordon, uncordon, and drain nodes (double-keypress to confirm)
 - Launch image-pull, image-cleanup, apply-config, sync-groups, and helm upgrade — with tag dropdowns, node pickers, live streaming output, and dry-run support
@@ -87,7 +88,7 @@ sudo journalctl -u lobot-collector -f
 curl -s http://localhost:9095/api/state | python3 -m json.tool
 ```
 
-When the service is running, lobot-tui automatically switches to service mode on the next start (`svc` tag in the status bar). If the service stops, lobot-tui falls back to direct kubectl polling transparently.
+lobot-tui reads exclusively from this service (`svc` tag always shown in the status bar). If the service is not running, lobot-tui displays an error in the status bar with the command to start it — there is no kubectl fallback.
 
 **Deploying updates to the collector:**
 
@@ -164,10 +165,10 @@ python3 -m lobot_tui
 ```
 ┌─ LOBOT  lobot.cs.queensu.ca ─────────────────────── 2026-03-16 12:29:36 ─┐
 │ RESOURCE        #   CPU       RAM          GPU  │ NODE       RESOURCE  …  │
-│ lobot_a40       3   26/256  384/2014G      3/8  │ bootstrap  lobot_a40 …  │
-│ lobot_a5000     3   56/256  448/1007G      3/8  │ kickstart  lobot_a40 …  │
-│ lobot_a16       0    0/24     0/125G       0/8  │ giza       lobot_a50…   │
-│ bamlab          2   86/128  896/1007G      6/8  │ floppy     digilab   …  │
+│ lobot_a40       3   26/256  384/2014G      3/8  │▶titan      riselab   …  │
+│ lobot_a5000     3   56/256  448/1007G      3/8  │  └disk-1   /mnt/nvm  …  │
+│ lobot_a16       0    0/24     0/125G       0/8  │  └disk-10  /mnt/dis  …  │
+│ bamlab          2   86/128  896/1007G      6/8  │▶newclstr-1 lobot_a40 …  │
 │ gandslab        3   47/128   176/251G      1/2  │ lobot-dev  ctrl-plane…  │
 │ miblab          1  168/192  768/1007G      6/6  │                         │
 │ riselab         5  168/256  640/1007G      6/7  │                         │
@@ -182,7 +183,7 @@ python3 -m lobot_tui
 │ PODS: [l]logs [x]exec [d]describe [X]delete [f]filter [N]ns               │
 │ NODES:[n]node filter [r]resource filter [c]cordon [u]uncordon [w]drain …  │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ ● Live svc  Pods:12:29:30  Nodes:12:29:30  [q]quit [R]refresh [?]help     │
+│ ● Live svc  Pods:12:29:30  Nodes:12:29:30  Disk:12:29:00  [q]quit [R]…   │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -191,14 +192,14 @@ python3 -m lobot_tui
 | Panel | Location | Refresh |
 |-------|----------|---------|
 | Resources | Top-left | 5s — one row per resource group; stats reflect jupyter-\* pods only |
-| Nodes | Top-right | 5s |
+| Nodes | Top-right | 5s (pods/nodes); 30s (Longhorn disk) |
 | Pods | Centre | 5s |
 | Actions hint bar | Bottom-2 | Dynamic — all hints clickable; replaced by job status when a job is running |
 | Status bar | Bottom-1 | Live |
 
 **Panel focus:** The active panel is highlighted with an amber border. Press `Tab` to cycle focus between the three data panels (Resources → Nodes → Pods).
 
-The **status bar** shows an animated Braille spinner (`⠋⠙⠹…`) next to `Live` when data is fresh. The spinner stops and is replaced by `⚠ Stale` (amber) or `✗ <error>` (red) when data becomes stale or unavailable. The source tag next to the indicator shows `svc` (cyan) when the TUI is reading from the lobot-collector service, or `kubectl` (dim) when falling back to direct kubectl polling.
+The **status bar** shows an animated Braille spinner (`⠋⠙⠹…`) next to `● Live svc` when data is fresh. The spinner stops and is replaced by `⚠ Stale` (amber) when data is old. When lobot-collector is unreachable, the bar shows `✗ lobot-collector is not running` (red) with an actionable hint: `→ sudo systemctl start lobot-collector`. If the collector is running but reporting an error, it shows the error and suggests `→ sudo journalctl -u lobot-collector -n 20`. The source tag is always `svc` (cyan) — lobot-tui reads exclusively from lobot-collector. Timestamps at the bottom show last successful update times for each data type: `Pods:HH:MM:SS  Nodes:HH:MM:SS  Disk:HH:MM:SS`.
 
 The **top bar** shows a live cluster summary: `Pods N  Nodes ready/total  GPU used/total`. The pod count reflects jupyter-* pods only (user workloads). This updates with every data refresh.
 
@@ -233,6 +234,19 @@ The GPU column uses a fixed 23-character bar where each segment represents one p
 - For nodes with >23 GPUs (e.g. time-sliced 96-GPU nodes), ratio mode is used instead of segments. A minimum of 1 filled block is always shown when at least 1 GPU is in use.
 - No-GPU nodes show a dim dash.
 - Total column width: 29 (23 bar + 1 space + 5 value field).
+
+### DISK bar (node table)
+
+The DISK column appears left of CPU and shows aggregate Longhorn disk usage across all schedulable disks on the node. It uses the same block bar style as CPU/RAM:
+
+```
+███████░░░░░░░  1.3/3.5T
+```
+
+- Bar width: 10 characters. Value field: 7 characters (e.g. `1.3/3.5T`). Total column width: 18.
+- Color thresholds match CPU/RAM: green below 75 %, amber at 75–89 %, red at ≥ 90 %.
+- **Worst-case coloring**: the aggregate bar's color is driven by the *most full* individual disk, not the aggregate ratio. This ensures that a nearly-full disk on a node is visible on the parent row even before expanding. The bar fill still reflects the true aggregate.
+- Nodes with no Longhorn data (e.g. the control plane) show a dim `–`.
 
 ### Row tinting (node table)
 
@@ -307,12 +321,17 @@ Focus the node table with `Tab`. The control plane (`lobot-dev.cs.queensu.ca`) i
 
 | Key | Action |
 |-----|--------|
-| `↑` / `↓` | Navigate rows |
+| `↑` / `↓` | Navigate rows (including disk sub-rows) |
+| `Space` / `→` | Expand disk sub-rows for the selected node (shows per-disk detail) |
+| `←` | Collapse disk sub-rows for the selected node |
+| Click row | Toggle disk sub-rows (same as Space/→) |
 | `n` | Toggle node pod-filter — press once to filter the pod table to the selected node, press again to clear. While active, navigating to a different node auto-updates the filter. |
 | `c` | Cordon node — press twice within 2 seconds to confirm |
 | `u` | Uncordon node — press twice within 2 seconds to confirm |
 | `w` | Drain node — press twice within 2 seconds to confirm |
 | Click header | Sort by column (click again to reverse) |
+
+> **Disk sub-rows**: nodes with Longhorn data show a `▶` indicator. Press `Space` or `→` to expand — a sub-row appears for each disk showing its mount path, schedulable status (`Sched`/`Disab`), and a per-disk usage bar. Press `←` or `Space` again to collapse. The cursor can navigate through sub-rows; all node operations (`c`, `u`, `w`, `n`) always apply to the parent node regardless of which row is selected.
 
 > **Node filter**: when active, the filtered node name is highlighted in bold cyan in the node table and the pod panel header shows `node:<name> (n)`. Switching namespace does **not** clear the node filter.
 
@@ -517,16 +536,15 @@ All UI panels render with representative data. Pod actions (logs, exec, delete) 
 
 ## Data Sources
 
-The TUI uses **lobot-collector** as its primary data source when the service is running. On startup it probes `127.0.0.1:9095`; if reachable it enters **service mode** (`svc` tag in the status bar) and polls `/api/state` every 5 seconds — no kubectl calls of its own. If the service is unreachable it falls back to **kubectl mode** (`kubectl` tag) and polls the cluster directly. The fallback is transparent; all panels and operations continue to work.
+The TUI reads **exclusively from lobot-collector** — it makes no direct kubectl calls of its own. It polls `GET http://127.0.0.1:9095/api/state` every 5 seconds. The status bar always shows `svc` (cyan). If the service is not running, the status bar shows `✗ lobot-collector is not running` with the command to start it; if the service has an error, it shows the error with a journalctl hint.
 
-The lobot-collector service itself handles all kubectl polling and also writes `current.json` for the web dashboards — see [lobot-collector service](#lobot-collector-service) under Installation.
+The lobot-collector service handles all kubectl polling and also writes `current.json` for the web dashboards — see [lobot-collector service](#lobot-collector-service) under Installation.
 
-| Data | Source | Interval |
-|------|--------|----------|
-| Pod list, image tags, resource requests (service mode) | `GET http://localhost:9095/api/state` | 5s |
-| Pod list, image tags, resource requests (kubectl fallback) | `kubectl get pods -n jhub -o json` | 5s |
-| Node status, labels, allocatable CPU/RAM/GPU (service mode) | included in `/api/state` response | 5s |
-| Node status, labels, allocatable CPU/RAM/GPU (kubectl fallback) | `kubectl get nodes -o json` | 10s |
+| Data | Collected by | Interval |
+|------|-------------|----------|
+| Pod list, image tags, resource requests | `kubectl get pods -n jhub -o json` (in collector) | 5s |
+| Node status, labels, allocatable CPU/RAM/GPU | `kubectl get nodes -o json` (in collector) | 10s |
+| Longhorn disk usage per node and disk | `kubectl get nodes.longhorn.io -n longhorn-system -o json` (in collector) | 30s |
 | Available image tags | DockerHub API (on wizard open) | On demand |
 | Node list (for pickers) | `kubectl get nodes` (on wizard open) | On demand |
 
@@ -586,13 +604,13 @@ Action and log screens can also save their full streaming output to `/tmp/` by p
 ```
 tools/lobot_tui/
   __main__.py               Entry point (python3 -m lobot_tui)
-  app.py                    Root Textual App class; owns job_manager; picks ServiceCollector vs DataCollector
-  config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT)
+  app.py                    Root Textual App class; owns job_manager; starts ServiceCollector
+  config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT, LONGHORN_INTERVAL)
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
-    models.py               Dataclasses: PodInfo, NodeInfo, ResourceSummary, ClusterState (with to_dict/from_dict)
-    parsers.py              Pure kubectl parsing functions (shared with lobot_collector)
-    collector.py            DataCollector (direct kubectl), ServiceCollector (HTTP polling), ClusterStateUpdated
+    models.py               Dataclasses: PodInfo, NodeInfo, DiskInfo, ResourceSummary, ClusterState (with to_dict/from_dict)
+    parsers.py              Pure kubectl parsing functions (shared with lobot_collector); includes _parse_longhorn_nodes
+    collector.py            ServiceCollector (HTTP polling of /api/state), ClusterStateUpdated
     command_log.py          In-session command history (also written to audit log)
     job_manager.py          BackgroundJobManager — runs tool commands as background tasks
   screens/
@@ -611,12 +629,12 @@ tools/lobot_tui/
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
   widgets/
-    render_utils.py         Shared rendering helpers: colored block bars, GPU segment bars, status badges, row tinting
+    render_utils.py         Shared rendering helpers: colored block bars (with optional color_ratio override), GPU segment bars, status badges, row tinting
     cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle and column sort
     pod_table.py            Pod DataTable with text filter, node filter, resource filter, and column sort
-    node_table.py           Node DataTable with column sort and node filter toggle
+    node_table.py           Node DataTable with DISK column, expandable per-disk sub-rows, column sort and node filter toggle
     actions_panel.py        Key hint bar (all hints are clickable)
-    status_bar.py           Bottom status line (animated spinner, shows svc/kubectl source tag)
+    status_bar.py           Bottom status line (animated spinner, service error detection, Pods/Nodes/Disk timestamps)
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/
@@ -628,8 +646,8 @@ tools/lobot-tui.sh          Shell launcher (supports --dev flag)
 tools/lobot_collector/      lobot-collector service (shared data collection)
   __init__.py
   __main__.py               Entry point (python3 -m lobot_collector)
-  config.py                 Service constants: port, paths, email settings, resource display names
-  collector.py              Async kubectl polling loop; maintains ClusterState; pub/sub queue
+  config.py                 Service constants: port, paths, email settings, resource display names, LONGHORN_INTERVAL
+  collector.py              Async kubectl polling loops for pods, nodes, and Longhorn disk; maintains ClusterState; pub/sub queue
   server.py                 aiohttp HTTP server: GET /api/state, GET /api/events (SSE)
   writer.py                 Renders and writes current.json in the legacy format (atomic write)
   notifier.py               Email notifications on startup/shutdown/error (30-min cooldown)
