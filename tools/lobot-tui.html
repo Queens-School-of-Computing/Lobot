@@ -426,6 +426,77 @@ python3 -m lobot_tui</code></pre>
 <p><strong>Known quirk — Escape requires two presses:</strong> Due to how Textual's <code>RichLog</code> widget handles keyboard focus internally, pressing <code>Escape</code> in log/describe screens requires <strong>two presses</strong> to return to the dashboard. <code>q</code> works with a single press. This is a known limitation with no clean fix in the current Textual version.</p>
 <p><strong>Log scroll/pause:</strong> When you scroll up in the log viewer the live stream is paused — new lines are buffered but not displayed, so your scroll position is stable. The footer changes to <strong>⏸ Paused</strong> and shows the <code>[l]</code> key to resume. Resuming flushes all buffered lines and jumps to the bottom. All lines (including buffered ones) are always included when you save with <code>s</code>.</p>
 <hr />
+<h2>Themes</h2>
+<p>Press <code>T</code> to cycle through available themes. The choice is saved to <code>~/.config/lobot-tui/theme.txt</code> and restored on next launch.</p>
+<table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lobot</code></td>
+<td>Default dark theme — GitHub-dark inspired palette</td>
+</tr>
+<tr>
+<td><code>tricolour</code></td>
+<td>Queen's University brand identity — blue, gold, and red</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Queen's Tricolour colour mapping:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Colour</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Surfaces / panels</td>
+<td>Queen's Blue</td>
+<td><code>#002452</code></td>
+</tr>
+<tr>
+<td>Accent, titles, links</td>
+<td>Queen's Gold</td>
+<td><code>#fabd0f</code></td>
+</tr>
+<tr>
+<td>Errors, failed, delete</td>
+<td>Queen's Red</td>
+<td><code>#b90e31</code></td>
+</tr>
+<tr>
+<td>Selected row highlight</td>
+<td>Queen's Red</td>
+<td><code>#b90e31</code></td>
+</tr>
+<tr>
+<td>Warnings, stale</td>
+<td>Queen's Gold</td>
+<td><code>#fabd0f</code></td>
+</tr>
+<tr>
+<td>Live, running, ready</td>
+<td>Bright blue</td>
+<td><code>#4a9fd4</code></td>
+</tr>
+<tr>
+<td>Muted text</td>
+<td>Light Limestone</td>
+<td><code>#b4aea8</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Per-session override</strong> — useful on shared accounts (e.g. multiple admins sharing <code>croot</code>) where the saved file is common to all:</p>
+<pre><code>LOBOT_TUI_THEME=tricolour lobot-tui</code></pre>
+<p>When the env var is set, <code>T</code> cycles themes for that session only and does not overwrite the shared saved file.</p>
+<hr />
 <h2>Tool Actions (Keys 1 – 6)</h2>
 <p>All tool actions open a wizard screen to configure parameters before running. Press <code>Enter</code> (when not in a text field) or click <strong>Run ↵</strong> to submit. Tool actions (1–5) run as <strong>background jobs</strong> — the job starts and the output panel opens automatically. Press <code>b</code> to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing <code>1</code>–<code>5</code> is blocked until the job completes.</p>
 <h3>[1] image-pull</h3>

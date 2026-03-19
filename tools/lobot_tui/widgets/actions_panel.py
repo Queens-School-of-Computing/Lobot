@@ -22,6 +22,9 @@ _ROW1_RIGHT = [
     ("[bold yellow](1)[/] image-pull", "hint-tool", "1"),
     ("[bold yellow](2)[/] image-cleanup", "hint-tool", "2"),
     ("[bold yellow](3)[/] apply-config", "hint-tool", "3"),
+    ("[bold yellow](4)[/] sync-groups", "hint-tool", "4"),
+    ("[bold yellow](5)[/] helm upgrade", "hint-tool", "5"),
+    ("[bold yellow](6)[/] announce", "hint-tool", "6"),
 ]
 
 _ROW2_LEFT = [
@@ -34,13 +37,12 @@ _ROW2_LEFT = [
 ]
 
 _ROW2_RIGHT = [
-    ("[bold yellow](4)[/] sync-groups", "hint-tool", "4"),
-    ("[bold yellow](5)[/] helm upgrade", "hint-tool", "5"),
-    ("[bold yellow](6)[/] announce", "hint-tool", "6"),
     ("[bold yellow](`)[/] console", "hint-tool", "`"),
     ("[bold yellow](b)[/] jobs", "hint-tool", "b"),
-    ("[bold dim](?)[/] help", "hint-global", "?"),
-    ("[bold dim](q)[/] quit", "hint-global", "q"),
+    ("[bold yellow](?)[/] help", "hint-tool", "?"),
+    ("[bold yellow](G)[/] guide", "hint-tool", "G"),
+    ("[bold yellow](T)[/] theme", "hint-tool", "T"),
+    ("[bold yellow](q)[/] quit", "hint-tool", "q"),
 ]
 
 

@@ -393,6 +393,37 @@ These are used for short-lived kubectl commands (pod logs, describe, cordon, dra
 
 ---
 
+## Themes
+
+Press `T` to cycle through available themes. The choice is saved to `~/.config/lobot-tui/theme.txt` and restored on next launch.
+
+| Theme | Description |
+|-------|-------------|
+| `lobot` | Default dark theme — GitHub-dark inspired palette |
+| `tricolour` | Queen's University brand identity — blue, gold, and red |
+
+**Queen's Tricolour colour mapping:**
+
+| Role | Colour | Hex |
+|------|--------|-----|
+| Surfaces / panels | Queen's Blue | `#002452` |
+| Accent, titles, links | Queen's Gold | `#fabd0f` |
+| Errors, failed, delete | Queen's Red | `#b90e31` |
+| Selected row highlight | Queen's Red | `#b90e31` |
+| Warnings, stale | Queen's Gold | `#fabd0f` |
+| Live, running, ready | Bright blue | `#4a9fd4` |
+| Muted text | Light Limestone | `#b4aea8` |
+
+**Per-session override** — useful on shared accounts (e.g. multiple admins sharing `croot`) where the saved file is common to all:
+
+```bash
+LOBOT_TUI_THEME=tricolour lobot-tui
+```
+
+When the env var is set, `T` cycles themes for that session only and does not overwrite the shared saved file.
+
+---
+
 ## Tool Actions (Keys `1` – `6`)
 
 All tool actions open a wizard screen to configure parameters before running. Press `Enter` (when not in a text field) or click **Run ↵** to submit. Tool actions (1–5) run as **background jobs** — the job starts and the output panel opens automatically. Press `b` to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing `1`–`5` is blocked until the job completes.
