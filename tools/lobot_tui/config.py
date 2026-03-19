@@ -44,6 +44,7 @@ DEV_MODE = os.environ.get("LOBOT_TUI_DEV", "0") == "1"
 
 # ── Per-namespace filter persistence ──────────────────────────────────────────
 NS_FILTERS_FILE = Path.home() / ".config" / "lobot-tui" / "ns_filters.json"
+THEME_FILE = Path.home() / ".config" / "lobot-tui" / "theme.txt"
 
 # ── Audit log ─────────────────────────────────────────────────────────────────
 # All commands run via the TUI are appended here (rotates daily).

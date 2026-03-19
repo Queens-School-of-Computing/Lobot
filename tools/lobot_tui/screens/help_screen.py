@@ -18,6 +18,8 @@ HELP_TEXT = """
 | `R` | Force refresh all data |
 | `Tab` | Cycle panel focus: Resources → Nodes → Pods |
 | `?` | This help screen |
+| `G` | Full guide — opens `lobot-tui.md` in a scrollable viewer with table of contents |
+| `T` | Cycle theme (lobot → tricolour → …) — persisted across sessions |
 | `` ` `` | Command console (history + errors) |
 | `b` | Background jobs panel (live output of running tool) |
 | `Escape` | Return focus to pod table (from filter input) |

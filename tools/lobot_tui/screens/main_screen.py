@@ -100,6 +100,7 @@ class MainScreen(Screen):
         ("R", "force_refresh", "Refresh"),
         ("question_mark", "show_help", "Help"),
         ("G", "show_guide", "Guide"),
+        ("T", "cycle_theme", "Theme"),
         ("grave_accent", "show_console", "Console"),
         ("b", "show_jobs", "Jobs"),
         ("1", "tool_1", "image-pull"),
@@ -336,6 +337,11 @@ class MainScreen(Screen):
 
     def action_show_guide(self) -> None:
         self.app.push_screen(GuideScreen())
+
+    def action_cycle_theme(self) -> None:
+        name = self.app.cycle_theme()
+        labels = {"lobot": "Lobot (default)", "tricolour": "Queen's Tricolour"}
+        self.notify(f"Theme: {labels.get(name, name)}", timeout=2)
 
     def action_show_console(self) -> None:
         self.app.push_screen(ConsoleScreen())

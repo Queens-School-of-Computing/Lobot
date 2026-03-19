@@ -290,6 +290,7 @@ A 3-row Sparkline widget at the bottom of the resource panel charts the total po
 | `R` | Force-refresh all data immediately |
 | `?` | Help screen (full key binding reference) |
 | `G` | Full guide — opens `lobot-tui.md` in a scrollable viewer with table of contents |
+| `T` | Cycle theme (`lobot` → `tricolour` → …) — choice persisted to `~/.config/lobot-tui/theme.txt` |
 | `` ` `` | Command console (recent command history and errors) |
 | `b` | Background jobs panel (live output of running tool) |
 | `Tab` | Cycle focus between panels: Resources → Nodes → Pods |
