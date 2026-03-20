@@ -8,6 +8,7 @@ from textual.widgets import DataTable, Static
 from ..config import JUPYTERHUB_NAMESPACE
 from ..data.collector import ClusterStateUpdated
 from ..data.models import PodInfo
+from ..themes import COLOR_CRIT, COLOR_OK, COLOR_WARN
 
 # Fixed-width columns (excluding USERNAME which expands)
 _FIXED_COLS = [
@@ -26,9 +27,9 @@ _USERNAME_MIN = 14
 _USERNAME_MAX = 30
 
 PHASE_MARKUP = {
-    "Running": "[#3fb950]● Running[/]",
-    "Pending": "[#d29922]◌ Pending[/]",
-    "Failed": "[#f85149]✖ Failed[/]",
+    "Running":   f"[{COLOR_OK}]● Running[/]",
+    "Pending":   f"[{COLOR_WARN}]◌ Pending[/]",
+    "Failed":    f"[{COLOR_CRIT}]✖ Failed[/]",
     "Succeeded": "[dim]✓ Done[/]",
 }
 

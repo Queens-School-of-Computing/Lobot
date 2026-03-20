@@ -7,6 +7,7 @@ from textual.widget import Widget
 from textual.widgets import Label
 
 from ..data.collector import ClusterStateUpdated
+from ..themes import COLOR_CRIT, COLOR_OK, COLOR_WARN
 
 _SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 
@@ -59,7 +60,7 @@ class StatusBarWidget(Widget):
         self._spinner_idx = (self._spinner_idx + 1) % len(_SPINNER)
         try:
             spin = _SPINNER[self._spinner_idx]
-            self.query_one("#status-live", Label).update(f"[#3fb950]{spin} Live[/] [cyan]svc[/]  ")
+            self.query_one("#status-live", Label).update(f"[{COLOR_OK}]{spin} Live[/] [cyan]svc[/]  ")
         except Exception:
             pass
 
@@ -69,7 +70,7 @@ class StatusBarWidget(Widget):
 
         if state.service_error:
             self._live = False
-            live_label.update(f"[#f85149]✗ {state.service_error}[/]  ")
+            live_label.update(f"[{COLOR_CRIT}]✗ {state.service_error}[/]  ")
             if "not running" in state.service_error:
                 self.query_one("#status-timestamps", Label).update(
                     "[dim]→  sudo systemctl start lobot-collector[/]"
@@ -86,14 +87,14 @@ class StatusBarWidget(Widget):
         if has_error:
             self._live = False
             err = state.pods_error or state.nodes_error
-            live_label.update(f"[#f85149]✗ {err[:60]}[/]  ")
+            live_label.update(f"[{COLOR_CRIT}]✗ {err[:60]}[/]  ")
         elif pods_stale:
             self._live = False
-            live_label.update("[#d29922]⚠ Stale[/] [cyan]svc[/]  ")
+            live_label.update(f"[{COLOR_WARN}]⚠ Stale[/] [cyan]svc[/]  ")
         else:
             self._live = True
             spin = _SPINNER[self._spinner_idx]
-            live_label.update(f"[#3fb950]{spin} Live[/] [cyan]svc[/]  ")
+            live_label.update(f"[{COLOR_OK}]{spin} Live[/] [cyan]svc[/]  ")
 
         self._last_pods_update = state.last_pods_update
         self._last_nodes_update = state.last_nodes_update

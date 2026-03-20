@@ -2,15 +2,17 @@
 
 from rich.text import Text
 
+from ..themes import BG_CORDONED, BG_NOTREADY, COLOR_CRIT, COLOR_DIM, COLOR_OK, COLOR_WARN
+
 _FILLED = "▀"
 _EMPTY = "▀"
-_COLOR_OK = "#00af5f"  # deep emerald (xterm-256 index 35)
-_COLOR_WARN = "#fabd0f"  # Queen's Gold
-_COLOR_CRIT = "#af0000"  # Queen's Red (xterm-256 index 124)
-_COLOR_DIM = "#3a404e"  # near-invisible text on dark bg
+_COLOR_OK   = COLOR_OK
+_COLOR_WARN = COLOR_WARN
+_COLOR_CRIT = COLOR_CRIT
+_COLOR_DIM  = COLOR_DIM
 
-_BG_CORDONED = "#1a1500"  # very dark amber for cordoned rows
-_BG_NOTREADY = "#1a0505"  # very dark red for NotReady rows
+_BG_CORDONED = BG_CORDONED
+_BG_NOTREADY = BG_NOTREADY
 
 
 def _pct_color(ratio: float) -> str:
@@ -186,11 +188,11 @@ def status_badge(node) -> str:
     if node.is_control_plane:
         return "[dim]● ctrl[/]"
     if node.status == "Ready" and node.schedulable:
-        return "[#00dd55]● Ready[/]"
+        return f"[{_COLOR_OK}]● Ready[/]"
     if node.status == "Ready" and not node.schedulable:
-        return "[#f0a800]◆ Cordoned[/]"
+        return f"[{_COLOR_WARN}]◆ Cordoned[/]"
     if node.status == "NotReady":
-        return "[#ff3333]✖ NotReady[/]"
+        return f"[{_COLOR_CRIT}]✖ NotReady[/]"
     return "[dim]? Unknown[/]"
 
 
@@ -201,11 +203,11 @@ def status_badge_text(node, row_bg: "str | None" = None) -> Text:
     if node.is_control_plane:
         t.append("● ctrl", style=f"dim {base}".strip())
     elif node.status == "Ready" and node.schedulable:
-        t.append("● Ready", style=f"#00dd55 {base}".strip())
+        t.append("● Ready", style=f"{_COLOR_OK} {base}".strip())
     elif node.status == "Ready" and not node.schedulable:
-        t.append("◆ Cordoned", style=f"#f0a800 {base}".strip())
+        t.append("◆ Cordoned", style=f"{_COLOR_WARN} {base}".strip())
     elif node.status == "NotReady":
-        t.append("✖ NotReady", style=f"#ff3333 {base}".strip())
+        t.append("✖ NotReady", style=f"{_COLOR_CRIT} {base}".strip())
     else:
         t.append("? Unknown", style=f"dim {base}".strip())
     return t

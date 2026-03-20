@@ -22,6 +22,7 @@ from ..config import (
 from ..data.collector import ClusterStateUpdated, ServiceCollector
 from ..data.job_manager import JobCompleted
 from ..data.models import NodeInfo, PodInfo
+from ..themes import PRIMARY, SECONDARY
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
 from ..widgets.tricolour_stripe import TricolourStripe
 from ..widgets.cluster_summary import ResourceTableWidget
@@ -200,9 +201,9 @@ class MainScreen(Screen):
             gpu_used = sum(r.gpu_used for r in state.resources.values())
             stats = (
                 f"  [dim]│[/]  "
-                f"[#79c0ff]Pods[/] [white]{total_pods}[/]  "
-                f"[#79c0ff]Nodes[/] [white]{ready_nodes}/{total_nodes}[/]  "
-                f"[#79c0ff]GPU[/] [white]{gpu_used}/{gpu_total}[/]"
+                f"[{SECONDARY}]Pods[/] [white]{total_pods}[/]  "
+                f"[{SECONDARY}]Nodes[/] [white]{ready_nodes}/{total_nodes}[/]  "
+                f"[{SECONDARY}]GPU[/] [white]{gpu_used}/{gpu_total}[/]"
             )
         else:
             stats = ""
@@ -210,7 +211,7 @@ class MainScreen(Screen):
         badge = "[bold yellow] DEV [/]" if IS_DEV else "[bold green] PROD [/]"
         try:
             self.query_one("#top-bar", Label).update(
-                f" [bold #58a6ff]LOBOT[/]  [dim]{hostname}[/]  {badge}  [dim]{now}[/]{stats}"
+                f" [bold {PRIMARY}]LOBOT[/]  [dim]{hostname}[/]  {badge}  [dim]{now}[/]{stats}"
             )
         except Exception:
             pass

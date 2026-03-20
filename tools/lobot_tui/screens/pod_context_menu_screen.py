@@ -18,38 +18,38 @@ class PodContextMenuScreen(Screen):
     #context-menu {
         width: 44;
         height: auto;
-        background: #161b22;
-        border: solid #58a6ff;
+        background: $surface;
+        border: solid $primary;
         padding: 1 2;
     }
     #context-title {
         text-style: bold;
-        color: #58a6ff;
+        color: $primary;
         margin-bottom: 1;
         width: 1fr;
     }
     .ctx-btn {
         width: 1fr;
         height: 1;
-        background: #1c2128;
+        background: $panel;
         border: none;
-        color: #c9d1d9;
+        color: $foreground;
         margin-bottom: 0;
     }
     .ctx-btn:hover {
-        background: #1f6feb;
-        color: #ffffff;
+        background: $primary;
+        color: $background;
     }
     .ctx-btn:focus {
-        background: #2d333b;
+        background: $bg-hover;
         border: none;
     }
     #ctx-delete {
-        color: #f85149;
+        color: $error;
     }
     #ctx-delete:hover {
-        background: #da3633;
-        color: #ffffff;
+        background: $error;
+        color: $background;
     }
     """
 

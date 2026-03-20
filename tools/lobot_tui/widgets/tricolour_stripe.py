@@ -3,9 +3,11 @@
 from rich.text import Text
 from textual.widget import Widget
 
-_GOLD = "#fabd0f"
-_RED = "#af0000"
-_CHROME = "#002452"
+from ..themes import CHROME, STRIPE_GOLD, STRIPE_RED
+
+_GOLD   = STRIPE_GOLD
+_RED    = STRIPE_RED
+_CHROME = CHROME
 
 
 class TricolourStripe(Widget):
