@@ -99,12 +99,51 @@ Screen {
     padding-right: 1;
 }
 
-/* ── Actions panel ── */
+/* ── Actions panel: three horizontal panels ── */
 #actions-panel {
     height: 2;
     background: $chrome-bg;
     padding: 0 1;
+    layout: horizontal;
+}
+
+#left-actions {
+    width: 1fr;
+    height: 2;
     layout: vertical;
+    background: $chrome-bg;
+}
+
+#left-actions Horizontal {
+    height: 1;
+    background: $chrome-bg;
+}
+
+#bongo-cat-panel {
+    width: 11;
+    height: 2;
+    text-align: center;
+    color: $primary;
+    background: $chrome-bg;
+}
+
+#bongo-cat-panel Static {
+    width: 11;
+    height: 2;
+    text-align: center;
+    color: $primary;
+}
+
+#right-actions {
+    width: 1fr;
+    height: 2;
+    layout: vertical;
+    background: $chrome-bg;
+}
+
+#right-actions Horizontal {
+    height: 1;
+    background: $chrome-bg;
 }
 
 /* ── Status bar ── */

@@ -23,7 +23,12 @@ from ..data.collector import ClusterStateUpdated, ServiceCollector
 from ..data.job_manager import JobCompleted
 from ..data.models import NodeInfo, PodInfo
 from ..themes import PRIMARY, SECONDARY
-from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
+from ..widgets.actions_panel import (
+    HintClicked,
+    LeftActionsWidget,
+    RightActionsWidget,
+    BongoCatWidget,
+)
 from ..widgets.tricolour_stripe import TricolourStripe
 from ..widgets.cluster_summary import ResourceTableWidget
 from ..widgets.node_table import NodeTableWidget
@@ -118,6 +123,7 @@ class MainScreen(Screen):
         ("d", "pod_describe", "Describe pod"),
         ("f", "focus_filter", "Filter"),
         Binding("tab", "cycle_panel", "Switch panel", priority=True, show=False),
+        Binding("space", "bongo_space", "", priority=True, show=False),
         ("n", "toggle_node_filter", "Node filter"),
         ("r", "toggle_resource_filter", "Resource filter"),
         Binding("escape", "escape_focus", "", priority=True, show=False),
@@ -167,7 +173,10 @@ class MainScreen(Screen):
                 yield Static("", id="pod-count-outer", markup=True)
             yield PodTableWidget(id="pod-table")
         yield TricolourStripe("▀")
-        yield ActionsPanelWidget(id="actions-panel")
+        with Horizontal(id="actions-panel"):
+            yield LeftActionsWidget(id="left-actions")
+            yield BongoCatWidget(id="bongo-cat-panel")
+            yield RightActionsWidget(id="right-actions")
         yield StatusBarWidget(id="status-bar")
 
     def on_mount(self) -> None:
@@ -219,17 +228,18 @@ class MainScreen(Screen):
 
     def _update_job_indicator(self) -> None:
         """Refresh the running-job status in the actions panel hint bar."""
-        try:
-            panel = self.query_one("#actions-panel", ActionsPanelWidget)
-        except Exception:
-            return
         job = self.app.job_manager.current_job
         if job is None or job.status != "running":
             return
         elapsed = int((datetime.now() - job.start_time).total_seconds())
         mins, secs = divmod(elapsed, 60)
         elapsed_str = f"{mins}m{secs:02d}s" if mins else f"{secs}s"
-        panel.set_job_status(rf"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]")
+        try:
+            self.query_one("#right-actions", RightActionsWidget).set_job_status(
+                rf"[yellow]● {job.title}[/]  [dim]{elapsed_str}  \[b] view output[/]"
+            )
+        except Exception:
+            pass
 
     # ── Double-keypress confirmation ───────────────────────────────────────
 
@@ -363,6 +373,17 @@ class MainScreen(Screen):
             self.query_one("#pod-datatable").focus()
         else:
             resource_dt.focus()
+        self._bongo_hit()
+
+    def action_bongo_space(self) -> None:
+        """Space: intercepted only to animate the cat."""
+        self._bongo_hit()
+
+    def _bongo_hit(self) -> None:
+        try:
+            self.query_one("#bongo-cat-panel", BongoCatWidget).bongo_hit()
+        except Exception:
+            pass
 
     def action_focus_filter(self) -> None:
         inp = self.query_one("#pod-filter-input", Input)
@@ -561,7 +582,7 @@ class MainScreen(Screen):
         job = event.job
         # Clear the running-job indicator and restore normal hints
         try:
-            self.query_one("#actions-panel", ActionsPanelWidget).set_job_status(None)
+            self.query_one("#right-actions", RightActionsWidget).set_job_status(None)
         except Exception:
             pass
         if job.status == "done":

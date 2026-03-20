@@ -86,6 +86,15 @@ class LobotApp(App):
 
     # ── message routing ───────────────────────────────────────────────────────
 
+    def on_key(self, event) -> None:
+        """Advance the bongo cat for keys that bubble up to app level."""
+        try:
+            from .screens.main_screen import MainScreen
+            if isinstance(self.screen, MainScreen):
+                self.screen._bongo_hit()
+        except Exception:
+            pass
+
     def on_cluster_state_updated(self, event) -> None:
         try:
             self.screen.post_message(event)
