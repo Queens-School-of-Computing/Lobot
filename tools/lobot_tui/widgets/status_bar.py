@@ -60,7 +60,9 @@ class StatusBarWidget(Widget):
         self._spinner_idx = (self._spinner_idx + 1) % len(_SPINNER)
         try:
             spin = _SPINNER[self._spinner_idx]
-            self.query_one("#status-live", Label).update(f"[{COLOR_OK}]{spin} Live[/] [cyan]svc[/]  ")
+            self.query_one("#status-live", Label).update(
+                f"[{COLOR_OK}]{spin} Live[/] [cyan]svc[/]  "
+            )
         except Exception:
             pass
 

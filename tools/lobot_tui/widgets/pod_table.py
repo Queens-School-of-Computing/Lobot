@@ -27,9 +27,9 @@ _USERNAME_MIN = 14
 _USERNAME_MAX = 30
 
 PHASE_MARKUP = {
-    "Running":   f"[{COLOR_OK}]● Running[/]",
-    "Pending":   f"[{COLOR_WARN}]◌ Pending[/]",
-    "Failed":    f"[{COLOR_CRIT}]✖ Failed[/]",
+    "Running": f"[{COLOR_OK}]● Running[/]",
+    "Pending": f"[{COLOR_WARN}]◌ Pending[/]",
+    "Failed": f"[{COLOR_CRIT}]✖ Failed[/]",
     "Succeeded": "[dim]✓ Done[/]",
 }
 

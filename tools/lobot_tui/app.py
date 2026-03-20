@@ -60,6 +60,7 @@ class LobotApp(App):
         # the saved file is shared but individuals may want their own theme:
         #   LOBOT_TUI_THEME=tricolour lobot-tui
         import os
+
         env = os.environ.get("LOBOT_TUI_THEME", "").strip()
         if env in THEME_NAMES:
             return env
@@ -74,6 +75,7 @@ class LobotApp(App):
     def _save_theme(self, name: str) -> None:
         # Don't overwrite the shared file when running with an env var override.
         import os
+
         if os.environ.get("LOBOT_TUI_THEME", "").strip() in THEME_NAMES:
             return
         try:
