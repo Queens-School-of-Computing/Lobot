@@ -75,18 +75,17 @@ class ActionsPanelWidget(Widget):
     DEFAULT_CSS = """
     ActionsPanelWidget {
         height: 2;
-        background: #161b22;
-        border-top: solid #30363d;
+        background: $chrome-bg;
         padding: 0 1;
         layout: vertical;
     }
     ActionsPanelWidget Horizontal {
         height: 1;
-        background: #161b22;
+        background: $chrome-bg;
     }
     .hint-prefix {
         width: auto;
-        color: #8b949e;
+        color: $text-muted;
         padding: 0 1 0 0;
     }
     .hint-spacer {
@@ -95,14 +94,14 @@ class ActionsPanelWidget(Widget):
     .hint-pod, .hint-node, .hint-tool, .hint-global {
         width: auto;
         padding: 0 1 0 0;
-        color: #c9d1d9;
+        color: $foreground;
     }
     .hint-pod:hover, .hint-node:hover, .hint-tool:hover {
         text-style: underline;
-        color: #58a6ff;
+        color: $primary;
     }
     .hint-global {
-        color: #8b949e;
+        color: $text-muted;
     }
     #job-status-label {
         width: auto;

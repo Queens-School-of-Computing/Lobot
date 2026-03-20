@@ -23,6 +23,7 @@ from ..data.collector import ClusterStateUpdated, ServiceCollector
 from ..data.job_manager import JobCompleted
 from ..data.models import NodeInfo, PodInfo
 from ..widgets.actions_panel import ActionsPanelWidget, HintClicked
+from ..widgets.tricolour_stripe import TricolourStripe
 from ..widgets.cluster_summary import ResourceTableWidget
 from ..widgets.node_table import NodeTableWidget
 from ..widgets.pod_table import PodTableWidget
@@ -145,6 +146,7 @@ class MainScreen(Screen):
             id="top-bar",
             markup=True,
         )
+        yield TricolourStripe("▄")
         with Horizontal(id="top-section"):
             with Vertical(id="summary-panel"):
                 yield ResourceTableWidget(id="resource-table")
@@ -163,6 +165,7 @@ class MainScreen(Screen):
                 )
                 yield Static("", id="pod-count-outer", markup=True)
             yield PodTableWidget(id="pod-table")
+        yield TricolourStripe("▀")
         yield ActionsPanelWidget(id="actions-panel")
         yield StatusBarWidget(id="status-bar")
 

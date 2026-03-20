@@ -8,8 +8,9 @@ Screen {
 
 /* ── Top info bar ── */
 #top-bar {
+    width: 1fr;
     height: 1;
-    background: $surface;
+    background: $chrome-bg;
     color: $primary;
     padding: 0 1;
     content-align: left middle;
@@ -100,9 +101,8 @@ Screen {
 
 /* ── Actions panel ── */
 #actions-panel {
-    height: 3;
-    background: $surface;
-    border-top: solid $panel-border;
+    height: 2;
+    background: $chrome-bg;
     padding: 0 1;
     layout: vertical;
 }
@@ -110,7 +110,7 @@ Screen {
 /* ── Status bar ── */
 #status-bar {
     height: 1;
-    background: $surface;
+    background: $chrome-bg;
     color: $text-muted;
     padding: 0 1;
     layout: horizontal;

@@ -37,6 +37,9 @@ class LobotApp(App):
             "accent-focus": "#e3b341",
             "bg-cursor": "#0a1e35",
             "bg-hover": "#2d333b",
+            "chrome-bg": "#002452",
+            "stripe-gold": "#fabd0f",
+            "stripe-red": "#b90e31",
         }
 
     def cycle_theme(self) -> str:

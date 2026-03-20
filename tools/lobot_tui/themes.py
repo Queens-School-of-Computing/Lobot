@@ -21,6 +21,9 @@ LOBOT_DARK = Theme(
         "accent-focus": "#e3b341",
         "bg-cursor": "#0a1e35",
         "bg-hover": "#2d333b",
+        "chrome-bg": "#002452",
+        "stripe-gold": "#fabd0f",
+        "stripe-red": "#b90e31",
     },
 )
 
@@ -45,8 +48,12 @@ TRICOLOUR = Theme(
         "accent-focus": "#fabd0f",
         "bg-cursor": "#b90e31",      # Queen's Red row highlight
         "bg-hover": "#001c3f",
+        "chrome-bg": "#002452",
+        "stripe-gold": "#fabd0f",
+        "stripe-red": "#b90e31",
     },
 )
 
-THEMES: list[Theme] = [LOBOT_DARK, TRICOLOUR]
+#THEMES: list[Theme] = [LOBOT_DARK, TRICOLOUR]
+THEMES: list[Theme] = [LOBOT_DARK]
 THEME_NAMES: list[str] = [t.name for t in THEMES]

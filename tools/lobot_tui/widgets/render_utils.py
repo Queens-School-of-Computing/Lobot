@@ -4,9 +4,9 @@ from rich.text import Text
 
 _FILLED = "▀"
 _EMPTY = "▀"
-_COLOR_OK = "#00dd55"  # vivid green
-_COLOR_WARN = "#f0a800"  # vivid amber
-_COLOR_CRIT = "#ff3333"  # vivid red
+_COLOR_OK = "#00af5f"  # deep emerald (xterm-256 index 35)
+_COLOR_WARN = "#fabd0f"  # Queen's Gold
+_COLOR_CRIT = "#af0000"  # Queen's Red (xterm-256 index 124)
 _COLOR_DIM = "#3a404e"  # near-invisible text on dark bg
 
 _BG_CORDONED = "#1a1500"  # very dark amber for cordoned rows

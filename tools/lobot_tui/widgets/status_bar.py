@@ -29,7 +29,7 @@ class StatusBarWidget(Widget):
     DEFAULT_CSS = """
     StatusBarWidget {
         height: 1;
-        background: #161b22;
+        background: $chrome-bg;
         layout: horizontal;
         padding: 0 1;
     }
