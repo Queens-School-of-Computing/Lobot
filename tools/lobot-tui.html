@@ -174,6 +174,109 @@ python3 -m lobot_tui</code></pre>
 <p><strong>Panel focus:</strong> The active panel is highlighted with an amber border. Press <code>Tab</code> to cycle focus between the three data panels (Resources → Nodes → Pods).</p>
 <p>The <strong>status bar</strong> shows an animated Braille spinner (<code>⠋⠙⠹…</code>) next to <code>● Live svc</code> when data is fresh. The spinner stops and is replaced by <code>⚠ Stale</code> (amber) when data is old. When lobot-collector is unreachable, the bar shows <code>✗ lobot-collector is not running</code> (red) with an actionable hint: <code>→ sudo systemctl start lobot-collector</code>. If the collector is running but reporting an error, it shows the error and suggests <code>→ sudo journalctl -u lobot-collector -n 20</code>. The source tag is always <code>svc</code> (cyan) — lobot-tui reads exclusively from lobot-collector. Timestamps at the bottom show last successful update times for each data type: <code>Pods:HH:MM:SS  Nodes:HH:MM:SS  Disk:HH:MM:SS</code>.</p>
 <hr />
+<h2>Visual Design</h2>
+<p>lobot-tui uses a btop-inspired dark theme with colored progress bars and status badges throughout. All rendering helpers live in <code>widgets/render_utils.py</code>.</p>
+<h3>Tricolour chrome</h3>
+<p>The top bar and the bottom section (actions hint bar + status bar) use a Queen's Blue (<code>#002452</code>) background. A thin horizontal stripe divides the top bar from the content area and the content area from the bottom chrome section. The stripe uses half-block Unicode characters so it occupies only half a character-cell row:</p>
+<pre><code>┌─ [Queen's Blue] LOBOT  lobot.cs.queensu.ca  ──────────────────────── ─┐
+│ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ gold ▄▄▄▄▄▄▄▄▄▄▄▄ red ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ │  ← thin stripe
+│  … resource / node / pod panels …                                      │
+│ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ gold ▀▀▀▀▀▀▀▀▀▀▀▀ red ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ │  ← thin stripe
+│ [Queen's Blue] PODS (l)logs …  TOOLS (1)… (q)quit                     │
+│ [Queen's Blue] ● Live svc  Pods:12:29:30  Nodes:12:29:30              │
+└────────────────────────────────────────────────────────────────────────┘</code></pre>
+<p>Stripe colours use exact xterm-256 palette entries so they render correctly in 256-colour SSH sessions: Queen's Gold → xterm index 214 (<code>#ffaf00</code>), Queen's Red → xterm index 124 (<code>#af0000</code>).</p>
+<p>All chrome and stripe colours are defined as Python constants and CSS variables in <code>themes.py</code> (<code>CHROME</code>, <code>STRIPE_GOLD</code>, <code>STRIPE_RED</code>).</p>
+<h3>Progress bars (CPU / RAM)</h3>
+<p>CPU and RAM columns display a colored block bar followed by a right-justified <code>used/total</code> value:</p>
+<pre><code>███████░░░░░░░  128/512</code></pre>
+<ul>
+<li>Bar width: 7 characters. Value field: 7 characters. Total column width: 15.</li>
+<li>Color thresholds: green (<code>#008700</code>) below 75 %, gold (<code>#fabd0f</code>, Queen's Gold) at 75–89 %, red (<code>#af0000</code>, Queen's Red) at ≥ 90 %.</li>
+<li>Characters used: <code>▀</code> (U+2580 UPPER HALF BLOCK) for both filled and empty segments — the color difference distinguishes them.</li>
+</ul>
+<h3>GPU bar</h3>
+<p>The GPU column uses a fixed 23-character bar where each segment represents one physical GPU, separated by <code>│</code> dividers:</p>
+<pre><code>█████│█████│░░░░░│░░░░░   2/4</code></pre>
+<ul>
+<li>Each segment is <code>(23 − (gpu_total − 1)) ÷ gpu_total</code> characters wide. This gives exact integer widths for the common GPU counts 1, 2, 3, 4, 6, and 8.</li>
+<li>Segments with filled GPUs use bright color; unused segments use dim.</li>
+<li>For nodes with &gt;23 GPUs (e.g. time-sliced 96-GPU nodes), ratio mode is used instead of segments. A minimum of 1 filled block is always shown when at least 1 GPU is in use.</li>
+<li>No-GPU nodes show a dim dash.</li>
+<li>Total column width: 29 (23 bar + 1 space + 5 value field).</li>
+</ul>
+<h3>DISK bar (node table)</h3>
+<p>The DISK column appears left of CPU and shows aggregate Longhorn disk usage across all schedulable disks on the node. It uses the same block bar style as CPU/RAM:</p>
+<pre><code>███████░░░░░░░  1.3/3.5T</code></pre>
+<ul>
+<li>Bar width: 10 characters. Value field: 7 characters (e.g. <code>1.3/3.5T</code>). Total column width: 18.</li>
+<li>Color thresholds match CPU/RAM: green below 75 %, gold at 75–89 %, red at ≥ 90 %.</li>
+<li><strong>Worst-case coloring</strong>: the aggregate bar's color is driven by the <em>most full</em> individual disk, not the aggregate ratio. This ensures that a nearly-full disk on a node is visible on the parent row even before expanding. The bar fill still reflects the true aggregate.</li>
+<li>Nodes with no Longhorn data (e.g. the control plane) show a dim <code>–</code>.</li>
+</ul>
+<h3>Row tinting (node table)</h3>
+<p>Cordoned nodes receive a faint amber background tint (<code>#1a1500</code>). NotReady nodes receive a faint red tint (<code>#1a0505</code>). These tints are applied to all cells in the row using <code>rich.text.Text</code> objects with an <code>on &lt;bg&gt;</code> style, which preserves bar colors inside the tinted row.</p>
+<h3>Colour centralisation</h3>
+<p>All Python-level colours (used in Rich markup strings) are defined as named constants in <code>themes.py</code> and imported from there by every widget. CSS-level colours are defined as theme variables and resolved via <code>$variable-name</code> in TCSS. Editing <code>themes.py</code> is the single place to change any colour across the entire application.</p>
+<h3>Status badges (node table)</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Badge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ready and schedulable</td>
+<td><code>● Ready</code> (green)</td>
+</tr>
+<tr>
+<td>Ready but cordoned</td>
+<td><code>◆ Cordoned</code> (amber)</td>
+</tr>
+<tr>
+<td>NotReady</td>
+<td><code>✖ NotReady</code> (red)</td>
+</tr>
+<tr>
+<td>Control plane</td>
+<td><code>● ctrl</code> (dim)</td>
+</tr>
+</tbody>
+</table>
+<h3>Phase icons (pod table)</h3>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Icon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Running</td>
+<td><code>● Running</code> (green)</td>
+</tr>
+<tr>
+<td>Pending</td>
+<td><code>◌ Pending</code> (amber)</td>
+</tr>
+<tr>
+<td>Failed</td>
+<td><code>✖ Failed</code> (red)</td>
+</tr>
+<tr>
+<td>Succeeded</td>
+<td><code>✓ Done</code> (dim)</td>
+</tr>
+</tbody>
+</table>
+<h3>Row selection</h3>
+<p>Selected rows use a very light blue background (<code>#0a1e35</code>) with bold text. <code>cursor_foreground_priority="renderable"</code> is set on all DataTable widgets so that bar and badge colors in the selected row are never overridden by the cursor CSS color.</p>
+<h3>Sparkline (resource panel)</h3>
+<p>A 3-row Sparkline widget at the bottom of the resource panel charts the total pod count over the last 60 data updates (~5 minutes at 5s refresh). This gives a quick visual of pod churn over recent time.</p>
+<hr />
 <h2>Key Bindings</h2>
 <h3>Global</h3>
 <table>
@@ -446,6 +549,34 @@ python3 -m lobot_tui</code></pre>
 </tr>
 </tbody>
 </table>
+<p><strong>Tricolour chrome (both themes):</strong></p>
+<p>Regardless of the active theme, the top bar and bottom section (actions + status) always use the Queen's Blue chrome with the gold/red dividing stripe. These colours are fixed to the brand identity and do not change with the theme.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Colour</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Top bar / actions / status background</td>
+<td>Queen's Blue</td>
+<td><code>#002452</code></td>
+</tr>
+<tr>
+<td>Stripe — left half</td>
+<td>Queen's Gold</td>
+<td><code>#fabd0f</code></td>
+</tr>
+<tr>
+<td>Stripe — right half</td>
+<td>Queen's Red</td>
+<td><code>#af0000</code> (xterm-256 #124)</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Queen's Tricolour colour mapping:</strong></p>
 <table>
 <thead>
@@ -490,6 +621,33 @@ python3 -m lobot_tui</code></pre>
 <td>Muted text</td>
 <td>Light Limestone</td>
 <td><code>#b4aea8</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Status indicator colours (both themes):</strong></p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Colour</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OK / Ready / Running / Live</td>
+<td>Deep green</td>
+<td><code>#008700</code> (xterm-256 #28)</td>
+</tr>
+<tr>
+<td>Warning / Cordoned / Pending / Stale</td>
+<td>Queen's Gold</td>
+<td><code>#fabd0f</code></td>
+</tr>
+<tr>
+<td>Critical / NotReady / Failed / Error</td>
+<td>Queen's Red</td>
+<td><code>#af0000</code> (xterm-256 #124)</td>
 </tr>
 </tbody>
 </table>
@@ -825,6 +983,7 @@ git push origin newcluster</code></pre>
   __main__.py               Entry point (python3 -m lobot_tui)
   app.py                    Root Textual App class; owns job_manager; starts ServiceCollector
   config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT, LONGHORN_INTERVAL)
+  themes.py                 Textual Theme definitions (lobot, tricolour) + all Python-level colour constants
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
     models.py               Dataclasses: PodInfo, NodeInfo, DiskInfo, ResourceSummary, ClusterState (with to_dict/from_dict)
@@ -848,11 +1007,13 @@ git push origin newcluster</code></pre>
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
   widgets/
+    render_utils.py         Shared rendering helpers: colored block bars (with optional color_ratio override), GPU segment bars, status badges, row tinting
     cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle
     pod_table.py            Pod DataTable with text filter, node filter, resource filter, and column sort
     node_table.py           Node DataTable with DISK column, expandable per-disk sub-rows, column sort and node filter toggle
     actions_panel.py        Key hint bar (all hints are clickable)
     status_bar.py           Bottom status line (animated spinner, service error detection, Pods/Nodes/Disk timestamps)
+    tricolour_stripe.py     One-row Queen's gold+red dividing stripe widget
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/

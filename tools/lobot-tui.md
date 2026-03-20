@@ -209,6 +209,24 @@ The **top bar** shows a live cluster summary: `Pods N  Nodes ready/total  GPU us
 
 lobot-tui uses a btop-inspired dark theme with colored progress bars and status badges throughout. All rendering helpers live in `widgets/render_utils.py`.
 
+### Tricolour chrome
+
+The top bar and the bottom section (actions hint bar + status bar) use a Queen's Blue (`#002452`) background. A thin horizontal stripe divides the top bar from the content area and the content area from the bottom chrome section. The stripe uses half-block Unicode characters so it occupies only half a character-cell row:
+
+```
+┌─ [Queen's Blue] LOBOT  lobot.cs.queensu.ca  ──────────────────────── ─┐
+│ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ gold ▄▄▄▄▄▄▄▄▄▄▄▄ red ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄ │  ← thin stripe
+│  … resource / node / pod panels …                                      │
+│ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ gold ▀▀▀▀▀▀▀▀▀▀▀▀ red ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ │  ← thin stripe
+│ [Queen's Blue] PODS (l)logs …  TOOLS (1)… (q)quit                     │
+│ [Queen's Blue] ● Live svc  Pods:12:29:30  Nodes:12:29:30              │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+Stripe colours use exact xterm-256 palette entries so they render correctly in 256-colour SSH sessions: Queen's Gold → xterm index 214 (`#ffaf00`), Queen's Red → xterm index 124 (`#af0000`).
+
+All chrome and stripe colours are defined as Python constants and CSS variables in `themes.py` (`CHROME`, `STRIPE_GOLD`, `STRIPE_RED`).
+
 ### Progress bars (CPU / RAM)
 
 CPU and RAM columns display a colored block bar followed by a right-justified `used/total` value:
@@ -218,8 +236,8 @@ CPU and RAM columns display a colored block bar followed by a right-justified `u
 ```
 
 - Bar width: 7 characters. Value field: 7 characters. Total column width: 15.
-- Color thresholds: green (`#00dd55`) below 75 %, amber (`#f0a800`) at 75–89 %, red (`#ff3333`) at ≥ 90 %.
-- Characters used: `█` (U+2588 FULL BLOCK, filled) and `░` (U+2591 LIGHT SHADE, empty) — present in all major terminal fonts including Windows.
+- Color thresholds: green (`#008700`) below 75 %, gold (`#fabd0f`, Queen's Gold) at 75–89 %, red (`#af0000`, Queen's Red) at ≥ 90 %.
+- Characters used: `▀` (U+2580 UPPER HALF BLOCK) for both filled and empty segments — the color difference distinguishes them.
 
 ### GPU bar
 
@@ -244,13 +262,17 @@ The DISK column appears left of CPU and shows aggregate Longhorn disk usage acro
 ```
 
 - Bar width: 10 characters. Value field: 7 characters (e.g. `1.3/3.5T`). Total column width: 18.
-- Color thresholds match CPU/RAM: green below 75 %, amber at 75–89 %, red at ≥ 90 %.
+- Color thresholds match CPU/RAM: green below 75 %, gold at 75–89 %, red at ≥ 90 %.
 - **Worst-case coloring**: the aggregate bar's color is driven by the *most full* individual disk, not the aggregate ratio. This ensures that a nearly-full disk on a node is visible on the parent row even before expanding. The bar fill still reflects the true aggregate.
 - Nodes with no Longhorn data (e.g. the control plane) show a dim `–`.
 
 ### Row tinting (node table)
 
 Cordoned nodes receive a faint amber background tint (`#1a1500`). NotReady nodes receive a faint red tint (`#1a0505`). These tints are applied to all cells in the row using `rich.text.Text` objects with an `on <bg>` style, which preserves bar colors inside the tinted row.
+
+### Colour centralisation
+
+All Python-level colours (used in Rich markup strings) are defined as named constants in `themes.py` and imported from there by every widget. CSS-level colours are defined as theme variables and resolved via `$variable-name` in TCSS. Editing `themes.py` is the single place to change any colour across the entire application.
 
 ### Status badges (node table)
 
@@ -402,7 +424,17 @@ Press `T` to cycle through available themes. The choice is saved to `~/.config/l
 | `lobot` | Default dark theme — GitHub-dark inspired palette |
 | `tricolour` | Queen's University brand identity — blue, gold, and red |
 
-**Queen's Tricolour colour mapping:**
+**Tricolour chrome (both themes):**
+
+Regardless of the active theme, the top bar and bottom section (actions + status) always use the Queen's Blue chrome with the gold/red dividing stripe. These colours are fixed to the brand identity and do not change with the theme.
+
+| Element | Colour | Hex |
+|---------|--------|-----|
+| Top bar / actions / status background | Queen's Blue | `#002452` |
+| Stripe — left half | Queen's Gold | `#fabd0f` |
+| Stripe — right half | Queen's Red | `#af0000` (xterm-256 #124) |
+
+**Queen's Tricolour theme colour mapping:**
 
 | Role | Colour | Hex |
 |------|--------|-----|
@@ -413,6 +445,14 @@ Press `T` to cycle through available themes. The choice is saved to `~/.config/l
 | Warnings, stale | Queen's Gold | `#fabd0f` |
 | Live, running, ready | Bright blue | `#4a9fd4` |
 | Muted text | Light Limestone | `#b4aea8` |
+
+**Status indicator colours (both themes):**
+
+| State | Colour | Hex |
+|-------|--------|-----|
+| OK / Ready / Running / Live | Deep green | `#008700` (xterm-256 #28) |
+| Warning / Cordoned / Pending / Stale | Queen's Gold | `#fabd0f` |
+| Critical / NotReady / Failed / Error | Queen's Red | `#af0000` (xterm-256 #124) |
 
 **Per-session override** — useful on shared accounts (e.g. multiple admins sharing `croot`) where the saved file is common to all:
 
@@ -639,6 +679,7 @@ tools/lobot_tui/
   __main__.py               Entry point (python3 -m lobot_tui)
   app.py                    Root Textual App class; owns job_manager; starts ServiceCollector
   config.py                 Cluster constants and paths (SERVICE_HOST, SERVICE_PORT, LONGHORN_INTERVAL)
+  themes.py                 Textual Theme definitions (lobot, tricolour) + all Python-level colour constants
   requirements-tui.txt      Python dependencies (textual, aiofiles)
   data/
     models.py               Dataclasses: PodInfo, NodeInfo, DiskInfo, ResourceSummary, ClusterState (with to_dict/from_dict)
@@ -668,6 +709,7 @@ tools/lobot_tui/
     node_table.py           Node DataTable with DISK column, expandable per-disk sub-rows, column sort and node filter toggle
     actions_panel.py        Key hint bar (all hints are clickable)
     status_bar.py           Bottom status line (animated spinner, service error detection, Pods/Nodes/Disk timestamps)
+    tricolour_stripe.py     One-row Queen's gold+red dividing stripe widget
   actions/
     definitions.py          ActionDef registry (image-pull, cleanup, apply-config, etc.)
   utils/
