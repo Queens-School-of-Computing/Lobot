@@ -4,6 +4,7 @@ import os
 import subprocess
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, Static
 
@@ -20,11 +21,13 @@ class ExecScreen(Screen):
         self._pod = pod
 
     def compose(self) -> ComposeResult:
-        yield Label(
-            f" [bold cyan]EXEC[/]  {self._pod.name}  [dim]— Ctrl-D or type 'exit' to return[/]",
-            id="screen-header",
-            markup=True,
-        )
+        with Horizontal(id="screen-header"):
+            yield Label(
+                f" [bold cyan]EXEC[/]  {self._pod.name}  [dim]— Ctrl-D or type 'exit' to return[/]",
+                id="screen-header-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield Static("", id="screen-log")
         yield Label(
             "[dim](q)[/] back",

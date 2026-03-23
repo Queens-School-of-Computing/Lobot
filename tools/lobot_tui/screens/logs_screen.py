@@ -5,6 +5,7 @@ from datetime import datetime
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -40,12 +41,14 @@ class LogsScreen(Screen):
         self._stream_done = False
 
     def compose(self) -> ComposeResult:
-        yield Label(
-            f" [bold cyan]LOGS[/]  {self._pod.name}  ns:{self._pod.namespace}  "
-            rf"[dim]\[Esc/q] back  \[s] save[/]",
-            id="screen-header",
-            markup=True,
-        )
+        with Horizontal(id="screen-header"):
+            yield Label(
+                f" [bold cyan]LOGS[/]  {self._pod.name}  ns:{self._pod.namespace}  "
+                rf"[dim]\[Esc/q] back  \[s] save[/]",
+                id="screen-header-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield RichLog(id="screen-log", highlight=True, markup=True, wrap=True)
         yield Label("", id="screen-footer")
 

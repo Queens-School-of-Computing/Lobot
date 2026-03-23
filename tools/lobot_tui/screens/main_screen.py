@@ -27,7 +27,6 @@ from ..widgets.actions_panel import (
     HintClicked,
     LeftActionsWidget,
     RightActionsWidget,
-    BongoCatWidget,
 )
 from ..widgets.tricolour_stripe import TricolourStripe
 from ..widgets.cluster_summary import ResourceTableWidget
@@ -148,11 +147,13 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         hostname = socket.gethostname()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        yield Label(
-            f" [bold cyan]LOBOT[/]  {hostname}  {'[bold yellow]DEV[/]' if IS_DEV else '[bold green]PROD[/]'}  [dim]{now}[/]",
-            id="top-bar",
-            markup=True,
-        )
+        with Horizontal(id="top-bar"):
+            yield Label(
+                f" [bold cyan]LOBOT[/]  {hostname}  {'[bold yellow]DEV[/]' if IS_DEV else '[bold green]PROD[/]'}  [dim]{now}[/]",
+                id="top-bar-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield TricolourStripe("▄")
         with Horizontal(id="top-section"):
             with Vertical(id="summary-panel"):
@@ -175,7 +176,6 @@ class MainScreen(Screen):
         yield TricolourStripe("▀")
         with Horizontal(id="actions-panel"):
             yield LeftActionsWidget(id="left-actions")
-            yield BongoCatWidget(id="bongo-cat-panel")
             yield RightActionsWidget(id="right-actions")
         yield StatusBarWidget(id="status-bar")
 
@@ -219,11 +219,12 @@ class MainScreen(Screen):
 
         badge = "[bold yellow] DEV [/]" if IS_DEV else "[bold green] PROD [/]"
         try:
-            self.query_one("#top-bar", Label).update(
+            self.query_one("#top-bar-main", Label).update(
                 f" [bold {PRIMARY}]LOBOT[/]  [dim]{hostname}[/]  {badge}  [dim]{now}[/]{stats}"
             )
         except Exception:
             pass
+        self.app._refresh_cat()
         self._update_job_indicator()
 
     def _update_job_indicator(self) -> None:
@@ -373,17 +374,14 @@ class MainScreen(Screen):
             self.query_one("#pod-datatable").focus()
         else:
             resource_dt.focus()
-        self._bongo_hit()
+        self._bongo_hit("tab")
 
     def action_bongo_space(self) -> None:
         """Space: intercepted only to animate the cat."""
-        self._bongo_hit()
+        self._bongo_hit("space")
 
-    def _bongo_hit(self) -> None:
-        try:
-            self.query_one("#bongo-cat-panel", BongoCatWidget).bongo_hit()
-        except Exception:
-            pass
+    def _bongo_hit(self, key: str = "") -> None:
+        self.app._bongo_hit(key)
 
     def action_focus_filter(self) -> None:
         inp = self.query_one("#pod-filter-input", Input)

@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from textual.app import App
+from textual.widgets import Label
 
 from .config import APP_TITLE, THEME_FILE
 from .data.collector import ServiceCollector
@@ -26,6 +27,9 @@ class LobotApp(App):
 
         self._collector = ServiceCollector(poster=self)
         self.job_manager = BackgroundJobManager()
+        self._cat_frame_idx = 0
+        self._cat_last_key = ""
+        self._cat_reset_timer = None
         main = MainScreen(self._collector)
         self.push_screen(main)
         self._collector.start()
@@ -84,16 +88,44 @@ class LobotApp(App):
         except OSError:
             pass
 
+    # ── bongo cat ─────────────────────────────────────────────────────────────
+
+    def _cat_text(self) -> str:
+        from .widgets.actions_panel import _CAT_FRAMES, _fmt_key
+        idx = getattr(self, "_cat_frame_idx", 0)
+        key = getattr(self, "_cat_last_key", "")
+        template = _CAT_FRAMES[idx]
+        k = _fmt_key(key) if key else "   "
+        return template.replace("{k}", k)
+
+    def _refresh_cat(self) -> None:
+        try:
+            self.screen.query_one("#top-bar-cat", Label).update(self._cat_text())
+        except Exception:
+            pass
+
+    def _bongo_hit(self, key: str = "") -> None:
+        try:
+            self._cat_frame_idx = (getattr(self, "_cat_frame_idx", 0) % 3) + 1
+            self._cat_last_key = key
+            self._refresh_cat()
+            timer = getattr(self, "_cat_reset_timer", None)
+            if timer is not None:
+                timer.stop()
+            self._cat_reset_timer = self.set_timer(3.0, self._cat_reset)
+        except Exception:
+            pass
+
+    def _cat_reset(self) -> None:
+        self._cat_frame_idx = 0
+        self._cat_last_key = ""
+        self._cat_reset_timer = None
+        self._refresh_cat()
+
     # ── message routing ───────────────────────────────────────────────────────
 
     def on_key(self, event) -> None:
-        """Advance the bongo cat for keys that bubble up to app level."""
-        try:
-            from .screens.main_screen import MainScreen
-            if isinstance(self.screen, MainScreen):
-                self.screen._bongo_hit()
-        except Exception:
-            pass
+        self._bongo_hit(event.key)
 
     def on_cluster_state_updated(self, event) -> None:
         try:

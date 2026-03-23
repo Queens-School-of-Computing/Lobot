@@ -47,12 +47,48 @@ _ROW2_RIGHT = [
 
 # Typing cat: paws alternate hitting the keyboard.
 # Eyes squint on the hitting side. `/` = arm raised, `.` = paw down on keys.
+# Hit frames use {k} (3 chars) to show the key pressed.
+# ༼ つ ◕_◕ ༽つ
+# _CAT_FRAMES = [
+#     "(•ω•)\n/[{k}]\\",  # neutral — both paws raised — key shown
+#     "(•ω•)\n.[{k}]/",   # left paw hits — key shown
+#     "(•ω•)\n/[{k}]\\",  # neutral — both paws raised — key shown
+#     "(•ω•)\n/[{k}].",   # right paw hits — key shown
+# ]
 _CAT_FRAMES = [
-    "(•ω•)\n/[___]\\",  # neutral — both paws raised
-    "(^ω•)\n.[___]/",   # left paw hits — left eye squints
-    "(•ω•)\n/[___]\\",  # neutral — both paws raised
-    "(•ω^)\n/[___].",   # right paw hits — right eye squints
+    "༼-╯⊙_⊙༽╯  [{k}]",    # neutral, both paws raised.    
+    "༼つ⊙_⊙༽╯  [{k}]",    # right paw pressed
+    "༼-╯⊙_⊙༽つ [{k}]",   # left paw pressed
+    "༼つ⊙_⊙༽つ [{k}]",   # both paws pressed.
 ]
+
+# Textual key name → 3-char display string (must be exactly 3 chars)
+_KEY_ABBREVS: dict[str, str] = {
+    "space": "spc",
+    "tab": "tab",
+    "escape": "esc",
+    "enter": "ret",
+    "backspace": "bsp",
+    "delete": "del",
+    "up": " ↑ ",
+    "down": " ↓ ",
+    "left": " ← ",
+    "right": " → ",
+    "grave_accent": " ` ",
+    "question_mark": " ? ",
+}
+
+
+def _fmt_key(key: str) -> str:
+    """Return exactly 3 chars representing the key for display in the cat frame."""
+    if key in _KEY_ABBREVS:
+        return _KEY_ABBREVS[key]
+    if len(key) == 1:
+        return f" {key} "
+    if key.startswith("ctrl+") and len(key) == 6:
+        return f"^{key[5]} "
+    # fallback: first 3 chars left-justified
+    return key[:3].ljust(3)
 
 # ── Shared label types ────────────────────────────────────────────────────────
 
@@ -102,15 +138,18 @@ class BongoCatWidget(Widget):
     """Animated bongo cat. Sizing set by #bongo-cat-panel in app.tcss."""
 
     def compose(self) -> ComposeResult:
-        yield Static(_CAT_FRAMES[0], id="bongo-cat", markup=False)
+        initial = _CAT_FRAMES[0].replace("{k}", "   ")
+        yield Static(initial, id="bongo-cat", markup=False)
 
     def on_mount(self) -> None:
         self._frame_idx = 0
 
-    def bongo_hit(self) -> None:
+    def bongo_hit(self, key: str = "") -> None:
         self._frame_idx = (self._frame_idx + 1) % len(_CAT_FRAMES)
+        template = _CAT_FRAMES[self._frame_idx]
+        frame = template.replace("{k}", _fmt_key(key)) if "{k}" in template else template
         try:
-            self.query_one("#bongo-cat", Static).update(_CAT_FRAMES[self._frame_idx])
+            self.query_one("#bongo-cat", Static).update(frame)
         except Exception:
             pass
 

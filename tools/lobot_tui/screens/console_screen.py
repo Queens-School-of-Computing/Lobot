@@ -4,6 +4,7 @@ from datetime import datetime
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -22,11 +23,13 @@ class ConsoleScreen(Screen):
 
     def compose(self) -> ComposeResult:
         log_file = LOG_DIR / f"lobot-tui-{datetime.now().strftime('%Y-%m-%d')}.log"
-        yield Label(
-            f" [bold cyan]CONSOLE[/]  [dim]command history  log: {log_file}  [Esc/q/`] back[/]",
-            id="screen-header",
-            markup=True,
-        )
+        with Horizontal(id="screen-header"):
+            yield Label(
+                f" [bold cyan]CONSOLE[/]  [dim]command history  log: {log_file}  [Esc/q/`] back[/]",
+                id="screen-header-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield RichLog(id="screen-log", highlight=False, markup=True, wrap=True)
         yield Label("[dim]Most recent commands first[/]", id="screen-footer", markup=True)
 

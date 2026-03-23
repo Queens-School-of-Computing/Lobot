@@ -4,6 +4,7 @@ from datetime import datetime
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -22,7 +23,9 @@ class JobsScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Label("", id="screen-header", markup=True)
+        with Horizontal(id="screen-header"):
+            yield Label("", id="screen-header-main", markup=True)
+            yield Label("", id="top-bar-cat", markup=False)
         yield RichLog(id="screen-log", highlight=True, markup=False, wrap=True)
         yield Label("", id="screen-footer", markup=True)
 
@@ -67,7 +70,7 @@ class JobsScreen(Screen):
                 f" [bold cyan]JOBS[/]  {status_tag}  [dim]{job.title}  "
                 f"{elapsed}s elapsed  {hint}[/]"
             )
-        self.query_one("#screen-header", Label).update(text)
+        self.query_one("#screen-header-main", Label).update(text)
 
     def _update_footer(self, job: "BackgroundJob | None") -> None:
         footer = self.query_one("#screen-footer", Label)

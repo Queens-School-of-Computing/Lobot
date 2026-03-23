@@ -4,6 +4,7 @@ import asyncio
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -24,12 +25,14 @@ class PodDetailScreen(Screen):
         self._pod = pod
 
     def compose(self) -> ComposeResult:
-        yield Label(
-            f" [bold cyan]DESCRIBE[/]  {self._pod.name}  "
-            f"ns:{self._pod.namespace}  [dim][Esc/q] back[/]",
-            id="screen-header",
-            markup=True,
-        )
+        with Horizontal(id="screen-header"):
+            yield Label(
+                f" [bold cyan]DESCRIBE[/]  {self._pod.name}  "
+                f"ns:{self._pod.namespace}  [dim][Esc/q] back[/]",
+                id="screen-header-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield RichLog(id="screen-log", highlight=False, markup=False, wrap=False)
         yield Label("[dim]Loading…[/]", id="screen-footer")
 

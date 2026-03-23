@@ -5,6 +5,7 @@ from datetime import datetime
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
@@ -34,11 +35,13 @@ class ActionScreen(Screen):
         cmd_display = " ".join(self._argv[:6])
         if len(self._argv) > 6:
             cmd_display += " …"
-        yield Label(
-            f" [bold cyan]{self._title}[/]  [dim]{cmd_display}[/]  [dim][Esc/q] back  [s] save[/]",
-            id="screen-header",
-            markup=True,
-        )
+        with Horizontal(id="screen-header"):
+            yield Label(
+                f" [bold cyan]{self._title}[/]  [dim]{cmd_display}[/]  [dim][Esc/q] back  [s] save[/]",
+                id="screen-header-main",
+                markup=True,
+            )
+            yield Label("", id="top-bar-cat", markup=False)
         yield RichLog(id="screen-log", highlight=True, markup=False, wrap=True)
         yield Label("[dim]Running…[/]", id="screen-footer", markup=True)
 

@@ -11,9 +11,22 @@ Screen {
     width: 1fr;
     height: 1;
     background: $chrome-bg;
-    color: $primary;
     padding: 0 1;
+    layout: horizontal;
+}
+
+#top-bar-main {
+    width: 1fr;
+    height: 1;
+    color: $primary;
     content-align: left middle;
+}
+
+#top-bar-cat {
+    width: auto;
+    height: 1;
+    color: $primary;
+    content-align: right middle;
 }
 
 /* ── Two-column top section: summary | nodes ── */
@@ -119,29 +132,16 @@ Screen {
     background: $chrome-bg;
 }
 
-#bongo-cat-panel {
-    width: 11;
-    height: 2;
-    text-align: center;
-    color: $primary;
-    background: $chrome-bg;
-}
-
-#bongo-cat-panel Static {
-    width: 11;
-    height: 2;
-    text-align: center;
-    color: $primary;
-}
 
 #right-actions {
-    width: 1fr;
+    width: auto;
     height: 2;
     layout: vertical;
     background: $chrome-bg;
 }
 
 #right-actions Horizontal {
+    width: auto;
     height: 1;
     background: $chrome-bg;
 }
@@ -426,9 +426,16 @@ LogsScreen, ActionScreen, PodDetailScreen, JobsScreen, ConsoleScreen {
 
 #screen-header {
     height: 1;
-    background: $surface;
-    color: $primary;
+    background: $chrome-bg;
     padding: 0 1;
+    layout: horizontal;
+}
+
+#screen-header-main {
+    width: 1fr;
+    height: 1;
+    color: $primary;
+    content-align: left middle;
 }
 
 #screen-log {
