@@ -49,6 +49,7 @@ roles:
   user: group-devtesting
   members:
   - wiegerthefarmer
+  - jm-janzen
   - aaronvisser
   scopes:
   - access:servers!user={user}
