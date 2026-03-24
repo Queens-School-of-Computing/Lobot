@@ -63,8 +63,8 @@ class NodePickerScreen(ModalScreen):
                                 yield Checkbox(node, value=False, id=f"node-cb-{node}")
 
             with Horizontal(id="node-picker-buttons"):
-                yield Button("Cancel", variant="default", id="btn-np-cancel")
-                yield Button("OK", variant="primary", id="btn-np-ok")
+                yield Button("Cancel  (q)", variant="error", id="btn-np-cancel")
+                yield Button("OK", variant="success", id="btn-np-ok")
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         if not self._multi and event.value:
@@ -100,6 +100,12 @@ class NodePickerScreen(ModalScreen):
                     pass
             self.dismiss(",".join(selected))
 
+    def on_mount(self) -> None:
+        self.query_one("#btn-np-cancel").focus()
+
     def on_key(self, event) -> None:
-        if event.key == "escape":
+        if event.key in ("enter", "space") and isinstance(self.focused, Button):
+            self.focused.press()
+            event.stop()
+        elif event.key in ("escape", "q"):
             self.dismiss(None)

@@ -256,12 +256,12 @@ vi config.yaml
 
 # Generate config-env.yaml (auto-detects prod vs dev from hostname)
 # Also re-applies secrets to the latest template from GitHub going forward
-sudo bash tools/apply-config.sh
+bash tools/apply-config.sh
 
 # Review both output files
 # config.yaml      — base config with secrets
 # config-env.yaml  — env overrides for this cluster</code></pre>
-<blockquote><p>For all future config updates, just run <code>sudo bash /opt/Lobot/tools/apply-config.sh</code>. See <a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/apply-config.md" target="_blank" rel="noopener">apply-config.md</a> for full documentation.</p></blockquote>
+<blockquote><p>For all future config updates, just run <code>bash /opt/Lobot/tools/apply-config.sh</code>. See <a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/apply-config.md" target="_blank" rel="noopener">apply-config.md</a> for full documentation.</p></blockquote>
 <hr />
 <h2>Step 17 — Longhorn</h2>
 <pre><code>apt-get install open-iscsi

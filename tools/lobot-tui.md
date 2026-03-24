@@ -14,7 +14,7 @@ Designed for the control plane where a terminal is always available, including d
 - Expandable per-disk sub-rows in the node table showing individual Longhorn disk detail
 - Stream pod logs, exec bash into a pod, describe or delete pods
 - Cordon, uncordon, and drain nodes (double-keypress to confirm)
-- Launch image-pull, image-cleanup, apply-config, sync-groups, and helm upgrade — with tag dropdowns, node pickers, live streaming output, and dry-run support
+- Launch image-pull, image-cleanup, apply-config, sync-groups, and hub upgrade & restart — with tag dropdowns, node pickers, live streaming output, and dry-run support
 - Background job mode: long-running commands (e.g. image-pull) run in the background so the dashboard remains usable during a pull
 - Edit `announcement.yaml` and push directly to GitHub from within the TUI
 - Clickable hint bar — every keyboard shortcut shown at the bottom is also clickable
@@ -38,7 +38,7 @@ python3 -m venv /opt/Lobot/tools/lobot_tui/.venv
 /opt/Lobot/tools/lobot_tui/.venv/bin/pip install textual aiofiles
 ```
 
-- `helm` on PATH (required only for the helm upgrade action)
+- `helm` on PATH (required only for the hub upgrade & restart action)
 - `git` on PATH with push access to the Lobot repo (required only for the announcement editor)
 
 ---
@@ -312,6 +312,7 @@ A 3-row Sparkline widget at the bottom of the resource panel charts the total po
 | `R` | Force-refresh all data immediately |
 | `?` | Help screen (full key binding reference) |
 | `G` | Full guide — opens `lobot-tui.md` in a scrollable viewer with table of contents |
+| `C` | Config viewer — opens `/opt/Lobot/config.yaml` and `config-env.yaml` for review; press `1`/`2` to switch files |
 | `T` | Cycle theme (`lobot` → `tricolour` → …) — choice persisted to `~/.config/lobot-tui/theme.txt` |
 | `` ` `` | Command console (recent command history and errors) |
 | `b` | Background jobs panel (live output of running tool) |
@@ -397,6 +398,19 @@ The available keys depend on whether the job is still running:
 |-----|--------|
 | `Escape` / `q` / `b` | Close the panel and return to dashboard |
 | `s` | Save full output to `/opt/Lobot/logs/lobot-tui-<name>-<timestamp>.log` |
+| `C` | Open config viewer — shown in footer hint after an `apply-config` job completes |
+
+### Config Viewer (`C`)
+
+Opens `/opt/Lobot/config.yaml` (the base Helm config) and `/opt/Lobot/config-env.yaml` (the env-specific overrides) for review. These are the files written by `apply-config.sh` and read by `helm upgrade`.
+
+| Key | Action |
+|-----|--------|
+| `1` | Switch to `config.yaml` |
+| `2` | Switch to `config-env.yaml` |
+| `Escape` / `q` | Return to previous screen |
+
+Files are displayed with YAML syntax highlighting. Available from the main screen at any time (`C`), and also from the jobs panel — the footer shows `[C] view config` after an `apply-config` job finishes.
 
 ### Logs / Action Screens
 
@@ -466,7 +480,21 @@ When the env var is set, `T` cycles themes for that session only and does not ov
 
 ## Tool Actions (Keys `1` – `6`)
 
-All tool actions open a wizard screen to configure parameters before running. Press `Enter` (when not in a text field) or click **Run ↵** to submit. Tool actions (1–5) run as **background jobs** — the job starts and the output panel opens automatically. Press `b` to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing `1`–`5` is blocked until the job completes.
+Tool actions (1–5) run as **background jobs** — the job starts and the output panel opens automatically. Press `b` to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing `1`–`5` is blocked until the job completes.
+
+### Action windows
+
+Actions that require parameters open a **wizard screen**; actions that have no parameters (apply-config, hub upgrade & restart) go directly to a **command preview screen**. All action windows share the same key conventions:
+
+| Key | Action |
+|-----|--------|
+| `r` | Run / submit the action |
+| `q` / `Escape` | Cancel and close |
+| `Space` / `Enter` | Activate the focused button |
+| `y` | Confirm (confirm dialogs only) |
+| `d` | View documentation (apply-config only — opens `apply-config.md`) |
+
+Button colours follow a consistent scheme: **Cancel** = red, **Run / OK / Confirm** = green, **View Docs** = gold. The **Cancel button has focus by default** when any action window opens — pressing `r` or tabbing to Run is an explicit deliberate action.
 
 ### `[1]` image-pull
 
@@ -524,17 +552,24 @@ bash image-cleanup.sh \
 
 ### `[3]` apply-config
 
-Pulls the JupyterHub Helm config template from the `newcluster` GitHub branch, substitutes secrets from the existing config, and applies it. Runs `sudo bash apply-config.sh` on the control plane. The Hub pod restarts briefly.
+Pulls the JupyterHub Helm config template from the `newcluster` GitHub branch, substitutes secrets from the existing config, and writes the output files. Runs `bash apply-config.sh` on the control plane.
 
-No wizard fields — a confirmation prompt is shown before the command runs.
+**What it does:**
+- Pulls config from GitHub (overwrites local state)
+- Substitutes secrets into the config template
+- Overwrites `/opt/Lobot/config.yaml` and `/opt/Lobot/config-env.yaml`
+
+**What it does NOT do:** It does not run `helm upgrade` or restart the Hub. Run `[5]` hub upgrade & restart afterwards to apply the config to the cluster.
+
+No wizard fields — a **command preview screen** with a danger warning is shown before the command runs. Press `d` to open the full `apply-config.md` documentation without leaving the dialog. After the job completes, press `C` to review the generated config files.
 
 ### `[4]` sync-groups
 
 Syncs JupyterHub group membership from `group-roles.yaml`. Runs `bash sync_groups.sh`. Supports dry-run (checkbox in wizard) to preview changes without applying them.
 
-### `[5]` helm upgrade
+### `[5]` hub upgrade & restart
 
-Runs a full JupyterHub Helm upgrade. A **command preview screen** is shown first, displaying the exact command that will run, before any confirmation is accepted. The Hub pod restarts; active user sessions may be briefly interrupted.
+Runs a full JupyterHub Helm upgrade, applying the current config and restarting the Hub pod. A **command preview screen** is shown first, displaying the exact command that will run, before any confirmation is accepted. Login and spawn pages will be briefly unavailable during the restart.
 
 ```bash
 helm upgrade --cleanup-on-fail jhub jupyterhub/jupyterhub \
@@ -545,7 +580,7 @@ helm upgrade --cleanup-on-fail jhub jupyterhub/jupyterhub \
   --timeout 60m
 ```
 
-> The preview screen requires an explicit confirmation (`y` or the Run button) before executing. Press `Escape` to cancel.
+> The preview screen requires an explicit `r` keypress or clicking Run before executing. Press `q` or `Escape` to cancel.
 
 ### `[6]` Announcement Editor
 
@@ -694,7 +729,9 @@ tools/lobot_tui/
     pod_detail_screen.py    kubectl describe viewer
     action_wizard_screen.py Tool parameter input form (tag dropdowns, node pickers, dry-run)
     jobs_screen.py          Live background-job output panel (toggled with b)
-    command_preview_screen.py  Pre-run command preview for destructive actions (helm upgrade)
+    guide_screen.py         Full-screen markdown viewer (lobot-tui.md); reusable for any doc file
+    config_viewer_screen.py Live config file viewer (config.yaml / config-env.yaml, toggle with 1/2)
+    command_preview_screen.py  Pre-run command preview for destructive actions; supports View Docs link
     confirm_screen.py       Generic boolean confirmation modal
     node_picker_screen.py   Multi/single node selector modal used by wizard
     pod_context_menu_screen.py  Right-click / Enter context menu for pod actions
@@ -736,7 +773,7 @@ tools/lobot-collector.service  systemd unit file
 ## Potential Improvements
 
 ### Slack / notification integration
-Post a summary to Slack when a helm upgrade or image-pull completes, particularly useful for communicating maintenance to users in active sessions.
+Post a summary to Slack when a hub upgrade & restart or image-pull completes, particularly useful for communicating maintenance to users in active sessions.
 
 ### Multi-cluster support
 Add a cluster selector to switch between prod and dev clusters, reading kubeconfig context rather than relying on the default context.

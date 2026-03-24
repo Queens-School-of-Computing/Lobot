@@ -81,6 +81,7 @@ class AnnouncementScreen(ModalScreen):
 
     BINDINGS = [
         Binding("escape", "go_back", "Cancel", priority=True),
+        Binding("q", "go_back", "Cancel", priority=True),
     ]
 
     def compose(self) -> ComposeResult:
@@ -120,9 +121,10 @@ class AnnouncementScreen(ModalScreen):
                 markup=True,
             )
             with Horizontal(id="announcement-buttons"):
-                yield Button("Close", variant="default", id="btn-cancel")
+                yield Button("Close  (q)", variant="error", id="btn-cancel")
 
     def on_mount(self) -> None:
+        self.query_one("#btn-cancel").focus()
         self.run_worker(self._load_from_github(), exclusive=False, name="load-announcement")
 
     async def _load_from_github(self) -> None:
@@ -143,6 +145,11 @@ class AnnouncementScreen(ModalScreen):
                 footer.update(f"[yellow]GitHub unavailable ({exc}) — loaded from local file[/]")
             else:
                 footer.update(f"[yellow]Could not load values ({exc}) — fields are empty[/]")
+
+    def on_key(self, event) -> None:
+        if event.key in ("enter", "space") and isinstance(self.focused, Button):
+            self.focused.press()
+            event.stop()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-cancel":

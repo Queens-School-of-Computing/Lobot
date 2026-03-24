@@ -35,6 +35,7 @@ class ActionWizardScreen(ModalScreen):
 
     BINDINGS = [
         Binding("escape", "cancel", "Cancel", priority=True),
+        Binding("q", "cancel", "Cancel", priority=True),
     ]
 
     def action_cancel(self) -> None:
@@ -112,9 +113,9 @@ class ActionWizardScreen(ModalScreen):
                 )
 
             with Horizontal(id="wizard-buttons"):
-                yield Button("Cancel", variant="default", id="btn-cancel")
+                yield Button("Cancel  (q)", variant="error", id="btn-cancel")
                 if not self._locked:
-                    yield Button("Run  (↵)", variant="error", id="btn-run")
+                    yield Button("Run  (r)", variant="success", id="btn-run")
 
     def _compose_tag_select(self, f: ActionField):
         """Yield label + image-name input + tag Select for a tag_select field."""
@@ -176,6 +177,7 @@ class ActionWizardScreen(ModalScreen):
 
     def on_mount(self) -> None:
         """Start async tag loading after the screen is mounted."""
+        self.query_one("#btn-cancel").focus()
         for f in self._action.fields:
             if f.field_type == "tag_select":
                 self.run_worker(
@@ -371,5 +373,8 @@ class ActionWizardScreen(ModalScreen):
         self.dismiss((argv, self._action.working_dir, dry_run))
 
     def on_key(self, event) -> None:
-        if event.key == "enter" and not isinstance(self.focused, Input):
+        if event.key in ("enter", "space") and isinstance(self.focused, Button):
+            self.focused.press()
+            event.stop()
+        elif event.key == "r" and not isinstance(self.focused, Input):
             self._do_run()

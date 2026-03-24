@@ -32,8 +32,11 @@ class ConfirmScreen(ModalScreen[bool]):
             yield Label(f"⚠  {self._title}", id="confirm-title", markup=True)
             yield Label(self._message, id="confirm-message")
             with Horizontal(id="confirm-buttons"):
-                yield Button("Cancel  (Esc)", variant="default", id="btn-cancel")
-                yield Button("Confirm  (Enter/y)", variant="error", id="btn-confirm")
+                yield Button("Cancel  (q)", variant="error", id="btn-cancel")
+                yield Button("Confirm  (y)", variant="success", id="btn-confirm")
+
+    def on_mount(self) -> None:
+        self.query_one("#btn-cancel").focus()
 
     def _confirm(self) -> None:
         if self._confirmed:  # guard: Enter on focused button can double-fire
@@ -51,7 +54,10 @@ class ConfirmScreen(ModalScreen[bool]):
             self._cancel()
 
     def on_key(self, event) -> None:
-        if event.key in ("y", "enter"):
+        if event.key in ("enter", "space") and isinstance(self.focused, Button):
+            self.focused.press()
+            event.stop()
+        elif event.key == "y":
             self._confirm()
-        elif event.key == "escape":
+        elif event.key in ("escape", "q"):
             self._cancel()

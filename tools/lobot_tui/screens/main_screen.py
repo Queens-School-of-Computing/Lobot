@@ -4,6 +4,7 @@ import asyncio
 import json
 import socket
 from datetime import datetime
+from pathlib import Path
 from typing import Callable
 
 from textual.app import ComposeResult
@@ -17,6 +18,7 @@ from ..config import (
     IS_DEV,
     JUPYTERHUB_NAMESPACE,
     NS_FILTERS_FILE,
+    TOOLS_DIR,
     TOOLS_LOCKED,
 )
 from ..data.collector import ClusterStateUpdated, ServiceCollector
@@ -37,6 +39,7 @@ from .action_screen import ActionScreen
 from .action_wizard_screen import ActionWizardScreen
 from .announcement_screen import AnnouncementScreen
 from .command_preview_screen import CommandPreviewScreen
+from .config_viewer_screen import ConfigViewerScreen
 from .console_screen import ConsoleScreen
 from .exec_screen import ExecScreen
 from .guide_screen import GuideScreen
@@ -106,6 +109,7 @@ class MainScreen(Screen):
         ("R", "force_refresh", "Refresh"),
         ("question_mark", "show_help", "Help"),
         ("G", "show_guide", "Guide"),
+        ("C", "show_config", "Config"),
         ("T", "cycle_theme", "Theme"),
         ("grave_accent", "show_console", "Console"),
         ("b", "show_jobs", "Jobs"),
@@ -113,7 +117,7 @@ class MainScreen(Screen):
         ("2", "tool_2", "image-cleanup"),
         ("3", "tool_3", "apply-config"),
         ("4", "tool_4", "sync-groups"),
-        ("5", "tool_5", "helm upgrade"),
+        ("5", "tool_5", "hub upgrade & restart"),
         ("6", "tool_6", "announcement"),
         # Pod actions
         ("l", "pod_logs", "Logs"),
@@ -353,6 +357,9 @@ class MainScreen(Screen):
     def action_show_guide(self) -> None:
         self.app.push_screen(GuideScreen())
 
+    def action_show_config(self) -> None:
+        self.app.push_screen(ConfigViewerScreen())
+
     def action_cycle_theme(self) -> None:
         name = self.app.cycle_theme()
         labels = {"lobot": "Lobot (default)", "tricolour": "Queen's Tricolour"}
@@ -526,8 +533,9 @@ class MainScreen(Screen):
         elif action.needs_confirm:
             # No wizard fields, but needs explicit confirmation — show command preview
             argv = action.build_command({})
+            docs_path = Path(action.working_dir) / action.docs_path if action.docs_path else None
             self.app.push_screen(
-                CommandPreviewScreen(action.name, action.confirm_message, argv),
+                CommandPreviewScreen(action.name, action.confirm_message, argv, docs_path=docs_path),
                 callback=lambda confirmed, a=action, v=argv: (
                     self._launch_tool(a, v, a.working_dir) if confirmed else None
                 ),

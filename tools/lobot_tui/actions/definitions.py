@@ -42,6 +42,7 @@ class ActionDef:
     build_command: Callable
     working_dir: str = TOOLS_DIR
     confirm_message: str = ""
+    docs_path: str = ""  # filename relative to working_dir; shown as "View Docs" link in confirmation
 
 
 # ── Command builders ──────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ def _image_cleanup_cmd(values: dict) -> list:
 
 
 def _apply_config_cmd(values: dict) -> list:
-    return ["sudo", "bash", "apply-config.sh"]
+    return ["bash", "apply-config.sh"]
 
 
 def _sync_groups_cmd(values: dict) -> list:
@@ -181,7 +182,17 @@ ACTIONS: list = [
         fields=[],
         build_command=_apply_config_cmd,
         working_dir=TOOLS_DIR,
-        confirm_message="This will apply the JupyterHub Helm config. Hub will restart briefly.",
+        confirm_message=(
+            "WARNING: This is a destructive cluster operation.\n\n"
+            "apply-config.sh will:\n"
+            "  • Pull config from GitHub (overwriting local state)\n"
+            "  • Substitute secrets into the config template\n"
+            "  • Overwrite /opt/Lobot/config.yaml and config-env.yaml\n\n"
+            "Do NOT run this unless you have reviewed the config changes.\n"
+            "Run [5] hub upgrade & restart afterwards to apply to the cluster.\n"
+            "Review the documentation first."
+        ),
+        docs_path="apply-config.md",
     ),
     ActionDef(
         key="4",
@@ -196,8 +207,8 @@ ACTIONS: list = [
     ),
     ActionDef(
         key="5",
-        name="helm-upgrade",
-        description="Run helm upgrade for the JupyterHub release.",
+        name="hub-upgrade",
+        description="Run helm upgrade to apply config and restart JupyterHub.",
         needs_confirm=True,
         has_dry_run=False,
         fields=[],

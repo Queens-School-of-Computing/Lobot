@@ -419,6 +419,27 @@ CommandPreviewScreen {
     margin-left: 1;
 }
 
+/* ── Guide / Docs screen ── */
+GuideScreen {
+    background: $panel;
+}
+
+GuideScreen MarkdownTableOfContents {
+    border-right: heavy $panel-border;
+}
+
+GuideScreen MarkdownTableOfContents:focus-within {
+    border-right: heavy $accent-focus;
+}
+
+GuideScreen Markdown {
+    border: heavy $panel-border;
+}
+
+GuideScreen Markdown:focus-within {
+    border: heavy $accent-focus;
+}
+
 /* ── Logs / Action / Detail / Jobs screens ── */
 LogsScreen, ActionScreen, PodDetailScreen, JobsScreen, ConsoleScreen {
     background: $panel;

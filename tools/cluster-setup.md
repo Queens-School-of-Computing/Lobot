@@ -370,14 +370,14 @@ vi config.yaml
 
 # Generate config-env.yaml (auto-detects prod vs dev from hostname)
 # Also re-applies secrets to the latest template from GitHub going forward
-sudo bash tools/apply-config.sh
+bash tools/apply-config.sh
 
 # Review both output files
 # config.yaml      — base config with secrets
 # config-env.yaml  — env overrides for this cluster
 ```
 
-> For all future config updates, just run `sudo bash /opt/Lobot/tools/apply-config.sh`.
+> For all future config updates, just run `bash /opt/Lobot/tools/apply-config.sh`.
 > See [apply-config.md](apply-config.md) for full documentation.
 
 ---

@@ -68,7 +68,7 @@ HELP_TEXT = """
 | `2` | image-cleanup wizard |
 | `3` | apply-config (confirm required) |
 | `4` | sync-groups |
-| `5` | helm upgrade — JupyterHub |
+| `5` | hub upgrade & restart — JupyterHub |
 | `6` | Edit announcement.yaml + push to GitHub |
 
 > Tool actions run as background jobs. Only one job runs at a time. Press `b` to return to the dashboard while the job continues.

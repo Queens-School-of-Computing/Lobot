@@ -3,7 +3,7 @@
 # Pulls the latest config template from GitHub, extracts secrets from the
 # existing local config.yaml, and writes a new config.yaml ready for helm.
 #
-# Usage: sudo bash /opt/Lobot/tools/apply-config.sh
+# Usage: bash /opt/Lobot/tools/apply-config.sh
 #
 # Run on:
 #   prod:  lobot.cs.queensu.ca    -> config.yaml.bk + config-prod.yaml.bk

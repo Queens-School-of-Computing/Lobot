@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
 from ..config import LOG_DIR
+from .config_viewer_screen import ConfigViewerScreen
 from ..data.job_manager import BackgroundJob, JobCompleted
 from ..widgets.tricolour_stripe import TricolourStripe
 
@@ -20,6 +21,7 @@ class JobsScreen(Screen):
         Binding("b", "go_back", "Background/back", priority=True),
         Binding("k", "kill_job", "Kill job", priority=True),
         Binding("s", "save_output", "Save"),
+        Binding("C", "view_config", "View config", show=False),
         # escape and q are handled in on_key so they only work when the job is done
     ]
 
@@ -84,10 +86,12 @@ class JobsScreen(Screen):
                 r"\[k] kill job (press twice to confirm)[/]"
             )
         elif job.status == "done":
-            footer.update(r"[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
+            config_hint = r"  \[C] view config" if job.title == "apply-config" else ""
+            footer.update(rf"[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save{config_hint}[/]")
         else:
             rc = job.returncode if job.returncode is not None else "?"
-            footer.update(rf"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save[/]")
+            config_hint = r"  \[C] view config" if job.title == "apply-config" else ""
+            footer.update(rf"[red]Failed (exit {rc})[/]  [dim]Esc/q/\[b] close  \[s] save{config_hint}[/]")
 
     def _poll_output(self) -> None:
         job = self.app.job_manager.current_job
@@ -158,6 +162,9 @@ class JobsScreen(Screen):
         # Restore normal footer
         job = self.app.job_manager.current_job
         self._update_footer(job)
+
+    def action_view_config(self) -> None:
+        self.app.push_screen(ConfigViewerScreen())
 
     def action_save_output(self) -> None:
         from datetime import datetime as _dt

@@ -24,6 +24,10 @@ ANNOUNCEMENT_YAML = "/opt/Lobot/announcement.yaml"
 HELM_CONFIG = "/opt/Lobot/config.yaml.bk"
 HELM_CONFIG_ENV = "/opt/Lobot/config-dev.yaml.bk" if IS_DEV else "/opt/Lobot/config-prod.yaml.bk"
 
+# Live output files written by apply-config.sh (reviewed after running action 3)
+HELM_CONFIG_LIVE = "/opt/Lobot/config.yaml"
+HELM_CONFIG_ENV_LIVE = "/opt/Lobot/config-env.yaml"
+
 JUPYTERHUB_NAMESPACE = "jhub"
 JUPYTERHUB_RELEASE = "jhub"
 JUPYTERHUB_CHART = "jupyterhub/jupyterhub"
