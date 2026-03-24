@@ -25,7 +25,7 @@ Screen {
 #top-bar-cat {
     width: auto;
     height: 1;
-    color: $primary;
+    color: white;
     content-align: right middle;
 }
 
