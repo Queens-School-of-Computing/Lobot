@@ -12,6 +12,7 @@ from textual.widgets import Label, RichLog
 from ..config import LOG_DIR
 from ..data import command_log
 from ..data.models import PodInfo
+from ..widgets.tricolour_stripe import TricolourStripe
 
 _FOOTER_LIVE = r"[dim]Streaming — \[Esc/q] back  \[s] save  (scroll up to pause)[/]"
 _FOOTER_PAUSED = r"[yellow]⏸ Paused — \[l] resume stream  \[s] save  \[Esc/q] back[/]"
@@ -49,6 +50,7 @@ class LogsScreen(Screen):
                 markup=True,
             )
             yield Label("", id="top-bar-cat", markup=False)
+        yield TricolourStripe("▄")
         yield RichLog(id="screen-log", highlight=True, markup=True, wrap=True)
         yield Label("", id="screen-footer")
 

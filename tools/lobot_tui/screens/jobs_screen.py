@@ -10,6 +10,7 @@ from textual.widgets import Label, RichLog
 
 from ..config import LOG_DIR
 from ..data.job_manager import BackgroundJob, JobCompleted
+from ..widgets.tricolour_stripe import TricolourStripe
 
 
 class JobsScreen(Screen):
@@ -26,6 +27,7 @@ class JobsScreen(Screen):
         with Horizontal(id="screen-header"):
             yield Label("", id="screen-header-main", markup=True)
             yield Label("", id="top-bar-cat", markup=False)
+        yield TricolourStripe("▄")
         yield RichLog(id="screen-log", highlight=True, markup=False, wrap=True)
         yield Label("", id="screen-footer", markup=True)
 

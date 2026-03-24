@@ -11,6 +11,7 @@ from textual.widgets import Label, RichLog
 
 from ..config import LOG_DIR
 from ..data import command_log
+from ..widgets.tricolour_stripe import TricolourStripe
 
 
 class ActionScreen(Screen):
@@ -42,6 +43,7 @@ class ActionScreen(Screen):
                 markup=True,
             )
             yield Label("", id="top-bar-cat", markup=False)
+        yield TricolourStripe("▄")
         yield RichLog(id="screen-log", highlight=True, markup=False, wrap=True)
         yield Label("[dim]Running…[/]", id="screen-footer", markup=True)
 

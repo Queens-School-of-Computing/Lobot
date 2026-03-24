@@ -10,6 +10,7 @@ from textual.widgets import Label, RichLog
 
 from ..config import LOG_DIR
 from ..data import command_log
+from ..widgets.tricolour_stripe import TricolourStripe
 
 
 class ConsoleScreen(Screen):
@@ -30,6 +31,7 @@ class ConsoleScreen(Screen):
                 markup=True,
             )
             yield Label("", id="top-bar-cat", markup=False)
+        yield TricolourStripe("▄")
         yield RichLog(id="screen-log", highlight=False, markup=True, wrap=True)
         yield Label("[dim]Most recent commands first[/]", id="screen-footer", markup=True)
 

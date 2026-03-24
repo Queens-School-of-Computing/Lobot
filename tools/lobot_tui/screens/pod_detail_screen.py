@@ -10,6 +10,7 @@ from textual.widgets import Label, RichLog
 
 from ..data import command_log
 from ..data.models import PodInfo
+from ..widgets.tricolour_stripe import TricolourStripe
 
 
 class PodDetailScreen(Screen):
@@ -33,6 +34,7 @@ class PodDetailScreen(Screen):
                 markup=True,
             )
             yield Label("", id="top-bar-cat", markup=False)
+        yield TricolourStripe("▄")
         yield RichLog(id="screen-log", highlight=False, markup=False, wrap=False)
         yield Label("[dim]Loading…[/]", id="screen-footer")
 

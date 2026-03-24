@@ -541,6 +541,19 @@ hub:
                          "name": "pvc-6cefcf15-7c4f-4034-9e93-712fff961490"
                  }
           ])
+          if username == 'nafiz95':
+            spwnr.volumes.extend([
+                   {
+                           "name": "pv-bamlab-ildpatients",
+                           "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}
+                   }
+            ])
+            spwnr.volume_mounts.extend([
+                   {
+                           "mountPath": "/home/jovyan/bamlab_ildpatients",
+                           "name": "pv-bamlab-ildpatients"
+                   }
+            ])
         spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
         if int(options["gpu_limit"][0]) == 0:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
