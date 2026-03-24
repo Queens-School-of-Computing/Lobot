@@ -17,8 +17,8 @@ SMTP_USE_TLS=false
 SMTP_USERNAME=""
 SMTP_PASSWORD=""
 FROM_EMAIL="lobot@cs.queensu.ca"
-#TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
-TO_EMAIL="aaron@cs.queensu.ca"
+TO_EMAIL="aaron@cs.queensu.ca,whb1@queensu.ca"
+#TO_EMAIL="aaron@cs.queensu.ca"
 
 # ==========================================
 # Email helper - reads body from temp file
