@@ -55,3 +55,48 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-creategroup1-users
+  user: creategroup1
+  members:
+  - wiegerthefarmer
+  - dashtiali
+  scopes:
+  - access:servers!user={user}
+  - read:users!user={user}
+  - servers!user={user}
+- name: group-creategroup2-users
+  user: creategroup2
+  members:
+  - wiegerthefarmer
+  - dashtiali
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-creategroup3-users
+  user: creategroup3
+  members:
+  - wiegerthefarmer
+  - dashtiali
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-creategroup4-users
+  user: creategroup4
+  members:
+  - wiegerthefarmer
+  - dashtiali
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-creategroup5-users
+  user: creategroup5
+  members:
+  - wiegerthefarmer
+  - dashtiali
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
