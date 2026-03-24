@@ -123,10 +123,10 @@ class NodeTableWidget(Widget):
         except Exception:
             return
         if event.key in ("space", "right"):
-            event.stop()
+            event.prevent_default()
             self._toggle_expand()
         elif event.key == "left":
-            event.stop()
+            event.prevent_default()
             self._collapse_selected()
 
     def _name_width(self) -> int:
