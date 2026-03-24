@@ -200,6 +200,15 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # Deploy Flannel CNI
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 sudo systemctl restart kubelet</code></pre>
+<blockquote>
+<p><strong>Control plane scheduling:</strong> By default, the control plane node is tainted so user pods are not scheduled on it. In our single-node setup (control plane + workers) the taint is left in place — worker nodes do the pod work. If you ever need to allow pods on the control plane (e.g. initial single-node testing), remove it with:</p>
+<pre><code># Remove taint — allows all pods to schedule on the control plane.
+# Do NOT run this before worker nodes have joined in a multi-node setup.
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+
+# To re-add the taint (make the control plane unschedulable again):
+kubectl taint nodes lobot-dev.cs.queensu.ca node-role.kubernetes.io/control-plane:NoSchedule</code></pre>
+</blockquote>
 <hr />
 <h2>Step 13 — Helm</h2>
 <pre><code>curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
@@ -294,11 +303,19 @@ kubectl apply -f miniosecret.yaml</code></pre>
 <p><strong>Upgrading Longhorn:</strong> You can only upgrade one minor version at a time (1.8.x → 1.9.x, not 1.6.x → 1.9.x). Review patch notes before upgrading: <a href="https://longhorn.io/docs/1.9.2/deploy/upgrade/longhorn-manager/" target="_blank" rel="noopener">longhorn.io upgrade guide</a></p>
 <pre><code>helm upgrade longhorn longhorn/longhorn --namespace longhorn-system --version 1.9.2</code></pre>
 <hr />
-<h2>Step 18 — Deploy JupyterHub</h2>
+<h2>Step 18 — Storageclass</h2>
+<p>Apply the custom Longhorn storageclass. This registers <code>caslab-retain-r1</code> as the <strong>default</strong> storageclass (single replica, Retain reclaim policy) that JupyterHub uses to provision persistent volumes for user home directories.</p>
+<blockquote><p><strong>Requires Longhorn to be running</strong> — run this after Step 17.</p></blockquote>
+<pre><code>kubectl create -f /opt/Lobot/storageclass.yaml</code></pre>
+<hr />
+<h2>Step 19 — Deploy JupyterHub</h2>
 <pre><code>helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
 helm repo update
 
 kubectl create namespace jhub
+
+# The hub image specifies which web templates and launcher to use;
+# those files are pulled from the hub_templates_bt4 folder in the Lobot repo.
 
 # Initial deploy: hub-only config (no user image, confirms the hub comes up cleanly)
 RELEASE=jhub; NAMESPACE=jhub
@@ -317,7 +334,7 @@ helm upgrade --cleanup-on-fail $RELEASE jupyterhub/jupyterhub \
   --values /opt/Lobot/config-env.yaml \
   --timeout=60m</code></pre>
 <hr />
-<h2>Step 19 — Post-JupyterHub: Lobot Tools</h2>
+<h2>Step 20 — Post-JupyterHub: Lobot Tools</h2>
 <h3>Create the group-manager API token secret</h3>
 <p>Required by <code>sync_groups.sh</code> to authenticate with the JupyterHub API. The token value must match <code>hub.services.group-manager.api_token</code> in <code>config.yaml</code>.</p>
 <pre><code>kubectl create secret generic group-manager-token -n jhub \
@@ -396,7 +413,7 @@ ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
 bash /opt/Lobot/tools/lobot-tui.sh</code></pre>
 <p>See <a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/lobot-tui.md" target="_blank" rel="noopener">lobot-tui.md</a> for full documentation.</p>
 <hr />
-<h2>Step 20 — nginx</h2>
+<h2>Step 21 — nginx</h2>
 <pre><code>sudo apt install nginx</code></pre>
 <p>Create the server block at <code>/etc/nginx/sites-available/lobot-dev.cs.queensu.ca</code> (replace <code>lobot-dev.cs.queensu.ca</code> with the actual hostname):</p>
 <pre><code>server {
@@ -409,6 +426,10 @@ bash /opt/Lobot/tools/lobot-tui.sh</code></pre>
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy true;
         proxy_set_header X-Scheme $scheme;
+
+        # If VSCode extensions show HTTPS errors through the proxy, uncomment:
+        # proxy_set_header Origin https://$host;
+        # proxy_set_header Host $host;
 
         # Required for real-time SSE (spawn progress log) and WebSocket support
         proxy_buffering off;
@@ -463,6 +484,14 @@ bash /opt/Lobot/tools/lobot-tui.sh</code></pre>
         allow 130.15.1.50;
         deny all;
     }
+
+    # Uncomment if you need a password-protected /status path:
+    # location /status {
+    #     alias /opt/Lobot/status;
+    #     try_files $uri /status.html =404;
+    #     auth_basic "Restricted";
+    #     auth_basic_user_file /etc/nginx/.htpasswd;
+    # }
 
     location /allocationstatus {
         alias /opt/Lobot/resource_collector_data;
@@ -528,12 +557,12 @@ sudo ln -s /etc/nginx/sites-available/lobot-dev.cs.queensu.ca /etc/nginx/sites-e
 sudo htpasswd -c /etc/nginx/.htpasswd lobotstatus
 sudo htpasswd -c /etc/nginx/.htpasswd-longhorn longhornadmin</code></pre>
 <hr />
-<h2>Step 21 — TLS (Certbot)</h2>
+<h2>Step 22 — TLS (Certbot)</h2>
 <p>Ensure ports 80 and 443 are open on the perimeter firewall before running.</p>
 <pre><code>certbot --nginx -d lobot-dev.cs.queensu.ca</code></pre>
 <p>Reference: <a href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04" target="_blank" rel="noopener">How To Secure Nginx with Let's Encrypt on Ubuntu</a></p>
 <hr />
-<h2>Step 22 — Move Lobot Directory and Final Config</h2>
+<h2>Step 23 — Move Lobot Directory and Final Config</h2>
 <pre><code># If you set up in ~/.kube/Lobot during install, move it to /opt
 sudo mv /home/croot/.kube/Lobot /opt/
 
@@ -679,3 +708,16 @@ dmesg | grep -i vfio
 dmesg | grep 'remapping'
 lspci -nnk</code></pre>
 <blockquote><p><strong>Note:</strong> When passing through multiple GPUs (A16), do not select BAR and PCI in the advanced options — it breaks the network adapter. Set the VM CPU type to <code>host</code>.</p></blockquote>
+<h4>Nested virtualisation (if needed for VMs inside Proxmox)</h4>
+<pre><code>modprobe -r kvm_intel
+modprobe kvm_intel nested=1
+echo "options kvm-intel nested=Y" &gt; /etc/modprobe.d/kvm-intel.conf
+echo "options kvm ignore_msrs=1" &gt;&gt; /etc/modprobe.d/kvm.conf</code></pre>
+<h4>ZFS ARC cache limits (if the Proxmox host uses ZFS)</h4>
+<pre><code># Set ARC min/max to 16 GB (adjust as needed)
+echo "$[16 * 1024*1024*1024 - 1]" &gt; /sys/module/zfs/parameters/zfs_arc_min
+echo "$[16 * 1024*1024*1024]"     &gt; /sys/module/zfs/parameters/zfs_arc_max
+
+# To persist across reboots, edit /etc/modprobe.d/zfs.conf:
+# options zfs zfs_arc_min=17179869183
+# options zfs zfs_arc_max=17179869184</code></pre>

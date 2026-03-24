@@ -298,6 +298,20 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 sudo systemctl restart kubelet
 ```
 
+> **Control plane scheduling:** By default, the control plane node is tainted so user pods
+> are not scheduled on it. In our single-node setup (control plane + workers) the taint is
+> left in place — worker nodes do the pod work. If you ever need to allow pods on the
+> control plane (e.g. initial single-node testing), remove it with:
+>
+> ```bash
+> # Remove taint — allows all pods to schedule on the control plane.
+> # Do NOT run this before worker nodes have joined in a multi-node setup.
+> kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+>
+> # To re-add the taint (make the control plane unschedulable again):
+> kubectl taint nodes lobot-dev.cs.queensu.ca node-role.kubernetes.io/control-plane:NoSchedule
+> ```
+
 ---
 
 ## Step 13 — Helm
@@ -426,13 +440,28 @@ helm upgrade longhorn longhorn/longhorn --namespace longhorn-system --version 1.
 
 ---
 
-## Step 18 — Deploy JupyterHub
+## Step 18 — Storageclass
+
+Apply the custom Longhorn storageclass. This registers `caslab-retain-r1` as the
+**default** storageclass (single replica, Retain reclaim policy) that JupyterHub uses
+to provision persistent volumes for user home directories.
+
+> **Requires Longhorn to be running** — run this after Step 17.
+
+```bash
+kubectl create -f /opt/Lobot/storageclass.yaml
+```
+
+---
+
+## Step 19 — Deploy JupyterHub
 
 ```bash
 helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
 helm repo update
 
 kubectl create namespace jhub
+
 
 # Initial deploy: hub-only config (no user image, confirms the hub comes up cleanly)
 RELEASE=jhub; NAMESPACE=jhub
@@ -454,7 +483,7 @@ helm upgrade --cleanup-on-fail $RELEASE jupyterhub/jupyterhub \
 
 ---
 
-## Step 19 — Post-JupyterHub: Lobot Tools
+## Step 20 — Post-JupyterHub: Lobot Tools
 
 ### Create the group-manager API token secret
 
@@ -576,7 +605,7 @@ See [lobot-tui.md](lobot-tui.md) for full documentation.
 
 ---
 
-## Step 20 — nginx
+## Step 21 — nginx
 
 ```bash
 sudo apt install nginx
@@ -597,6 +626,10 @@ server {
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy true;
         proxy_set_header X-Scheme $scheme;
+
+        # If VSCode extensions show HTTPS errors through the proxy, uncomment:
+        # proxy_set_header Origin https://$host;
+        # proxy_set_header Host $host;
 
         # Required for real-time SSE (spawn progress log) and WebSocket support
         proxy_buffering off;
@@ -651,6 +684,14 @@ server {
         allow 130.15.1.50;
         deny all;
     }
+
+    # Uncomment if you need a password-protected /status path:
+    # location /status {
+    #     alias /opt/Lobot/status;
+    #     try_files $uri /status.html =404;
+    #     auth_basic "Restricted";
+    #     auth_basic_user_file /etc/nginx/.htpasswd;
+    # }
 
     location /allocationstatus {
         alias /opt/Lobot/resource_collector_data;
@@ -722,7 +763,7 @@ sudo htpasswd -c /etc/nginx/.htpasswd-longhorn longhornadmin  # password in Pass
 
 ---
 
-## Step 21 — TLS (Certbot)
+## Step 22 — TLS (Certbot)
 
 Ensure ports 80 and 443 are open on the perimeter firewall before running.
 
@@ -734,7 +775,7 @@ Reference: https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-
 
 ---
 
-## Step 22 — Move Lobot Directory and Final Config
+## Step 23 — Move Lobot Directory and Final Config
 
 ```bash
 # If you set up in ~/.kube/Lobot during install, move it to /opt
@@ -914,3 +955,24 @@ lspci -nnk
 
 > **Note:** When passing through multiple GPUs (A16), do not select BAR and PCI
 > in advanced options — it breaks the network adapter. Set VM CPU type to `host`.
+
+#### Nested virtualisation (if needed for VMs inside Proxmox)
+
+```bash
+modprobe -r kvm_intel
+modprobe kvm_intel nested=1
+echo "options kvm-intel nested=Y" > /etc/modprobe.d/kvm-intel.conf
+echo "options kvm ignore_msrs=1" >> /etc/modprobe.d/kvm.conf
+```
+
+#### ZFS ARC cache limits (if the Proxmox host uses ZFS)
+
+```bash
+# Set ARC min/max to 16 GB (adjust as needed)
+echo "$[16 * 1024*1024*1024 - 1]" > /sys/module/zfs/parameters/zfs_arc_min
+echo "$[16 * 1024*1024*1024]"     > /sys/module/zfs/parameters/zfs_arc_max
+
+# To persist across reboots, edit /etc/modprobe.d/zfs.conf:
+# options zfs zfs_arc_min=17179869183
+# options zfs zfs_arc_max=17179869184
+```
