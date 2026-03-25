@@ -402,6 +402,7 @@ The available keys depend on whether the job is still running:
 | `Escape` / `q` / `b` | Close the panel and return to dashboard |
 | `s` | Save full output to `/opt/Lobot/logs/lobot-tui-<name>-<timestamp>.log` |
 | `C` | Open config viewer — shown in footer hint after an `apply-config` job completes |
+| `R` | Restart JupyterHub pod — shown in footer hint after a successful `sync-groups` job |
 
 ### Config Viewer (`C`)
 
@@ -495,7 +496,7 @@ Actions that require parameters open a **wizard screen**; actions that have no p
 | `q` / `Escape` | Cancel and close |
 | `Space` / `Enter` | Activate the focused button |
 | `y` | Confirm (confirm dialogs only) |
-| `d` | View documentation (apply-config only — opens `apply-config.md`) |
+| `d` | View documentation — opens the relevant `.md` file in the guide viewer (available on actions that have docs: image-pull, image-cleanup, apply-config, sync-groups) |
 
 Button colours follow a consistent scheme: **Cancel** = red, **Run / OK / Confirm** = green, **View Docs** = gold. The **Cancel button has focus by default** when any action window opens — pressing `r` or tabbing to Run is an explicit deliberate action.
 
@@ -519,6 +520,8 @@ Pre-pulls a container image across all cluster nodes in controlled batches. This
 > **Tag dropdown**: tags are loaded asynchronously from DockerHub when the wizard opens, sorted newest-first by the `YYYYMMDD` date code embedded in the tag name. If `Use latest tag` is checked, the dropdown is greyed out and `--latest` is passed to the script. Selecting a tag automatically unchecks `Use latest tag`.
 
 > **Node fields**: `Single target node` and `Exclude nodes` are mutually exclusive in the script — if a single node is selected, the exclude list is ignored.
+
+> **View Docs**: press `d` in the wizard to open `IMAGE-MANAGEMENT.md` in the guide viewer without leaving the dialog.
 
 Generated command example:
 ```bash
@@ -546,6 +549,8 @@ Removes old image tags from all nodes while protecting images in use by running 
 | Single target node (`-n`) | Dropdown | Target one specific node (includes control plane) | All nodes |
 | Dry run | Checkbox | Preview without removing | ✓ (checked) |
 
+Press `d` in the wizard to open `IMAGE-MANAGEMENT.md` in the guide viewer without leaving the dialog.
+
 Generated command example:
 ```bash
 bash image-cleanup.sh \
@@ -568,7 +573,15 @@ No wizard fields — a **command preview screen** with a danger warning is shown
 
 ### `[4]` sync-groups
 
-Syncs JupyterHub group membership from `group-roles.yaml`. Runs `bash sync_groups.sh`. Supports dry-run (checkbox in wizard) to preview changes without applying them.
+Syncs JupyterHub group membership from `group-roles.yaml`. Runs `bash sync_groups.sh`. Supports dry-run (checkbox in wizard) to preview changes without applying them. Press `d` in the wizard to open `sync_groups.md` in the guide viewer without leaving the dialog.
+
+After the job completes successfully, the footer shows `[R] restart hub`. Press `R` to optionally restart the JupyterHub pod — a confirmation modal appears with a warning that the spawn page and `/hub` pages will be unavailable for ~30 seconds. Confirming runs:
+
+```bash
+kubectl rollout restart deploy/hub -n jhub
+```
+
+> Restarting the hub picks up any group membership changes that require a running hub process to re-read. Skip the restart if you know the changes take effect without one.
 
 ### `[5]` hub upgrade & restart
 

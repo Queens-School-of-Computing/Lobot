@@ -229,7 +229,7 @@ ConfirmScreen {
 }
 
 #confirm-dialog {
-    width: 60;
+    width: 72;
     height: auto;
     background: $surface;
     border: solid $primary;

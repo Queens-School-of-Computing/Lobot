@@ -147,6 +147,7 @@ ACTIONS: list = [
         build_command=_image_pull_cmd,
         working_dir=TOOLS_DIR,
         confirm_message="This will pull a large image (~18GB) across ALL nodes. Use --dry-run first.",
+        docs_path="IMAGE-MANAGEMENT.md",
     ),
     ActionDef(
         key="2",
@@ -172,6 +173,7 @@ ACTIONS: list = [
         build_command=_image_cleanup_cmd,
         working_dir=TOOLS_DIR,
         confirm_message="This will REMOVE old image tags from nodes. Verify the keep-tag is correct.",
+        docs_path="IMAGE-MANAGEMENT.md",
     ),
     ActionDef(
         key="3",
@@ -204,6 +206,7 @@ ACTIONS: list = [
         build_command=_sync_groups_cmd,
         working_dir=TOOLS_DIR,
         confirm_message="This will modify JupyterHub group memberships.",
+        docs_path="sync_groups.md",
     ),
     ActionDef(
         key="5",

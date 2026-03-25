@@ -513,6 +513,10 @@ python3 -m lobot_tui</code></pre>
 <td><code>C</code></td>
 <td>Open config viewer — shown in footer hint after an <code>apply-config</code> job completes</td>
 </tr>
+<tr>
+<td><code>R</code></td>
+<td>Restart JupyterHub pod — shown in footer hint after a successful <code>sync-groups</code> job</td>
+</tr>
 </tbody>
 </table>
 <h3>Config Viewer (<code>C</code>)</h3>
@@ -727,7 +731,7 @@ python3 -m lobot_tui</code></pre>
 </tr>
 <tr>
 <td><code>d</code></td>
-<td>View documentation (apply-config only — opens <code>apply-config.md</code>)</td>
+<td>View documentation — opens the relevant <code>.md</code> file in the guide viewer (available on actions that have docs: image-pull, image-cleanup, apply-config, sync-groups)</td>
 </tr>
 </tbody>
 </table>
@@ -796,6 +800,7 @@ python3 -m lobot_tui</code></pre>
 </table>
 <p><strong>Tag dropdown:</strong> tags are loaded asynchronously from DockerHub when the wizard opens, sorted newest-first by the <code>YYYYMMDD</code> date code embedded in the tag name. If <code>Use latest tag</code> is checked, the dropdown is greyed out and <code>--latest</code> is passed to the script. Selecting a tag automatically unchecks <code>Use latest tag</code>.</p>
 <p><strong>Node fields:</strong> <code>Single target node</code> and <code>Exclude nodes</code> are mutually exclusive in the script — if a single node is selected, the exclude list is ignored.</p>
+<p>Press <code>d</code> in the wizard to open <code>IMAGE-MANAGEMENT.md</code> in the guide viewer without leaving the dialog.</p>
 <p>Generated command example:</p>
 <pre><code>bash image-pull.sh -i queensschoolofcomputingdocker/gpu-jupyter-latest \
   -b 3 -t 1200 -e lobot-dev.cs.queensu.ca --latest --yes</code></pre>
@@ -846,6 +851,7 @@ python3 -m lobot_tui</code></pre>
 </tr>
 </tbody>
 </table>
+<p>Press <code>d</code> in the wizard to open <code>IMAGE-MANAGEMENT.md</code> in the guide viewer without leaving the dialog.</p>
 <p>Generated command example:</p>
 <pre><code>bash image-cleanup.sh \
   -i queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-20260313 \
@@ -861,7 +867,10 @@ python3 -m lobot_tui</code></pre>
 <p><strong>What it does NOT do:</strong> It does not run <code>helm upgrade</code> or restart the Hub. Run <code>[5]</code> hub upgrade &amp; restart afterwards to apply the config to the cluster.</p>
 <p>No wizard fields — a <strong>command preview screen</strong> with a danger warning is shown before the command runs. Press <code>d</code> to open the full <code>apply-config.md</code> documentation without leaving the dialog. After the job completes, press <code>C</code> to review the generated config files.</p>
 <h3>[4] sync-groups</h3>
-<p>Syncs JupyterHub group membership from <code>group-roles.yaml</code>. Runs <code>bash sync_groups.sh</code>. Supports dry-run (checkbox in wizard) to preview changes without applying them.</p>
+<p>Syncs JupyterHub group membership from <code>group-roles.yaml</code>. Runs <code>bash sync_groups.sh</code>. Supports dry-run (checkbox in wizard) to preview changes without applying them. Press <code>d</code> in the wizard to open <code>sync_groups.md</code> in the guide viewer without leaving the dialog.</p>
+<p>After the job completes successfully, the footer shows <code>[R] restart hub</code>. Press <code>R</code> to optionally restart the JupyterHub pod — a confirmation modal appears with a warning that the spawn page and <code>/hub</code> pages will be unavailable for ~30 seconds. Confirming runs:</p>
+<pre><code>kubectl rollout restart deploy/hub -n jhub</code></pre>
+<p>Restarting the hub picks up any group membership changes that require a running hub process to re-read. Skip the restart if you know the changes take effect without one.</p>
 <h3>[5] hub upgrade &amp; restart</h3>
 <p>Runs a full JupyterHub Helm upgrade, applying the current config and restarting the Hub pod. A <strong>command preview screen</strong> is shown first, displaying the exact command that will run, before any confirmation is accepted. Login and spawn pages will be briefly unavailable during the restart.</p>
 <pre><code>helm upgrade --cleanup-on-fail jhub jupyterhub/jupyterhub \

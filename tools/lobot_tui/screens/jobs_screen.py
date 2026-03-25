@@ -9,7 +9,9 @@ from textual.screen import Screen
 from textual.widgets import Label, RichLog
 
 from ..config import LOG_DIR
+from .action_screen import ActionScreen
 from .config_viewer_screen import ConfigViewerScreen
+from .confirm_screen import ConfirmScreen
 from ..data.job_manager import BackgroundJob, JobCompleted
 from ..widgets.tricolour_stripe import TricolourStripe
 
@@ -22,6 +24,7 @@ class JobsScreen(Screen):
         Binding("k", "kill_job", "Kill job", priority=True),
         Binding("s", "save_output", "Save"),
         Binding("C", "view_config", "View config", show=False),
+        Binding("R", "restart_hub", "Restart hub", show=False),
         # escape and q are handled in on_key so they only work when the job is done
     ]
 
@@ -87,7 +90,8 @@ class JobsScreen(Screen):
             )
         elif job.status == "done":
             config_hint = r"  \[C] view config" if job.title == "apply-config" else ""
-            footer.update(rf"[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save{config_hint}[/]")
+            hub_hint = r"  \[R] restart hub" if job.title == "sync-groups" else ""
+            footer.update(rf"[green]Completed (exit 0)[/]  [dim]Esc/q/\[b] close  \[s] save{config_hint}{hub_hint}[/]")
         else:
             rc = job.returncode if job.returncode is not None else "?"
             config_hint = r"  \[C] view config" if job.title == "apply-config" else ""
@@ -165,6 +169,30 @@ class JobsScreen(Screen):
 
     def action_view_config(self) -> None:
         self.app.push_screen(ConfigViewerScreen())
+
+    def action_restart_hub(self) -> None:
+        """Offer to restart the hub pod — only shown after a successful sync-groups job."""
+        job = self.app.job_manager.current_job
+        if job is None or job.title != "sync-groups" or job.status != "done":
+            return
+
+        def _on_confirm(confirmed: bool) -> None:
+            if confirmed:
+                self.app.push_screen(
+                    ActionScreen(
+                        "HUB RESTART",
+                        ["kubectl", "rollout", "restart", "deploy/hub", "-n", "jhub"],
+                    )
+                )
+
+        self.app.push_screen(
+            ConfirmScreen(
+                "Restart JupyterHub pod?",
+                "This will restart the hub pod.\n"
+                "The spawn page and /hub pages will be unavailable for ~30 seconds.",
+            ),
+            _on_confirm,
+        )
 
     def action_save_output(self) -> None:
         from datetime import datetime as _dt

@@ -1,6 +1,7 @@
 """ActionWizardScreen: parameter input form before running a tool."""
 
 import re as _re
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -114,6 +115,8 @@ class ActionWizardScreen(ModalScreen):
 
             with Horizontal(id="wizard-buttons"):
                 yield Button("Cancel  (q)", variant="error", id="btn-cancel")
+                if self._action.docs_path:
+                    yield Button("View Docs  (d)", variant="warning", id="btn-docs")
                 if not self._locked:
                     yield Button("Run  (r)", variant="success", id="btn-run")
 
@@ -271,10 +274,17 @@ class ActionWizardScreen(ModalScreen):
 
     # ── Button handling ───────────────────────────────────────────────────────
 
+    def _open_docs(self) -> None:
+        from .guide_screen import GuideScreen
+        path = Path(self._action.working_dir) / self._action.docs_path
+        self.app.push_screen(GuideScreen(path=path, label="DOCS"))
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         btn_id = event.button.id or ""
         if btn_id == "btn-cancel":
             self.dismiss(None)
+        elif btn_id == "btn-docs":
+            self._open_docs()
         elif btn_id == "btn-run":
             self._do_run()
 
@@ -378,3 +388,5 @@ class ActionWizardScreen(ModalScreen):
             event.stop()
         elif event.key == "r" and not isinstance(self.focused, Input):
             self._do_run()
+        elif event.key == "d" and self._action.docs_path:
+            self._open_docs()
