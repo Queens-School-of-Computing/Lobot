@@ -60,6 +60,7 @@ roles:
   members:
   - wiegerthefarmer
   - dashtiali
+  - rebeccahisey
   scopes:
   - access:servers!user={user}
   - read:users!user={user}
@@ -69,6 +70,7 @@ roles:
   members:
   - wiegerthefarmer
   - dashtiali
+  - rebeccahisey
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -78,6 +80,7 @@ roles:
   members:
   - wiegerthefarmer
   - dashtiali
+  - rebeccahisey
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -87,6 +90,7 @@ roles:
   members:
   - wiegerthefarmer
   - dashtiali
+  - rebeccahisey
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -96,6 +100,7 @@ roles:
   members:
   - wiegerthefarmer
   - dashtiali
+  - rebeccahisey
   scopes:
   - access:servers!user={user}
   - servers!user={user}
