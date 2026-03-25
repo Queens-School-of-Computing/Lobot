@@ -22,6 +22,19 @@ jobs:
           gh api "/orgs/$org_name/invitations" \
             -F "invitee_id=${{ steps.one.outputs.user_id }}" \
             -f role=direct_member
+
+          if [[ $? -ne 0 ]]
+          then
+            error_message=$(echo $resp | jq -r '.errors[].message')
+            if [[ "$error_message" = "Invitee is already a part of this organization" ]]
+            then
+              echo "$error_message"
+              exit 0
+            fi
+
+            echo $resp | jq
+            exit 1
+          fi
         env:
           GH_TOKEN: ${{ secrets.INVITE_BOT_TOKEN }}
 
