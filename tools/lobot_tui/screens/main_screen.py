@@ -46,6 +46,9 @@ from .guide_screen import GuideScreen
 from .help_screen import HelpScreen
 from .jobs_screen import JobsScreen
 from .logs_screen import LogsScreen
+from .lv_expand_screen import LvExpandScreen
+from .lv_manage_screen import LvManageScreen
+from .lv_tool_screen import LvToolScreen
 from .pod_detail_screen import PodDetailScreen
 
 _NAMESPACES_DEFAULT = [JUPYTERHUB_NAMESPACE, "all"]
@@ -119,11 +122,14 @@ class MainScreen(Screen):
         ("4", "tool_4", "sync-groups"),
         ("5", "tool_5", "hub upgrade & restart"),
         ("6", "tool_6", "announcement"),
+        ("7", "tool_7", "lv tool"),
         # Pod actions
         ("l", "pod_logs", "Logs"),
         ("x", "pod_exec", "Exec"),
         ("X", "pod_delete", "Delete pod"),
         ("d", "pod_describe", "Describe pod"),
+        ("i", "pod_lv_manage", "LV Info"),
+        ("E", "pod_lv_expand", "LV Expand"),
         ("f", "focus_filter", "Filter"),
         Binding("tab", "cycle_panel", "Switch panel", priority=True, show=False),
         Binding("space", "bongo_space", "", priority=True, show=False),
@@ -441,6 +447,16 @@ class MainScreen(Screen):
         if pod:
             self.app.push_screen(PodDetailScreen(pod))
 
+    def action_pod_lv_manage(self) -> None:
+        pod = self._require_pod()
+        if pod:
+            self.app.push_screen(LvManageScreen(pod.name, pod.namespace))
+
+    def action_pod_lv_expand(self) -> None:
+        pod = self._require_pod()
+        if pod:
+            self.app.push_screen(LvExpandScreen(pod.name, pod.namespace))
+
     def action_pod_exec(self) -> None:
         pod = self._require_pod()
         if pod:
@@ -582,6 +598,9 @@ class MainScreen(Screen):
     def action_tool_6(self) -> None:
         self.app.push_screen(AnnouncementScreen())
 
+    def action_tool_7(self) -> None:
+        self.app.push_screen(LvToolScreen())
+
     # ── Actions panel click passthrough ───────────────────────────────────────
 
     def on_job_completed(self, event: JobCompleted) -> None:
@@ -614,12 +633,15 @@ class MainScreen(Screen):
             "4": self.action_tool_4,
             "5": self.action_tool_5,
             "6": self.action_tool_6,
+            "7": self.action_tool_7,
             "`": self.action_show_console,
             "b": self.action_show_jobs,
             "l": self.action_pod_logs,
             "x": self.action_pod_exec,
             "d": self.action_pod_describe,
             "X": self.action_pod_delete,
+            "i": self.action_pod_lv_manage,
+            "E": self.action_pod_lv_expand,
             "f": self.action_focus_filter,
             "n": self.action_toggle_node_filter,
             "r": self.action_toggle_resource_filter,

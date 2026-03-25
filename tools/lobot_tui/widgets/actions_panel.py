@@ -16,6 +16,8 @@ _ROW1_LEFT = [
     ("[bold cyan](X)[/] delete", "hint-pod", "X"),
     ("[bold cyan](f)[/] filter", "hint-pod", "f"),
     ("[bold cyan](N)[/] ns", "hint-pod", "N"),
+    ("[bold cyan](i)[/] lv info", "hint-pod", "i"),
+    ("[bold cyan](E)[/] lv expand", "hint-pod", "E"),
 ]
 _ROW2_LEFT = [
     ("[bold dim]NODES[/]", "hint-prefix", None),
@@ -33,6 +35,7 @@ _ROW1_RIGHT = [
     ("[bold yellow](4)[/] sync-groups", "hint-tool", "4"),
     ("[bold yellow](5)[/] hub upgrade & restart", "hint-tool", "5"),
     ("[bold yellow](6)[/] announce", "hint-tool", "6"),
+    ("[bold yellow](7)[/] lv tool", "hint-tool", "7"),
 ]
 _ROW2_RIGHT = [
     ("[bold yellow](`)[/] console", "hint-tool", "`"),
