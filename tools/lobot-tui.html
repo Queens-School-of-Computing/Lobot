@@ -12,6 +12,7 @@
 <li>Launch image-pull, image-cleanup, apply-config, sync-groups, and hub upgrade &amp; restart — with tag dropdowns, node pickers, live streaming output, and dry-run support</li>
 <li>Background job mode: long-running commands (e.g. image-pull) run in the background so the dashboard remains usable during a pull</li>
 <li>Edit <code>announcement.yaml</code> and push directly to GitHub from within the TUI</li>
+<li>Inspect and expand Longhorn persistent volumes directly from a pod (<code>i</code> / <code>E</code>) or from a standalone PVC picker (<code>7</code>) for offline volumes</li>
 <li>Clickable hint bar — every keyboard shortcut shown at the bottom is also clickable</li>
 </ul>
 <hr />
@@ -130,7 +131,7 @@ python3 -m lobot_tui</code></pre>
 │  jupyter-busvp52 lobot_a40  kickstart 13.0.2cu…   16  256G    1   8d2h    │
 │  hub-6b6646cb8d  digilab    floppy    4.0.0-beta…  0    0G    0   2d3h    │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ PODS: [l]logs [x]exec [d]describe [X]delete [f]filter [N]ns               │
+│ PODS: [l]logs [x]exec [d]describe [X]delete [f]filter [N]ns [i]lv [E]exp  │
 │ NODES:[n]node filter [r]resource filter [c]cordon [u]uncordon [w]drain …  │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ ● Live svc  Pods:12:29:30  Nodes:12:29:30  Disk:12:29:00  [q]quit [R]…   │
@@ -373,6 +374,14 @@ python3 -m lobot_tui</code></pre>
 <tr>
 <td><code>N</code></td>
 <td>Cycle namespace — per-namespace filters are remembered</td>
+</tr>
+<tr>
+<td><code>i</code></td>
+<td>Longhorn volume info — runs <code>lv-manage.sh &lt;pod-name&gt; &lt;namespace&gt;</code> and displays the output in a scrollable viewer</td>
+</tr>
+<tr>
+<td><code>E</code></td>
+<td>Longhorn volume expand — opens the LV expand screen: shows volume info, prompts for a new size, runs safety checks, then performs the expansion</td>
 </tr>
 <tr>
 <td>Click header</td>
@@ -688,7 +697,7 @@ python3 -m lobot_tui</code></pre>
 <pre><code>LOBOT_TUI_THEME=tricolour lobot-tui</code></pre>
 <p>When the env var is set, <code>T</code> cycles themes for that session only and does not overwrite the shared saved file.</p>
 <hr />
-<h2>Tool Actions (Keys 1 – 6)</h2>
+<h2>Tool Actions (Keys 1 – 7)</h2>
 <p>Tool actions (1–5) run as <strong>background jobs</strong> — the job starts and the output panel opens automatically. Press <code>b</code> to return to the dashboard; the job continues in the background. The tool hint bar is replaced by a live status indicator while any job is running, and pressing <code>1</code>–<code>5</code> is blocked until the job completes.</p>
 <h3>Action windows</h3>
 <p>Actions that require parameters open a <strong>wizard screen</strong>; actions with no parameters (apply-config, hub upgrade &amp; restart) go directly to a <strong>command preview screen</strong>. All action windows share the same key conventions:</p>
@@ -905,6 +914,32 @@ python3 -m lobot_tui</code></pre>
 git commit -m "chore: update announcement via lobot-tui"
 git push origin newcluster</code></pre>
 <p>The JupyterHub announcement banner updates within seconds as the hub fetches the new YAML from GitHub.</p>
+<h3>[7] LV Tool</h3>
+<p>Opens the <strong>LV Tool screen</strong> — a PVC picker for inspecting and expanding Longhorn volumes when the associated pod is offline or you want to work directly with a PVC rather than a pod.</p>
+<p>The screen lists all PVCs across all namespaces in a sortable table showing PVC name, namespace, capacity, status, storage class, and access mode. Use <code>↑</code>/<code>↓</code> to navigate.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i</code> or <code>Enter</code></td>
+<td>LV info — same as pressing <code>i</code> on a pod; runs <code>lv-manage.sh</code> and displays the output</td>
+</tr>
+<tr>
+<td><code>E</code></td>
+<td>LV expand — opens the expansion screen for the selected PVC</td>
+</tr>
+<tr>
+<td><code>Escape</code> / <code>q</code></td>
+<td>Return to main dashboard</td>
+</tr>
+</tbody>
+</table>
+<p>This screen is for <strong>offline volumes</strong> (pod stopped or no pod attached). For a running pod, use <code>i</code> / <code>E</code> directly from the pod table.</p>
 <hr />
 <h2>Background Job System</h2>
 <p>Tool actions 1–5 run as background jobs so the main dashboard remains usable during long operations like image-pull.</p>
@@ -1081,6 +1116,9 @@ git push origin newcluster</code></pre>
     help_screen.py          Key binding reference
     console_screen.py       Command history / debug console
     exec_screen.py          TTY handoff for kubectl exec
+    lv_manage_screen.py     Longhorn volume info viewer — runs lv-manage.sh and renders ANSI output
+    lv_expand_screen.py     Interactive volume expansion (info → size entry → confirm → expand)
+    lv_tool_screen.py       PVC picker for offline volume management (Tool [7])
   widgets/
     render_utils.py         Shared rendering helpers: colored block bars (with optional color_ratio override), GPU segment bars, status badges, row tinting
     cluster_summary.py      ResourceTableWidget — per-resource-group DataTable with filter toggle
