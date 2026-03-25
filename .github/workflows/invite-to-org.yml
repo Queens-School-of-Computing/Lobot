@@ -18,23 +18,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Send invitation to user
         run: |
-          org_name=${{ github.repository_owner }}
-          gh api "/orgs/$org_name/invitations" \
-            -F "invitee_id=${{ steps.one.outputs.user_id }}" \
-            -f role=direct_member
-
-          if [[ $? -ne 0 ]]
-          then
-            error_message=$(echo $resp | jq -r '.errors[].message')
-            if [[ "$error_message" = "Invitee is already a part of this organization" ]]
-            then
-              echo "$error_message"
-              exit 0
-            fi
-
-            echo $resp | jq
-            exit 1
-          fi
+          ./.github/scripts/invite-to-org.sh \
+            ${{ github.repository_owner }} \
+            ${{ steps.one.outputs.user_id }}
         env:
           GH_TOKEN: ${{ secrets.INVITE_BOT_TOKEN }}
 
