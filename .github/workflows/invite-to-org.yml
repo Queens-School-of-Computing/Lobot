@@ -12,7 +12,7 @@ jobs:
         id: one
         run: |
           username=${{ toJson(github.event.client_payload.username) }}
-          id=$(gh api "/users/$username" | jq .id)
+          id=$(gh api "/users/$username" --jq .id)
           echo "user_id=$id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
