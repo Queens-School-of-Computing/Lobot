@@ -106,14 +106,86 @@
 <tbody>
 <tr><td><code>TestImagePullArgErrors</code></td><td>Missing <code>-i</code> → exit 1; <code>-n</code> + <code>-e</code> together → exit 1</td><td>No</td></tr>
 <tr><td><code>TestImageCleanupArgErrors</code></td><td>Same as above for <code>image-cleanup.sh</code></td><td>No</td></tr>
-<tr><td><code>TestLvManageArgErrors</code></td><td>No args → exit 1 + usage; invalid <code>--expand</code> size format → exit 1</td><td>No</td></tr>
+<tr><td><code>TestLvManageArgErrors</code></td><td>No args → exit 1 + usage; <code>--expand 100</code> (no suffix) → exit 1; <code>--expand 100K</code> (wrong suffix) → exit 1</td><td>No</td></tr>
 <tr><td><code>TestSyncGroupsHelp</code></td><td><code>--help</code> → exit 0 + usage text</td><td>No</td></tr>
-<tr><td><code>TestLvManageInfo</code></td><td>Real PVC info output (read-only); nonexistent PVC → exit 1 with error</td><td>If kubectl up</td></tr>
+<tr><td><code>TestLvManageInfo</code></td><td>Real PVC info output (read-only kubectl queries); nonexistent PVC → exit 1 with error</td><td>If kubectl up</td></tr>
 <tr><td><code>TestImagePullDryRun</code></td><td><code>--dry-run --yes -n &lt;node&gt;</code>: exit 0, node in output, present/missing reported</td><td><strong>Yes</strong></td></tr>
 <tr><td><code>TestImageCleanupDryRun</code></td><td><code>--dry-run --yes</code>: exit 0, produces output</td><td><strong>Yes</strong></td></tr>
 </tbody>
 </table>
+<p>The two <code>TestLvManageArgErrors</code> expand tests (<code>test_invalid_expand_size_format</code> and <code>test_invalid_expand_size_wrong_suffix</code>) both pass a throwaway PVC name (<code>"some-pvc"</code>) that doesn't exist on the cluster. This is intentional — <code>lv-manage.sh</code> validates the <code>--expand</code> size format before making any kubectl calls, so the script exits with an error before it ever tries to look up the PVC. The two tests cover two distinct failure modes: a missing suffix entirely (<code>"100"</code>) and a suffix that exists but isn't in the allowed set (<code>"100K"</code> — only <code>M</code>, <code>G</code>, <code>T</code> are accepted).</p>
+<p>There are no tests for a successful <code>--expand</code> operation. Unlike <code>lv-manage.sh</code> info mode (which is read-only), actually expanding a volume is irreversible and there is no <code>--dry-run</code> flag for it, so a success test would modify real cluster state.</p>
 <p>The <code>script_integration</code> tests pass <code>--noemail</code> to suppress email notifications during testing. They still create temporary pods on the cluster and are excluded from the default run via <code>addopts</code> in <code>pyproject.toml</code>.</p>
+<hr />
+
+<h2>How Tests Work</h2>
+<p>The suite has four distinct categories of tests, each with a different correctness guarantee. Understanding the distinction helps you know what a passing run actually proves — and what it doesn't.</p>
+
+<h3>1. Unit tests (test_parsers.py, test_models.py)</h3>
+<p>These test pure Python functions in complete isolation — no network, no kubectl, no cluster state. They run in under a second and never fail due to infrastructure problems.</p>
+<p><strong>How they work:</strong> <code>conftest.py</code> constructs realistic but controlled fixture data: a fake <code>kubectl get pods -o json</code> response containing three pods (a normal jupyter pod, a pod whose username contains a hyphen-escaped character, and a non-jupyter system pod), a fake node list with one worker and one control-plane node, and a fake Longhorn node list with one initialized disk and one uninitialized disk. The tests feed this known input to each parsing function and assert the exact output.</p>
+<p><strong>What they guarantee:</strong> That the parsing and model logic is correct for every input shape the code is supposed to handle. Edge cases are tested explicitly:</p>
+<ul>
+<li>The <code>-2d</code> → <code>-</code> hyphen unescaping in pod usernames (JupyterHub encodes hyphens this way; getting it wrong would show corrupted usernames in the TUI)</li>
+<li><code>Ki</code>, <code>Mi</code>, <code>Gi</code>, <code>Ti</code>, <code>G</code>, <code>M</code> memory suffixes all converting to the right GB value</li>
+<li><code>500m</code> CPU millicores converting to <code>0.5</code> cores</li>
+<li>Uninitialized Longhorn disks (where <code>storageMaximum == 0</code>) being skipped entirely</li>
+<li>Control-plane nodes being excluded from resource aggregation</li>
+<li><code>ClusterState.to_dict()</code> / <code>from_dict()</code> round-tripping correctly, including <code>None</code> datetimes and the old <code>"labs"</code> wire format key</li>
+</ul>
+<p><strong>What they don't guarantee:</strong> That <code>kubectl</code> actually returns JSON in the shape the fixtures assume. If a Kubernetes upgrade changes a field path, these tests will still pass — the collector integration tests are what catch that.</p>
+
+<h3>2. Collector integration tests (test_collector_integration.py)</h3>
+<p>These make real HTTP requests to the live <code>lobot-collector</code> service running on the dev server at <code>127.0.0.1:9095</code>. All 17 tests are automatically skipped if the service is not reachable, so they never cause failures in a CI or offline context.</p>
+<p><strong>How they work:</strong> A small stdlib <code>http.client</code> helper connects to the collector and makes real requests. The tests assert on the actual HTTP responses — status codes, content-type headers, JSON structure, and field types. For the SSE endpoint (<code>/api/events</code>), the test reads bytes from the stream until it finds a complete <code>data: {...}\n\n</code> event, then deserializes and validates it.</p>
+<p><strong>What they guarantee:</strong> That the entire data pipeline — kubectl → parser → model → HTTP response — produces output that is structurally valid and internally consistent:</p>
+<ul>
+<li><code>/api/state</code> returns HTTP 200 with <code>application/json</code> and a body that deserializes into a <code>ClusterState</code> without errors</li>
+<li>All expected top-level keys (<code>nodes</code>, <code>pods</code>, <code>resources</code>, <code>longhorn_disks</code>, etc.) are present</li>
+<li>Node and pod fields have the correct types (strings, numbers, booleans — not <code>None</code> where values are required)</li>
+<li>Two back-to-back calls return the same set of node names (the service is stable, not oscillating)</li>
+<li>The first SSE event from <code>/api/events</code> is also a valid <code>ClusterState</code>, and its node set matches the <code>/api/state</code> response</li>
+</ul>
+<p><strong>What they don't guarantee:</strong> That the <em>values</em> are accurate (e.g., that the reported CPU count matches the actual hardware). They verify structure and type correctness, not domain accuracy. Running these requires the dev server to be up and <code>lobot-collector</code> to be running.</p>
+
+<h3>3. Shell script argument tests (test_scripts.py — always-run)</h3>
+<p>These invoke the real shell scripts with bad or missing arguments and assert on exit codes and output. They run without any cluster access — they only test the scripts' input validation layer.</p>
+<p><strong>How they work:</strong> <code>subprocess.run(["bash", str(TOOLS_DIR / script)] + list(args), ...)</code> runs the actual script. The tests check <code>result.returncode</code> and <code>result.stdout + result.stderr</code>. Because these tests deliberately trigger early-exit error paths (missing required flags, mutually exclusive flags, invalid format strings), no cluster calls are ever made.</p>
+<p><strong>What they guarantee:</strong> That the scripts reject bad input correctly and produce human-readable error output:</p>
+<ul>
+<li><code>image-pull.sh</code> with no <code>-i</code> flag exits non-zero and prints an error</li>
+<li><code>image-pull.sh</code> with both <code>-n</code> and <code>-e</code> exits non-zero (they're mutually exclusive)</li>
+<li><code>lv-manage.sh</code> with no arguments exits non-zero and prints usage</li>
+<li><code>lv-manage.sh --expand 100K</code> exits non-zero because <code>K</code> is not a valid size suffix (only <code>M</code>, <code>G</code>, <code>T</code> are accepted)</li>
+<li><code>sync_groups.sh --help</code> exits 0 and prints usage text</li>
+</ul>
+<p><strong>What they don't guarantee:</strong> That the scripts do the right thing on a real cluster. That's what the opt-in dry-run tests cover.</p>
+
+<h3>4. Dry-run script tests (test_scripts.py — script_integration, opt-in)</h3>
+<p>These run <code>image-pull.sh</code> and <code>image-cleanup.sh</code> end-to-end against the real cluster, using <code>--dry-run --yes --noemail</code>. They are excluded from the default run because they create temporary pods, which takes ~60 seconds. No emails are sent and no images are actually pulled or removed.</p>
+<p><strong>How they work:</strong> The test first calls <code>kubectl get nodes</code> to find a real Ready worker node, then runs the full script with <code>--dry-run</code>. The script genuinely executes its kubectl calls — it creates a temporary <code>alpine:latest</code> pod on the target node (for <code>image-pull.sh</code>) or deploys a DaemonSet (for <code>image-cleanup.sh</code>) — but stops short of actually pulling or deleting anything.</p>
+<p><strong>What they guarantee:</strong> That the scripts' full execution path works on real infrastructure, from argument parsing through kubectl calls to output formatting and exit:</p>
+<ul>
+<li>The script exits 0 (no crash, no unhandled error, no kubectl failure)</li>
+<li>The target node name appears in the output (the node targeting logic worked)</li>
+<li>The output contains words like "present", "pull", or "would" (the script reported something meaningful rather than silently doing nothing)</li>
+</ul>
+<p><strong>What they don't guarantee:</strong> That a real (non-dry-run) execution would succeed. For example, a permissions problem that only manifests when actually deleting images would not be caught here.</p>
+
+<h3>The overall picture</h3>
+<p>Each layer catches a different class of bug:</p>
+<table>
+<thead>
+<tr><th>Layer</th><th>Catches</th></tr>
+</thead>
+<tbody>
+<tr><td>Unit tests</td><td>Wrong field paths, unit conversion errors, sorting/filtering logic, serialization bugs</td></tr>
+<tr><td>Collector integration</td><td>Broken kubectl output shape, collector service crashes, invalid HTTP responses</td></tr>
+<tr><td>Script argument tests</td><td>Missing input validation, wrong exit codes, confusing error messages</td></tr>
+<tr><td>Script dry-run tests</td><td>kubectl call failures, broken node targeting, script crashes on real infra</td></tr>
+</tbody>
+</table>
+<p>A change that breaks <code>_parse_cpu_request</code> will fail unit tests in milliseconds. A Kubernetes upgrade that renames a JSON field will pass unit tests but fail the collector integration tests the next time the service runs. A shell script that accidentally accepts conflicting flags will pass everything except the argument tests.</p>
 <hr />
 
 <h2>Expected Output</h2>
