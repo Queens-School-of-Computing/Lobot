@@ -1,0 +1,191 @@
+<h2>Overview</h2>
+<p>Automated tests for the Python modules and shell scripts in <code>tools/</code>. Tests run on the dev server via SSH using the existing TUI Python virtual environment at <code>/opt/Lobot/tools/lobot_tui/.venv</code>.</p>
+<hr />
+
+<h2>Quick Start</h2>
+<pre><code># Run all tests (unit + integration + safe script tests)
+/opt/Lobot/tools/run-tests.sh -v
+
+# Run with opt-in dry-run script tests (sends real emails, creates pods)
+/opt/Lobot/tools/run-tests.sh -v -m script_integration
+
+# Run a specific file
+/opt/Lobot/tools/run-tests.sh -v tools/tests/test_parsers.py
+
+# Run a specific test class or function
+/opt/Lobot/tools/run-tests.sh -v -k TestParseCpuRequest
+/opt/Lobot/tools/run-tests.sh -v -k "test_invalid_expand_size_format"</code></pre>
+<p>The wrapper script (<code>run-tests.sh</code>) works from any directory. It resolves all paths relative to the repo root at <code>/opt/Lobot</code> and uses the venv Python automatically.</p>
+<hr />
+
+<h2>Test Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it tests</th>
+<th>Always runs?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tools/tests/test_parsers.py</code></td>
+<td>Pure Python parsing functions (<code>parsers.py</code>)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>tools/tests/test_models.py</code></td>
+<td>Domain dataclasses and <code>ClusterState</code> serialization (<code>models.py</code>)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>tools/tests/test_collector_integration.py</code></td>
+<td>Live HTTP endpoints of the lobot-collector service</td>
+<td>If service is up</td>
+</tr>
+<tr>
+<td><code>tools/tests/test_scripts.py</code></td>
+<td>Shell script argument errors, <code>lv-manage.sh</code> info mode</td>
+<td>Mostly yes</td>
+</tr>
+</tbody>
+</table>
+
+<h3>test_parsers.py — 71 tests</h3>
+<p>Tests every function in <code>lobot_tui/data/parsers.py</code> using fixture JSON constructed in <code>conftest.py</code>. No kubectl or network access required.</p>
+<table>
+<thead>
+<tr><th>Class</th><th>What it covers</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TestPodUsername</code></td><td><code>jupyter-</code> prefix stripping, <code>-2d</code> → <code>-</code> hyphen unescaping</td></tr>
+<tr><td><code>TestParseImageTag</code></td><td>Tag extraction, truncation at <code>MAX_TAG_LEN</code> (66 chars)</td></tr>
+<tr><td><code>TestAgeString</code></td><td>ISO8601 → human age (seconds/minutes/hours/days buckets), <code>Z</code> suffix, error cases</td></tr>
+<tr><td><code>TestParseCpuRequest</code></td><td><code>"4"</code>, <code>"500m"</code>, <code>"1000m"</code>, empty/invalid → float cores</td></tr>
+<tr><td><code>TestParseMemoryRequestGb</code></td><td><code>Ki</code>, <code>Mi</code>, <code>Gi</code>, <code>Ti</code>, <code>G</code>, <code>M</code> unit suffixes → float GB</td></tr>
+<tr><td><code>TestParseGpuRequest</code></td><td>Integer parsing, <code>None</code>/empty → 0</td></tr>
+<tr><td><code>TestParsePods</code></td><td>Full pod JSON → <code>PodInfo</code> list: fields, sorting, resource map, invalid JSON</td></tr>
+<tr><td><code>TestParseNodes</code></td><td>Full node JSON → <code>NodeInfo</code> + resource map: control plane, cordoned, NotReady</td></tr>
+<tr><td><code>TestMergeNodesAndPods</code></td><td>All-pod vs jupyter-only aggregation for <code>ResourceSummary</code>, control plane excluded</td></tr>
+<tr><td><code>TestParseLonghornNodes</code></td><td>Disk JSON → <code>DiskInfo</code>: uninitialized disk skipped, sorted by name</td></tr>
+</tbody>
+</table>
+
+<h3>test_models.py — 31 tests</h3>
+<p>Tests computed properties and serialization in <code>lobot_tui/data/models.py</code>.</p>
+<table>
+<thead>
+<tr><th>Class</th><th>What it covers</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TestResourceSummary</code></td><td><code>cpu_used</code>, <code>ram_used_gb</code>, <code>gpu_used</code>, <code>has_gpu</code></td></tr>
+<tr><td><code>TestNodeInfo</code></td><td><code>cordoned</code>, <code>cpu_free</code>, <code>ram_free_gb</code>, <code>gpu_free</code> — all clamped at zero</td></tr>
+<tr><td><code>TestDiskInfo</code></td><td><code>used_gb</code>, clamped at zero when available &gt; total</td></tr>
+<tr><td><code>TestClusterStateSerialization</code></td><td><code>to_dict()</code> / <code>from_dict()</code> round-trip for all fields, datetime ISO serialization, <code>None</code> datetimes, backward-compat <code>"labs"</code> key, error fields preserved</td></tr>
+</tbody>
+</table>
+
+<h3>test_collector_integration.py — 17 tests</h3>
+<p>Tests the live lobot-collector HTTP service on <code>127.0.0.1:9095</code>. Skipped automatically if the service is not reachable.</p>
+<table>
+<thead>
+<tr><th>Class</th><th>What it covers</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TestApiState</code></td><td><code>/api/state</code>: HTTP 200, <code>application/json</code> content-type, valid JSON, deserializes to <code>ClusterState</code>, all top-level keys present, node/pod field validation, no service error, consistency across repeated calls</td></tr>
+<tr><td><code>TestApiEvents</code></td><td><code>/api/events</code>: HTTP 200, <code>text/event-stream</code> content-type, first SSE event is valid JSON, deserializes to <code>ClusterState</code>, node set matches <code>/api/state</code></td></tr>
+</tbody>
+</table>
+
+<h3>test_scripts.py — 23 tests (5 opt-in)</h3>
+<p>Tests shell scripts by invoking them with <code>bash</code> via Python's <code>subprocess.run</code>.</p>
+<table>
+<thead>
+<tr><th>Class</th><th>What it covers</th><th>Opt-in?</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TestImagePullArgErrors</code></td><td>Missing <code>-i</code> → exit 1; <code>-n</code> + <code>-e</code> together → exit 1</td><td>No</td></tr>
+<tr><td><code>TestImageCleanupArgErrors</code></td><td>Same as above for <code>image-cleanup.sh</code></td><td>No</td></tr>
+<tr><td><code>TestLvManageArgErrors</code></td><td>No args → exit 1 + usage; invalid <code>--expand</code> size format → exit 1</td><td>No</td></tr>
+<tr><td><code>TestSyncGroupsHelp</code></td><td><code>--help</code> → exit 0 + usage text</td><td>No</td></tr>
+<tr><td><code>TestLvManageInfo</code></td><td>Real PVC info output (read-only); nonexistent PVC → exit 1 with error</td><td>If kubectl up</td></tr>
+<tr><td><code>TestImagePullDryRun</code></td><td><code>--dry-run --yes -n &lt;node&gt;</code>: exit 0, node in output, present/missing reported</td><td><strong>Yes</strong></td></tr>
+<tr><td><code>TestImageCleanupDryRun</code></td><td><code>--dry-run --yes</code>: exit 0, produces output</td><td><strong>Yes</strong></td></tr>
+</tbody>
+</table>
+<p>The <code>script_integration</code> tests send real emails to <code>aaron@cs.queensu.ca</code> and <code>whb1@queensu.ca</code> with <code>[DRY RUN]</code> subjects, and create temporary pods on the cluster. They are excluded from the default run via <code>addopts</code> in <code>pyproject.toml</code>.</p>
+<hr />
+
+<h2>Expected Output</h2>
+
+<h3>Default run — <code>run-tests.sh -v</code></h3>
+<pre><code>============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0
+rootdir: /opt/Lobot
+plugins: asyncio-1.3.0
+
+collecting ... collected 142 items / 5 deselected / 137 selected
+
+tools/tests/test_models.py::TestResourceSummary::test_cpu_used PASSED
+tools/tests/test_models.py::TestResourceSummary::test_cpu_used_all_free PASSED
+...
+tools/tests/test_scripts.py::TestLvManageInfo::test_exits_zero_for_valid_pvc PASSED
+tools/tests/test_scripts.py::TestLvManageInfo::test_produces_output_for_valid_pvc PASSED
+tools/tests/test_scripts.py::TestLvManageInfo::test_nonexistent_pvc_exits_nonzero PASSED
+tools/tests/test_scripts.py::TestLvManageInfo::test_nonexistent_pvc_prints_error PASSED
+
+====================== 137 passed, 5 deselected in 3.70s =======================</code></pre>
+<p>The 5 deselected tests are the <code>script_integration</code> dry-run tests. If lobot-collector is not running, the 17 integration tests show as skipped instead:</p>
+<pre><code>====================== 120 passed, 5 deselected, 17 skipped in 1.20s ===========</code></pre>
+
+<h3>Opt-in dry-run tests — <code>run-tests.sh -v -m script_integration</code></h3>
+<pre><code>collecting ... collected 5 items
+
+tools/tests/test_scripts.py::TestImagePullDryRun::test_dry_run_single_node_exits_zero PASSED
+tools/tests/test_scripts.py::TestImagePullDryRun::test_dry_run_output_mentions_node PASSED
+tools/tests/test_scripts.py::TestImagePullDryRun::test_dry_run_reports_present_or_missing PASSED
+tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_exits_zero PASSED
+tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_produces_output PASSED
+
+========================== 5 passed in 56.39s ==================================</code></pre>
+<p>These take ~60 seconds due to pod creation and cleanup.</p>
+
+<h3>Unit tests only</h3>
+<pre><code>/opt/Lobot/tools/run-tests.sh -v tools/tests/test_parsers.py tools/tests/test_models.py</code></pre>
+<pre><code>collecting ... collected 102 items
+...
+============================= 102 passed in 0.33s ==============================</code></pre>
+
+<h3>Integration tests only</h3>
+<pre><code>/opt/Lobot/tools/run-tests.sh -v tools/tests/test_collector_integration.py</code></pre>
+<pre><code>collecting ... collected 17 items
+...
+============================= 17 passed in 0.50s ==============================</code></pre>
+<hr />
+
+<h2>Configuration</h2>
+<p>Test configuration lives in the <code>[tool.pytest.ini_options]</code> section of <code>/opt/Lobot/pyproject.toml</code>:</p>
+<pre><code>[tool.pytest.ini_options]
+pythonpath = ["tools"]        # makes lobot_tui importable as a package
+testpaths = ["tools/tests"]   # default discovery path
+asyncio_mode = "auto"         # for any future async tests
+addopts = "-m 'not script_integration'"  # exclude email-sending tests by default
+markers = [
+    "script_integration: dry-run shell script tests that send real emails and create cluster pods (opt-in)",
+]</code></pre>
+<hr />
+
+<h2>Setup (First Time)</h2>
+<p>Pytest and pytest-asyncio are listed in <code>tools/lobot_tui/requirements-tui.txt</code> and must be installed into the TUI venv once:</p>
+<pre><code>/opt/Lobot/tools/lobot_tui/.venv/bin/pip install pytest pytest-asyncio</code></pre>
+<p>After that, <code>run-tests.sh</code> handles everything — no additional setup required.</p>
+<hr />
+
+<h2>Adding New Tests</h2>
+<ul>
+<li><strong>Unit tests for Python modules</strong>: add to <code>test_parsers.py</code>, <code>test_models.py</code>, or create a new <code>test_&lt;module&gt;.py</code> in <code>tools/tests/</code>.</li>
+<li><strong>Collector integration tests</strong>: add to <code>test_collector_integration.py</code>.</li>
+<li><strong>Shell script tests without side effects</strong>: add to <code>test_scripts.py</code> in the appropriate class — no mark needed.</li>
+<li><strong>Shell script tests with side effects</strong> (emails, pod creation): add to <code>test_scripts.py</code> decorated with <code>@pytest.mark.script_integration</code>.</li>
+</ul>
+<p>Fixture JSON for pod, node, and Longhorn parsing tests is shared via <code>tools/tests/conftest.py</code>.</p>

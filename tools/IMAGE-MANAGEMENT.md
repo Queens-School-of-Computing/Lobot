@@ -39,7 +39,7 @@ saturating the network and causing pod scheduling delays.
 ### Usage
 
 ```bash
-./image-pull.sh -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run] [--yes]
+./image-pull.sh -i <image[:tag]> [-i <image[:tag]> ...] [-b <batch_size>] [-t <timeout>] [-e <exclude>] [-n <node>] [--latest] [--dry-run] [--yes] [--noemail]
 ```
 
 ### Parameters

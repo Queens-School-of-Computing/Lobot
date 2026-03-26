@@ -1,3 +1,12 @@
+[tool.pytest.ini_options]
+pythonpath = ["tools"]
+testpaths = ["tools/tests"]
+asyncio_mode = "auto"
+markers = [
+    "script_integration: dry-run shell script tests that send real emails and create cluster pods (opt-in)",
+]
+addopts = "-m 'not script_integration'"
+
 [tool.ruff]
 line-length = 100
 target-version = "py314"

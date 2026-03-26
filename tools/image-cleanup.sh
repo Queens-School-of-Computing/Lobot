@@ -130,8 +130,9 @@ usage() {
   echo "  -i        Full image name and tag to KEEP (repeatable; all other tags will be removed)"
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
-  echo "  --dry-run Report what would be removed without actually removing anything"
-  echo "  --yes     Skip the confirmation prompt before removing images"
+  echo "  --dry-run  Report what would be removed without actually removing anything"
+  echo "  --yes      Skip the confirmation prompt before removing images"
+  echo "  --noemail  Skip email notification (useful for testing)"
   echo ""
   echo "Examples:"
   echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest:tag -e lobot-dev.cs.queensu.ca"
@@ -149,8 +150,9 @@ KEEP_IMAGES=()
 ARGS=()
 for arg in "$@"; do
   case $arg in
-    --dry-run) DRY_RUN=true ;;
-    --yes)     AUTO_YES=true ;;
+    --dry-run)  DRY_RUN=true ;;
+    --yes)      AUTO_YES=true ;;
+    --noemail)  EMAIL_ENABLED=false ;;
     *) ARGS+=("$arg") ;;
   esac
 done

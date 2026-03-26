@@ -152,9 +152,10 @@ usage() {
   echo "  -t        Timeout in seconds per node (default: 1200)"
   echo "  -e        Comma-separated list of nodes to exclude"
   echo "  -n        Target a single specific node only"
-  echo "  --latest  Resolve the most recently pushed tag from Docker Hub for each -i image"
-  echo "  --dry-run Report what would be pulled without actually pulling"
-  echo "  --yes     Skip the confirmation prompt before pulling"
+  echo "  --latest   Resolve the most recently pushed tag from Docker Hub for each -i image"
+  echo "  --dry-run  Report what would be pulled without actually pulling"
+  echo "  --yes      Skip the confirmation prompt before pulling"
+  echo "  --noemail  Skip email notification (useful for testing)"
   echo ""
   echo "Examples:"
   echo "  $0 -i queensschoolofcomputingdocker/gpu-jupyter-latest --latest -b 3"
@@ -175,9 +176,10 @@ PULL_IMAGES=()
 ARGS=()
 for arg in "$@"; do
   case $arg in
-    --dry-run) DRY_RUN=true ;;
-    --latest)  LATEST_MODE=true ;;
-    --yes)     AUTO_YES=true ;;
+    --dry-run)  DRY_RUN=true ;;
+    --latest)   LATEST_MODE=true ;;
+    --yes)      AUTO_YES=true ;;
+    --noemail)  EMAIL_ENABLED=false ;;
     *) ARGS+=("$arg") ;;
   esac
 done
