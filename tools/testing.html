@@ -14,8 +14,12 @@
 
 # Run a specific test class or function
 /opt/Lobot/tools/run-tests.sh -v -k TestParseCpuRequest
-/opt/Lobot/tools/run-tests.sh -v -k "test_invalid_expand_size_format"</code></pre>
+/opt/Lobot/tools/run-tests.sh -v -k "test_invalid_expand_size_format"
+
+# Show full script stdout/stderr even on passing tests (-s disables pytest output capture)
+LOBOT_TEST_VERBOSE=1 /opt/Lobot/tools/run-tests.sh -v -s tools/tests/test_scripts.py</code></pre>
 <p>The wrapper script (<code>run-tests.sh</code>) works from any directory. It resolves all paths relative to the repo root at <code>/opt/Lobot</code> and uses the venv Python automatically.</p>
+<p>Pass <code>--log</code> to save the full output (test names, pass/fail results, and failure details including script stdout/stderr) to a timestamped file in <code>tools/tests/</code>, e.g. <code>run-20260326-143052.log</code>. Without <code>--log</code>, output goes directly to the terminal with full color and formatting. Log files are excluded from git and accumulate until manually cleaned up.</p>
 <hr />
 
 <h2>Test Files</h2>

@@ -6,18 +6,23 @@ Test categories:
   - lv-manage.sh info tests: read-only kubectl queries, no emails, no pods.
     Skipped automatically if kubectl is unreachable or no PVCs exist on the cluster.
   - script_integration mark: dry-run tests for image-pull.sh and image-cleanup.sh.
-    THESE SEND REAL EMAILS and create temporary pods. Opt-in only:
+    Creates temporary pods on the cluster. Opt-in only:
       run-tests.sh -m script_integration
 
 Run only the fast, safe tests (default):
     /opt/Lobot/tools/run-tests.sh -v tools/tests/test_scripts.py
 
-Run everything including email-sending dry-runs:
+Run everything including dry-runs:
     /opt/Lobot/tools/run-tests.sh -v -m "script_integration or not script_integration" tools/tests/test_scripts.py
+
+Show full script output even on success (set LOBOT_TEST_VERBOSE=1 and pass -s):
+    LOBOT_TEST_VERBOSE=1 /opt/Lobot/tools/run-tests.sh -v -s tools/tests/test_scripts.py
 """
 
+import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,13 +31,24 @@ TOOLS_DIR = Path("/opt/Lobot/tools")
 
 
 def _run(script: str, *args: str, timeout: int = 30) -> subprocess.CompletedProcess:
-    """Run a tools/ script, capturing stdout + stderr."""
-    return subprocess.run(
+    """Run a tools/ script, capturing stdout + stderr.
+
+    If LOBOT_TEST_VERBOSE=1 is set in the environment, prints the script's stdout
+    and stderr after every call (pass -s to pytest to see the output).
+    """
+    result = subprocess.run(
         ["bash", str(TOOLS_DIR / script)] + list(args),
         capture_output=True,
         text=True,
         timeout=timeout,
     )
+    if os.environ.get("LOBOT_TEST_VERBOSE"):
+        label = f"{script} {' '.join(args)}"
+        if result.stdout:
+            print(f"\n[stdout: {label}]\n{result.stdout}", end="")
+        if result.stderr:
+            print(f"\n[stderr: {label}]\n{result.stderr}", end="", file=sys.stderr)
+    return result
 
 
 def _kubectl_available() -> bool:

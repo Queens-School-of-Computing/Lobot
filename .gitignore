@@ -11,3 +11,6 @@ tools/LOBOT-MEMORY.md
 .DS_Store
 .vscode.desktop
 tools/OLD-cluster-setup.html
+
+# Test run logs (timestamped, one per run)
+tools/tests/run-*.log

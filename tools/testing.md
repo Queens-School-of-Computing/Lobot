@@ -20,11 +20,24 @@ server via SSH using the existing TUI Python virtual environment.
 # Run a specific test class or function
 /opt/Lobot/tools/run-tests.sh -v -k TestParseCpuRequest
 /opt/Lobot/tools/run-tests.sh -v -k "test_invalid_expand_size_format"
+
+# Show full script stdout/stderr even on passing tests (-s disables pytest output capture)
+LOBOT_TEST_VERBOSE=1 /opt/Lobot/tools/run-tests.sh -v -s tools/tests/test_scripts.py
 ```
 
 The wrapper script (`run-tests.sh`) works from any directory — it resolves paths relative
 to the repo root at `/opt/Lobot` and uses the venv at
 `/opt/Lobot/tools/lobot_tui/.venv/bin/python3`.
+
+Pass `--log` to save the full pytest output (test names, pass/fail results, and failure
+details including script stdout/stderr) to a timestamped file in `tools/tests/`:
+
+```
+tools/tests/run-20260326-143052.log
+```
+
+Without `--log`, output goes directly to the terminal with full color and formatting.
+Log files are excluded from git and accumulate until manually cleaned up.
 
 ---
 
