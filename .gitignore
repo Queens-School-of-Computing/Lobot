@@ -14,3 +14,6 @@ tools/OLD-cluster-setup.html
 
 # Test run logs (timestamped, one per run)
 tools/tests/run-*.log
+
+# Local development venv (for running tests without deploying to the dev server)
+.venv-dev/

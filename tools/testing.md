@@ -335,6 +335,72 @@ tools/tests/test_collector_integration.py::TestApiEvents::test_first_event_match
 
 ---
 
+## Local Development
+
+Tests can run on your local machine without deploying to the dev server. The unit
+tests (`test_parsers.py`, `test_models.py`) and script argument error tests have no
+external dependencies. Collector integration tests and kubectl-dependent tests skip
+automatically when those services are not available.
+
+### Why this works without Textual
+
+`parsers.py` and `models.py` import only Python stdlib (`json`, `datetime`, `dataclasses`,
+etc.). Textual is only imported by the screen and widget files, which are not in the test
+import chain. The full local setup needs only `pytest` and `pytest-asyncio`.
+
+### One-time setup
+
+```bash
+cd /path/to/Lobot
+python3 -m venv .venv-dev
+.venv-dev/bin/pip install -r requirements-dev.txt
+```
+
+Then tell VS Code to use `.venv-dev` as the Python interpreter: open the Command Palette,
+run **Python: Select Interpreter**, and choose `.venv-dev`.
+
+### Running tests locally
+
+`LOBOT_TOOLS_DIR` tells the script tests where to find the shell scripts. Without it,
+they look in `/opt/Lobot/tools` (the server path). The VS Code integrated terminal
+sets this automatically via `.vscode/settings.json`.
+
+```bash
+# Unit tests only — always pass, ~0.3s, no cluster needed
+LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest tools/tests/test_parsers.py tools/tests/test_models.py -v
+
+# All tests — collector + kubectl tests auto-skip, argument error tests run
+LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest -v
+```
+
+Expected local result: ~114 passed, 17 skipped (collector not running), a handful
+skipped (kubectl not available). Zero failures.
+
+### Watch mode — run on every file save
+
+`pytest-watch` (`ptw`) watches for file changes and re-runs the specified tests
+automatically. This is the fastest inner loop for test-driven development:
+
+```bash
+LOBOT_TOOLS_DIR=tools .venv-dev/bin/ptw tools/tests/test_parsers.py tools/tests/test_models.py -- -v
+```
+
+Leave this running in a terminal while editing `parsers.py` or `models.py` — tests
+re-run within a second of each save.
+
+### VS Code Test Explorer
+
+With `.vscode/settings.json` in place, the Test Explorer sidebar (flask icon) shows all
+tests with live pass/fail indicators. Click the run button next to any test, class, or
+file to run just that subset. The debugger works too — set a breakpoint in a test and
+use **Debug Test** to step through it.
+
+`LOBOT_TOOLS_DIR` is set automatically in the VS Code integrated terminal via
+`terminal.integrated.env.osx` in `.vscode/settings.json`, so no manual export is needed
+when running from the terminal panel.
+
+---
+
 ## Configuration
 
 Test configuration lives in the `[tool.pytest.ini_options]` section of `/opt/Lobot/pyproject.toml`:

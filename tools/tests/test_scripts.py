@@ -27,7 +27,9 @@ from pathlib import Path
 
 import pytest
 
-TOOLS_DIR = Path("/opt/Lobot/tools")
+# Default: two levels up from this file (tools/tests/ → tools/)
+# Override with LOBOT_TOOLS_DIR env var if needed.
+TOOLS_DIR = Path(os.environ.get("LOBOT_TOOLS_DIR", str(Path(__file__).parent.parent)))
 
 
 def _run(script: str, *args: str, timeout: int = 30) -> subprocess.CompletedProcess:
