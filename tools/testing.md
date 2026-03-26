@@ -11,7 +11,7 @@ server via SSH using the existing TUI Python virtual environment.
 # Run all tests (unit + integration + safe script tests)
 /opt/Lobot/tools/run-tests.sh -v
 
-# Run with opt-in dry-run script tests (sends real emails, creates pods)
+# Run opt-in dry-run script tests (creates temporary pods, no emails, no real pulls or deletions)
 /opt/Lobot/tools/run-tests.sh -v -m script_integration
 
 # Run a specific file
