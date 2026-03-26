@@ -240,7 +240,7 @@ tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_produces_outpu
 <hr />
 
 <h2>Local Development</h2>
-<p>Tests can run on your local macOS machine without deploying to the dev server. The unit tests (<code>test_parsers.py</code>, <code>test_models.py</code>) and script argument error tests have no external dependencies. Collector integration tests and kubectl-dependent tests skip automatically when those services are not available.</p>
+<p>Tests can run on your local machine without deploying to the dev server. The unit tests (<code>test_parsers.py</code>, <code>test_models.py</code>) and script argument error tests have no external dependencies. Collector integration tests and kubectl-dependent tests skip automatically when those services are not available.</p>
 
 <h3>Why this works without Textual</h3>
 <p><code>parsers.py</code> and <code>models.py</code> import only Python stdlib (<code>json</code>, <code>datetime</code>, <code>dataclasses</code>, etc.). Textual is only imported by the screen and widget files, which are not in the test import chain. The full local setup needs only <code>pytest</code> and <code>pytest-asyncio</code>.</p>

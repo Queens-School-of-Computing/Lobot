@@ -85,7 +85,7 @@ class NodeInfo:
 
     @property
     def cpu_free(self) -> int:
-        return max(0, self.cpu_allocatable - self.cpu_requested)
+        return max(0, self.cpu_allocatable - self.cpu_requested)        
 
     @property
     def ram_free_gb(self) -> float:
