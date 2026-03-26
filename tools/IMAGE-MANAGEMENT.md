@@ -54,6 +54,7 @@ saturating the network and causing pod scheduling delays.
 | `--latest` | Resolve the most recently pushed tag from Docker Hub for each `-i` image | — |
 | `--dry-run` | Check image presence per node; report what would be pulled without pulling | — |
 | `--yes` | Skip the confirmation prompt before pulling | — |
+| `--noemail` | Skip email notification (useful for dry-run testing) | — |
 
 > `-n` and `-e` are mutually exclusive.
 
@@ -262,7 +263,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 ### Usage
 
 ```bash
-./image-cleanup.sh -i <image:tag> [-i <image:tag> ...] [-e <exclude>] [-n <node>] [--dry-run] [--yes]
+./image-cleanup.sh -i <image:tag> [-i <image:tag> ...] [-e <exclude>] [-n <node>] [--dry-run] [--yes] [--noemail]
 ```
 
 ### Parameters
@@ -274,6 +275,7 @@ pods (e.g. long-running user sessions that haven't restarted yet).
 | `-n` | Target a single specific node only | — |
 | `--dry-run` | Report what would be removed per node without removing anything | — |
 | `--yes` | Skip the confirmation prompt before removing images | — |
+| `--noemail` | Skip email notification (useful for dry-run testing) | — |
 
 > `-n` and `-e` are mutually exclusive.
 

@@ -90,9 +90,9 @@ Tests shell scripts by invoking them with `bash` via `subprocess.run`.
 | `TestImagePullDryRun` | `--dry-run --yes -n <node>`: exit 0, node in output, present/missing reported | **Yes** |
 | `TestImageCleanupDryRun` | `--dry-run --yes`: exit 0, produces output | **Yes** |
 
-The `script_integration` tests send real emails and create temporary pods on the cluster.
-They are excluded from the default run via `addopts = "-m 'not script_integration'"` in
-`pyproject.toml`.
+The `script_integration` tests pass `--noemail` to suppress email notifications during
+testing. They still create temporary pods on the cluster and are excluded from the default
+run via `addopts = "-m 'not script_integration'"` in `pyproject.toml`.
 
 ---
 
@@ -142,8 +142,8 @@ tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_produces_outpu
 ========================== 5 passed in 56.39s ==================================
 ```
 
-These take ~60 seconds due to pod creation. Real emails are sent to `aaron@cs.queensu.ca`
-and `whb1@queensu.ca` with `[DRY RUN]` subjects.
+These take ~60 seconds due to pod creation. No emails are sent — `--noemail` is passed
+by the tests.
 
 ### Unit tests only — `run-tests.sh -v tools/tests/test_parsers.py tools/tests/test_models.py`
 

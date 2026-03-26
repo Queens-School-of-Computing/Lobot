@@ -22,7 +22,7 @@
 <h3>Purpose</h3>
 <p>Pre-pulls a new image across cluster nodes in controlled batches before a helm upgrade. Without this, helm upgrades cause all nodes to pull simultaneously, saturating the network and causing pod scheduling delays.</p>
 <h3>Usage</h3>
-<pre><code>./image-pull.sh -i &lt;image[:tag]&gt; [-i &lt;image[:tag]&gt; ...] [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--latest] [--dry-run] [--yes]</code></pre>
+<pre><code>./image-pull.sh -i &lt;image[:tag]&gt; [-i &lt;image[:tag]&gt; ...] [-b &lt;batch_size&gt;] [-t &lt;timeout&gt;] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--latest] [--dry-run] [--yes] [--noemail]</code></pre>
 <h3>Parameters</h3>
 <table>
 <thead>
@@ -71,6 +71,11 @@
 <tr>
 <td><code>--yes</code></td>
 <td>Skip the confirmation prompt before pulling</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--noemail</code></td>
+<td>Skip email notification (useful for dry-run testing)</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -267,7 +272,7 @@ helm upgrade ...
 <h3>Purpose</h3>
 <p>Removes old tags of an image from all cluster nodes after a helm upgrade, freeing disk space. Automatically protects images currently in use by running pods (e.g. long-running user sessions that haven't restarted yet).</p>
 <h3>Usage</h3>
-<pre><code>./image-cleanup.sh -i &lt;image:tag&gt; [-i &lt;image:tag&gt; ...] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run] [--yes]</code></pre>
+<pre><code>./image-cleanup.sh -i &lt;image:tag&gt; [-i &lt;image:tag&gt; ...] [-e &lt;exclude&gt;] [-n &lt;node&gt;] [--dry-run] [--yes] [--noemail]</code></pre>
 <h3>Parameters</h3>
 <table>
 <thead>
@@ -301,6 +306,11 @@ helm upgrade ...
 <tr>
 <td><code>--yes</code></td>
 <td>Skip the confirmation prompt before removing images</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--noemail</code></td>
+<td>Skip email notification (useful for dry-run testing)</td>
 <td>—</td>
 </tr>
 </tbody>

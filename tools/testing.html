@@ -113,7 +113,7 @@
 <tr><td><code>TestImageCleanupDryRun</code></td><td><code>--dry-run --yes</code>: exit 0, produces output</td><td><strong>Yes</strong></td></tr>
 </tbody>
 </table>
-<p>The <code>script_integration</code> tests send real emails to <code>aaron@cs.queensu.ca</code> and <code>whb1@queensu.ca</code> with <code>[DRY RUN]</code> subjects, and create temporary pods on the cluster. They are excluded from the default run via <code>addopts</code> in <code>pyproject.toml</code>.</p>
+<p>The <code>script_integration</code> tests pass <code>--noemail</code> to suppress email notifications during testing. They still create temporary pods on the cluster and are excluded from the default run via <code>addopts</code> in <code>pyproject.toml</code>.</p>
 <hr />
 
 <h2>Expected Output</h2>
@@ -148,7 +148,7 @@ tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_exits_zero PAS
 tools/tests/test_scripts.py::TestImageCleanupDryRun::test_dry_run_produces_output PASSED
 
 ========================== 5 passed in 56.39s ==================================</code></pre>
-<p>These take ~60 seconds due to pod creation and cleanup.</p>
+<p>These take ~60 seconds due to pod creation and cleanup. No emails are sent — <code>--noemail</code> is passed by the tests.</p>
 
 <h3>Unit tests only</h3>
 <pre><code>/opt/Lobot/tools/run-tests.sh -v tools/tests/test_parsers.py tools/tests/test_models.py</code></pre>
