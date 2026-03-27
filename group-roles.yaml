@@ -9,7 +9,7 @@
 # By convention, groups follow the format 'group-{name}-users'
 # and system users (AKA accounts not owned by people), follow
 # the format 'group-{name}
-# Manually Edited. Aaron Mar 27 2026, edit 2
+
 roles:
 - name: group-csai801g14-users
   user: group-csai801g14
