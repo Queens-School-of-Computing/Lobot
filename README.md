@@ -1,3 +1,2 @@
-# QSC Lobot README Mar 27 2026
-
+# QSC Lobot README 
 ## See internal documentation.
