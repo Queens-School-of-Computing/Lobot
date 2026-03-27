@@ -1,7 +1,7 @@
 # Lobot Test Suite
 
-Automated tests for the Python modules and shell scripts in `tools/`. Tests run on the dev
-server via SSH using the existing TUI Python virtual environment.
+Automated tests for the Python modules and shell scripts in this repo. Tests run on the dev
+server via SSH using the `.venv-dev` Python virtual environment.
 
 ---
 
@@ -15,19 +15,19 @@ server via SSH using the existing TUI Python virtual environment.
 /opt/Lobot/tools/run-tests.sh -v -m script_integration
 
 # Run a specific file
-/opt/Lobot/tools/run-tests.sh -v tools/tests/test_parsers.py
+/opt/Lobot/tools/run-tests.sh -v tests/test_parsers.py
 
 # Run a specific test class or function
 /opt/Lobot/tools/run-tests.sh -v -k TestParseCpuRequest
 /opt/Lobot/tools/run-tests.sh -v -k "test_invalid_expand_size_format"
 
 # Show full script stdout/stderr even on passing tests (-s disables pytest output capture)
-LOBOT_TEST_VERBOSE=1 /opt/Lobot/tools/run-tests.sh -v -s tools/tests/test_scripts.py
+LOBOT_TEST_VERBOSE=1 /opt/Lobot/tools/run-tests.sh -v -s tests/test_scripts.py
 ```
 
 The wrapper script (`run-tests.sh`) works from any directory — it resolves paths relative
-to the repo root at `/opt/Lobot` and uses the venv at
-`/opt/Lobot/tools/lobot_tui/.venv/bin/python3`.
+to the tools directory at `/opt/Lobot/tools` and uses the dev venv at
+`/opt/Lobot/tools/.venv-dev/bin/python3`.
 
 Pass `--log` to save the full pytest output (test names, pass/fail results, and failure
 details including script stdout/stderr) to a timestamped file in `tools/tests/`:
@@ -269,7 +269,7 @@ conflicting flags will pass everything except the argument tests.
 ```
 ============================= test session starts ==============================
 platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0
-rootdir: /opt/Lobot
+rootdir: /opt/Lobot/tools
 plugins: asyncio-1.3.0
 asyncio: mode=Mode.AUTO
 
@@ -351,7 +351,7 @@ import chain. The full local setup needs only `pytest` and `pytest-asyncio`.
 ### One-time setup
 
 ```bash
-cd /path/to/Lobot
+cd /path/to/Lobot-tools
 python3 -m venv .venv-dev
 .venv-dev/bin/pip install -r requirements-dev.txt
 ```
@@ -372,10 +372,10 @@ sets this automatically via `.vscode/settings.json`.
 
 ```bash
 # Unit tests only — always pass, ~0.3s, no cluster needed
-LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest tools/tests/test_parsers.py tools/tests/test_models.py -v
+LOBOT_TOOLS_DIR=. LOBOT_CLUSTER_DIR=.. .venv-dev/bin/pytest tests/test_parsers.py tests/test_models.py -v
 
 # All tests — collector + kubectl tests auto-skip, argument error tests run
-LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest -v
+LOBOT_TOOLS_DIR=. LOBOT_CLUSTER_DIR=.. .venv-dev/bin/pytest -v
 ```
 
 Expected local result: ~114 passed, 17 skipped (collector not running), a handful
@@ -387,7 +387,7 @@ skipped (kubectl not available). Zero failures.
 automatically. This is the fastest inner loop for test-driven development:
 
 ```bash
-LOBOT_TOOLS_DIR=tools .venv-dev/bin/ptw tools/tests/test_parsers.py tools/tests/test_models.py -- -v
+LOBOT_TOOLS_DIR=. LOBOT_CLUSTER_DIR=.. .venv-dev/bin/ptw tests/test_parsers.py tests/test_models.py -- -v
 ```
 
 Leave this running in a terminal while editing `parsers.py` or `models.py` — tests
@@ -408,12 +408,12 @@ when running from the terminal panel.
 
 ## Configuration
 
-Test configuration lives in the `[tool.pytest.ini_options]` section of `/opt/Lobot/pyproject.toml`:
+Test configuration lives in the `[tool.pytest.ini_options]` section of `/opt/Lobot/tools/pyproject.toml`:
 
 ```toml
 [tool.pytest.ini_options]
-pythonpath = ["tools"]          # makes lobot_tui importable as a package
-testpaths = ["tools/tests"]     # default discovery path
+pythonpath = ["."]              # makes lobot_tui importable as a package
+testpaths = ["tests"]           # default discovery path
 asyncio_mode = "auto"           # for any future async tests
 addopts = "-m 'not script_integration'"   # exclude email-sending tests from default run
 markers = [
@@ -425,11 +425,12 @@ markers = [
 
 ## Setup (first time)
 
-Pytest and pytest-asyncio are listed in `tools/lobot_tui/requirements-tui.txt` and must
-be installed in the TUI venv:
+Create the dev venv at the repo root and install dependencies:
 
 ```bash
-/opt/Lobot/tools/lobot_tui/.venv/bin/pip install pytest pytest-asyncio
+cd /opt/Lobot/tools
+python3 -m venv .venv-dev
+.venv-dev/bin/pip install -r requirements-dev.txt
 ```
 
 This only needs to be done once. After that, `run-tests.sh` handles everything.

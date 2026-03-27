@@ -6,8 +6,7 @@
 #         Without this flag output goes directly to the terminal with full formatting.
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-REPO_DIR="$(dirname "$SCRIPT_DIR")"
-VENV_PYTHON="$SCRIPT_DIR/lobot_tui/.venv/bin/python3"
+VENV_PYTHON="$SCRIPT_DIR/.venv-dev/bin/python3"
 LOG_FILE="$SCRIPT_DIR/tests/run-$(date '+%Y%m%d-%H%M%S').log"
 
 SAVE_LOG=false
@@ -19,7 +18,7 @@ for arg in "$@"; do
   esac
 done
 
-cd "$REPO_DIR"
+cd "$SCRIPT_DIR"
 if [ "$SAVE_LOG" = true ]; then
   "$VENV_PYTHON" -m pytest "${PYTEST_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
   exit "${PIPESTATUS[0]}"

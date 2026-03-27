@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
-pythonpath = ["tools"]
-testpaths = ["tools/tests"]
+pythonpath = ["."]
+testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
     "script_integration: dry-run shell script tests that send real emails and create cluster pods (opt-in)",
