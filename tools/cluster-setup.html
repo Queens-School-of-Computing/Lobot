@@ -230,10 +230,17 @@ helm install --wait --generate-name \
 # To remove:
 # helm delete -n gpu-operator $(helm list -n gpu-operator | grep gpu-operator | awk '{print $1}')</code></pre>
 <hr />
-<h2>Step 15 — Clone Lobot Repo</h2>
+<h2>Step 15 — Clone Lobot Repos</h2>
+<p>The cluster config and the tools are in two separate repos. Clone both — the tools repo lives inside the cluster-config repo at <code>tools/</code>.</p>
 <pre><code>cd /opt
+
+# Clone the cluster-config repo
 sudo git clone https://github.com/Queens-School-of-Computing/Lobot.git -b newcluster
 sudo chown -R croot:croot /opt/Lobot
+
+# Clone the tools repo into tools/ inside the cluster-config repo
+sudo git clone https://github.com/Queens-School-of-Computing/Lobot-tools.git Lobot/tools
+sudo chown -R croot:croot /opt/Lobot/tools
 
 # Install Python dependencies needed by Lobot tools
 sudo apt install python3-pip -y
@@ -412,6 +419,34 @@ ln -sf /opt/Lobot/tools/lobot-tui.sh /usr/local/bin/lobot-tui
 # Launch
 bash /opt/Lobot/tools/lobot-tui.sh</code></pre>
 <p>See <a href="https://github.com/Queens-School-of-Computing/Lobot/blob/newcluster/tools/lobot-tui.md" target="_blank" rel="noopener">lobot-tui.md</a> for full documentation.</p>
+<h3>Environment variables</h3>
+<p><code>lobot-tui</code> and <code>lobot-collector</code> read two optional environment variables to locate the cluster-config repo and the tools directory.</p>
+<table>
+<thead>
+<tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>LOBOT_CLUSTER_DIR</code></td><td><code>/opt/Lobot</code></td><td>Path to the cluster-config repo (Helm configs, announcements, logs)</td></tr>
+<tr><td><code>LOBOT_TOOLS_DIR</code></td><td><code>$LOBOT_CLUSTER_DIR/tools</code></td><td>Path to the tools directory (overrides the derived default)</td></tr>
+</tbody>
+</table>
+<p><strong>Queens control plane (croot) — no action required.</strong> The defaults match the deployment layout at <code>/opt/Lobot</code> and <code>/opt/Lobot/tools</code>.</p>
+<p><strong>Other clusters</strong> — if your cluster config repo is not at <code>/opt/Lobot</code>, replace <code>/opt/Lobot</code> with your actual path throughout. Set <code>LOBOT_CLUSTER_DIR</code> in croot's shell profile for interactive TUI use, and as an <code>Environment=</code> directive in the collector service unit so the daemon picks it up:</p>
+<pre><code># Add to /home/croot/.bashrc (for interactive TUI use)
+echo 'export LOBOT_CLUSTER_DIR=/opt/Lobot' &gt;&gt; /home/croot/.bashrc
+echo 'export LOBOT_TOOLS_DIR=/opt/Lobot/tools' &gt;&gt; /home/croot/.bashrc
+source /home/croot/.bashrc</code></pre>
+<p>For the collector service, add <code>Environment=</code> lines and update <code>ExecStart</code> and <code>WorkingDirectory</code> to your actual paths in <code>lobot-collector.service</code> before installing it. Systemd does not expand environment variables in <code>ExecStart</code> or <code>WorkingDirectory</code>, so those must be literal paths:</p>
+<pre><code>[Service]
+Environment=LOBOT_CLUSTER_DIR=/opt/Lobot
+Environment=LOBOT_TOOLS_DIR=/opt/Lobot/tools
+ExecStart=/opt/Lobot/tools/lobot-collector.sh
+WorkingDirectory=/opt/Lobot/tools
+...</code></pre>
+<p>Then reinstall the unit:</p>
+<pre><code>sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl restart lobot-collector</code></pre>
 <hr />
 <h2>Step 21 — nginx</h2>
 <pre><code>sudo apt install nginx</code></pre>

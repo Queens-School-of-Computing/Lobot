@@ -167,7 +167,7 @@ When `--dry-run` is passed, no pods are launched for actual pulling. Instead:
 4. Image size estimates (compressed from Docker Hub + estimated uncompressed range) are
    shown at the top of the dry-run section and annotated on each missing image
 5. A summary is printed and a dry-run email notification is sent
-6. Log file is named `pull-dryrun-YYYYMMDD-HHMMSS.log`
+6. Log file is written to `logs/pull-dryrun-YYYYMMDD-HHMMSS.log`
 
 Useful for checking which nodes still need an image and whether there is sufficient
 disk space before committing to the full pull.
@@ -386,7 +386,7 @@ Instead:
    - `⚠️  Would skip:   <image-ref>` — in use by a running pod
    - `🗑️  Would remove: <image-ref>` — old tag, would be deleted in a live run
 4. A summary is printed and a dry-run email notification is sent
-5. Log file is named `cleanup-dryrun-YYYYMMDD-HHMMSS.log`
+5. Log file is written to `logs/cleanup-dryrun-YYYYMMDD-HHMMSS.log`
 
 Recommended before every cleanup run, particularly on clusters with active user
 sessions, to confirm which images are protected by in-use detection.
@@ -453,12 +453,12 @@ above for the full variable reference. The subject line format for
 
 ## Log Files
 
-Both scripts write log files automatically to the directory they are run from:
+Both scripts write log files automatically to `$LOBOT_CLUSTER_DIR/logs/` (default: `/opt/Lobot/logs/`). The directory is created automatically if it does not exist.
 
 | Script | Live run log | Dry-run log |
 |--------|-------------|-------------|
-| `image-pull.sh` | `pull-results-YYYYMMDD-HHMMSS.log` | `pull-dryrun-YYYYMMDD-HHMMSS.log` |
-| `image-cleanup.sh` | `cleanup-results-YYYYMMDD-HHMMSS.log` | `cleanup-dryrun-YYYYMMDD-HHMMSS.log` |
+| `image-pull.sh` | `logs/pull-results-YYYYMMDD-HHMMSS.log` | `logs/pull-dryrun-YYYYMMDD-HHMMSS.log` |
+| `image-cleanup.sh` | `logs/cleanup-results-YYYYMMDD-HHMMSS.log` | `logs/cleanup-dryrun-YYYYMMDD-HHMMSS.log` |
 
 Pull logs have `ctr` progress lines and ANSI escape codes stripped (these are
 only shown on the terminal). Cleanup logs are a full copy of terminal output.

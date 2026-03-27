@@ -136,6 +136,45 @@ ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_collector/.venv && \
   /opt/Lobot/tools/lobot_collector/.venv/bin/pip install -q aiohttp"
 ```
 
+### Environment variables
+
+`lobot-tui` and `lobot-collector` read two optional environment variables to locate the cluster-config repo and the tools directory.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LOBOT_CLUSTER_DIR` | `/opt/Lobot` | Path to the cluster-config repo (Helm configs, announcements, logs) |
+| `LOBOT_TOOLS_DIR` | `$LOBOT_CLUSTER_DIR/tools` | Path to the tools directory (overrides the derived default) |
+
+**Queens control plane (croot) — no action required.** The defaults match the deployment layout at `/opt/Lobot` and `/opt/Lobot/tools`.
+
+**Other clusters** — if your cluster config repo is not at `/opt/Lobot`, replace `/opt/Lobot` with your actual path throughout. Set `LOBOT_CLUSTER_DIR` in croot's shell profile for interactive TUI use, and as an `Environment=` directive in the collector service unit so the daemon picks it up:
+
+```bash
+# Add to /home/croot/.bashrc (for interactive TUI use)
+echo 'export LOBOT_CLUSTER_DIR=/opt/Lobot' >> /home/croot/.bashrc
+echo 'export LOBOT_TOOLS_DIR=/opt/Lobot/tools' >> /home/croot/.bashrc
+source /home/croot/.bashrc
+```
+
+For the collector service, add `Environment=` lines and update `ExecStart` and `WorkingDirectory` to your actual paths in `lobot-collector.service` before installing it. Systemd does not expand environment variables in `ExecStart` or `WorkingDirectory`, so those must be literal paths:
+
+```ini
+[Service]
+Environment=LOBOT_CLUSTER_DIR=/opt/Lobot
+Environment=LOBOT_TOOLS_DIR=/opt/Lobot/tools
+ExecStart=/opt/Lobot/tools/lobot-collector.sh
+WorkingDirectory=/opt/Lobot/tools
+...
+```
+
+Then reinstall the unit:
+
+```bash
+sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl restart lobot-collector
+```
+
 ---
 
 ## Usage

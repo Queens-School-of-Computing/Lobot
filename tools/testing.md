@@ -365,6 +365,11 @@ run **Python: Select Interpreter**, and choose `.venv-dev`.
 they look in `/opt/Lobot/tools` (the server path). The VS Code integrated terminal
 sets this automatically via `.vscode/settings.json`.
 
+> **Note:** `LOBOT_TOOLS_DIR` also serves a runtime role — `lobot-tui` and `lobot-collector`
+> read it to locate the tools directory and its venvs. Setting `LOBOT_TOOLS_DIR=tools`
+> (a relative path) is a **local testing override only**. On the Queens server, do not set
+> it — the default `/opt/Lobot/tools` is correct for both tests and runtime.
+
 ```bash
 # Unit tests only — always pass, ~0.3s, no cluster needed
 LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest tools/tests/test_parsers.py tools/tests/test_models.py -v

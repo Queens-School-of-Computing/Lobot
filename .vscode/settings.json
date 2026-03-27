@@ -4,9 +4,11 @@
   "python.testing.cwd": "${workspaceFolder}",
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
   "python.testing.env": {
-    "LOBOT_TOOLS_DIR": "tools"
+    "LOBOT_TOOLS_DIR": "tools",
+    "LOBOT_CLUSTER_DIR": "${workspaceFolder}"
   },
   "terminal.integrated.env.osx": {
-    "LOBOT_TOOLS_DIR": "${workspaceFolder}/tools"
+    "LOBOT_TOOLS_DIR": "${workspaceFolder}/tools",
+    "LOBOT_CLUSTER_DIR": "${workspaceFolder}"
   }
 }

@@ -5,6 +5,8 @@ from typing import Callable
 
 from ..config import (
     CONTROL_PLANE,
+    HELM_CONFIG_ENV_LIVE,
+    HELM_CONFIG_LIVE,
     JUPYTERHUB_API_URL,
     JUPYTERHUB_CHART,
     JUPYTERHUB_CHART_VERSION,
@@ -107,9 +109,9 @@ def _helm_upgrade_cmd(values: dict) -> list:
         "--version",
         JUPYTERHUB_CHART_VERSION,
         "--values",
-        "/opt/Lobot/config.yaml",
+        str(HELM_CONFIG_LIVE),
         "--values",
-        "/opt/Lobot/config-env.yaml",
+        str(HELM_CONFIG_ENV_LIVE),
         "--timeout",
         "60m",
     ]
@@ -189,7 +191,7 @@ ACTIONS: list = [
             "apply-config.sh will:\n"
             "  • Pull config from GitHub (overwriting local state)\n"
             "  • Substitute secrets into the config template\n"
-            "  • Overwrite /opt/Lobot/config.yaml and config-env.yaml\n\n"
+            f"  • Overwrite {HELM_CONFIG_LIVE} and {HELM_CONFIG_ENV_LIVE}\n\n"
             "Do NOT run this unless you have reviewed the config changes.\n"
             "Run [5] hub upgrade & restart afterwards to apply to the cluster.\n"
             "Review the documentation first."

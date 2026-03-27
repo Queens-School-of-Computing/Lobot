@@ -11,10 +11,11 @@
 
 set -euo pipefail
 
-LOCAL_CONFIG="/opt/Lobot/config.yaml"
-OUTPUT="/opt/Lobot/config.yaml"
-OUTPUT_ENV="/opt/Lobot/config-env.yaml"
-BACKUP_DIR="/opt/Lobot/previousconfig"
+CLUSTER_DIR="${LOBOT_CLUSTER_DIR:-/opt/Lobot}"
+LOCAL_CONFIG="$CLUSTER_DIR/config.yaml"
+OUTPUT="$CLUSTER_DIR/config.yaml"
+OUTPUT_ENV="$CLUSTER_DIR/config-env.yaml"
+BACKUP_DIR="$CLUSTER_DIR/previousconfig"
 TMPFILE=$(mktemp /tmp/config_template.XXXXXX.yaml)
 
 # ── Detect cluster ────────────────────────────────────────────────────────────
@@ -100,4 +101,4 @@ rm -f "$TMPFILE"
 echo "[apply-config] Done. Config written to $OUTPUT"
 echo ""
 echo "Review, then apply with:"
-echo "  cd /opt/Lobot && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail \$RELEASE jupyterhub/jupyterhub --namespace \$NAMESPACE --version=4.0.0-beta.2 --values config.yaml --values config-env.yaml --timeout=60m"
+echo "  cd $CLUSTER_DIR && RELEASE=jhub ; NAMESPACE=jhub ; helm upgrade --cleanup-on-fail \$RELEASE jupyterhub/jupyterhub --namespace \$NAMESPACE --version=4.0.0-beta.2 --values config.yaml --values config-env.yaml --timeout=60m"

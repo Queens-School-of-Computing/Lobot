@@ -17,12 +17,14 @@ The script reads:
 """
 
 import argparse
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-CONFIG_ENV = Path('/opt/Lobot/config-env.yaml')
+_CLUSTER_DIR = Path(os.environ.get("LOBOT_CLUSTER_DIR", "/opt/Lobot"))
+CONFIG_ENV = _CLUSTER_DIR / 'config-env.yaml'
 ASSETS_HTML = Path('.')
 IMAGE_REPO = 'queensschoolofcomputingdocker/gpu-jupyter-latest'
 

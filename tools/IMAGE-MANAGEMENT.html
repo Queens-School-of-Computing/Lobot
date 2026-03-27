@@ -423,7 +423,7 @@ sha256:d96404f136cf...            → digest reference</code></pre>
 </ul>
 <hr />
 <h2>Log Files</h2>
-<p>Both scripts write log files automatically to the directory they are run from:</p>
+<p>Both scripts write log files automatically to <code>$LOBOT_CLUSTER_DIR/logs/</code> (default: <code>/opt/Lobot/logs/</code>). The directory is created automatically if it does not exist.</p>
 <table>
 <thead>
 <tr>
@@ -435,13 +435,13 @@ sha256:d96404f136cf...            → digest reference</code></pre>
 <tbody>
 <tr>
 <td><code>image-pull.sh</code></td>
-<td><code>pull-results-YYYYMMDD-HHMMSS.log</code></td>
-<td><code>pull-dryrun-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>logs/pull-results-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>logs/pull-dryrun-YYYYMMDD-HHMMSS.log</code></td>
 </tr>
 <tr>
 <td><code>image-cleanup.sh</code></td>
-<td><code>cleanup-results-YYYYMMDD-HHMMSS.log</code></td>
-<td><code>cleanup-dryrun-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>logs/cleanup-results-YYYYMMDD-HHMMSS.log</code></td>
+<td><code>logs/cleanup-dryrun-YYYYMMDD-HHMMSS.log</code></td>
 </tr>
 </tbody>
 </table>

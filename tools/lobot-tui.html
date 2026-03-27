@@ -98,6 +98,34 @@ ssh PROD_HOST "sudo systemctl restart lobot-collector"</code></pre>
 
 ssh PROD_HOST "python3 -m venv /opt/Lobot/tools/lobot_collector/.venv && \
   /opt/Lobot/tools/lobot_collector/.venv/bin/pip install -q aiohttp"</code></pre>
+<h3>Environment variables</h3>
+<p><code>lobot-tui</code> and <code>lobot-collector</code> read two optional environment variables to locate the cluster-config repo and the tools directory.</p>
+<table>
+<thead>
+<tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>LOBOT_CLUSTER_DIR</code></td><td><code>/opt/Lobot</code></td><td>Path to the cluster-config repo (Helm configs, announcements, logs)</td></tr>
+<tr><td><code>LOBOT_TOOLS_DIR</code></td><td><code>$LOBOT_CLUSTER_DIR/tools</code></td><td>Path to the tools directory (overrides the derived default)</td></tr>
+</tbody>
+</table>
+<p><strong>Queens control plane (croot) — no action required.</strong> The defaults match the deployment layout at <code>/opt/Lobot</code> and <code>/opt/Lobot/tools</code>.</p>
+<p><strong>Other clusters</strong> — if your cluster config repo is not at <code>/opt/Lobot</code>, replace <code>/opt/Lobot</code> with your actual path throughout. Set <code>LOBOT_CLUSTER_DIR</code> in croot's shell profile for interactive TUI use, and as an <code>Environment=</code> directive in the collector service unit so the daemon picks it up:</p>
+<pre><code># Add to /home/croot/.bashrc (for interactive TUI use)
+echo 'export LOBOT_CLUSTER_DIR=/opt/Lobot' &gt;&gt; /home/croot/.bashrc
+echo 'export LOBOT_TOOLS_DIR=/opt/Lobot/tools' &gt;&gt; /home/croot/.bashrc
+source /home/croot/.bashrc</code></pre>
+<p>For the collector service, add <code>Environment=</code> lines and update <code>ExecStart</code> and <code>WorkingDirectory</code> to your actual paths in <code>lobot-collector.service</code> before installing it. Systemd does not expand environment variables in <code>ExecStart</code> or <code>WorkingDirectory</code>, so those must be literal paths:</p>
+<pre><code>[Service]
+Environment=LOBOT_CLUSTER_DIR=/opt/Lobot
+Environment=LOBOT_TOOLS_DIR=/opt/Lobot/tools
+ExecStart=/opt/Lobot/tools/lobot-collector.sh
+WorkingDirectory=/opt/Lobot/tools
+...</code></pre>
+<p>Then reinstall the unit:</p>
+<pre><code>sudo cp /opt/Lobot/tools/lobot-collector.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl restart lobot-collector</code></pre>
 <hr />
 <h2>Usage</h2>
 <pre><code># Standard launch (requires kubectl access)

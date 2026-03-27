@@ -205,9 +205,11 @@ if [ -n "$TARGET_NODE" ] && [ -n "$EXCLUDE_NODES" ]; then
   usage
 fi
 
-LOG_FILE="pull-results-$(date +%Y%m%d-%H%M%S).log"
+LOG_DIR="${LOBOT_CLUSTER_DIR:-/opt/Lobot}/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/pull-results-$(date +%Y%m%d-%H%M%S).log"
 if [ "$DRY_RUN" = "true" ]; then
-  LOG_FILE="pull-dryrun-$(date +%Y%m%d-%H%M%S).log"
+  LOG_FILE="$LOG_DIR/pull-dryrun-$(date +%Y%m%d-%H%M%S).log"
 fi
 
 # Capture raw output to temp file - clean log generated at end

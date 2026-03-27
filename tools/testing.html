@@ -253,6 +253,7 @@ python3 -m venv .venv-dev
 
 <h3>Running tests locally</h3>
 <p><code>LOBOT_TOOLS_DIR</code> tells the script tests where to find the shell scripts. Without it, they look in <code>/opt/Lobot/tools</code> (the server path). The VS Code integrated terminal sets this automatically via <code>.vscode/settings.json</code>.</p>
+<blockquote><p><strong>Note:</strong> <code>LOBOT_TOOLS_DIR</code> also serves a runtime role — <code>lobot-tui</code> and <code>lobot-collector</code> read it to locate the tools directory and its venvs. Setting <code>LOBOT_TOOLS_DIR=tools</code> (a relative path) is a <strong>local testing override only</strong>. On the Queens server, do not set it — the default <code>/opt/Lobot/tools</code> is correct for both tests and runtime.</p></blockquote>
 <pre><code># Unit tests only — always pass, ~0.3s, no cluster needed
 LOBOT_TOOLS_DIR=tools .venv-dev/bin/pytest tools/tests/test_parsers.py tools/tests/test_models.py -v
 

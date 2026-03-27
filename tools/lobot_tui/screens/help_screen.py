@@ -6,9 +6,10 @@ from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Label, Markdown
 
+from ..config import LOG_DIR
 from .guide_screen import GuideScreen
 
-HELP_TEXT = """
+HELP_TEXT = f"""
 # LOBOT TUI — Key Bindings
 
 ## Global
@@ -78,7 +79,7 @@ HELP_TEXT = """
 |-----|--------|
 | `b` | Background the panel — return to dashboard, job keeps running |
 | `k` | Kill job (press twice within 3 seconds to confirm) |
-| `s` | Save output to /opt/Lobot/logs/lobot-tui-\\<name\\>-\\<timestamp\\>.log |
+| `s` | Save output to {LOG_DIR}/lobot-tui-\\<name\\>-\\<timestamp\\>.log |
 
 > While a job is **running**: `Escape` and `q` have no effect. Once **finished**: `Escape` / `q` / `b` all close the panel.
 
@@ -86,7 +87,7 @@ HELP_TEXT = """
 | Key | Action |
 |-----|--------|
 | `Escape` (×2) / `q` | Return to main screen (`Escape` needs two presses) |
-| `s` | Save output to /opt/Lobot/logs/lobot-tui-*.log |
+| `s` | Save output to {LOG_DIR}/lobot-tui-*.log |
 | `Ctrl-D` / `exit` | Exit exec shell (exec screen only) |
 
 ## Log Viewer (scroll behaviour)

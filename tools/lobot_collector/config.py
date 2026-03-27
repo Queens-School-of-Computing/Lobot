@@ -10,7 +10,9 @@ SERVICE_HOST = "127.0.0.1"
 SERVICE_PORT = 9095
 
 # ── Output ─────────────────────────────────────────────────────────────────────
-OUTPUT_FILE = Path("/opt/Lobot/resource_collector_data/current.json")
+# LOBOT_CLUSTER_DIR: path to the cluster-config repo (default: /opt/Lobot)
+_CLUSTER_DIR = Path(os.environ.get("LOBOT_CLUSTER_DIR", "/opt/Lobot"))
+OUTPUT_FILE = _CLUSTER_DIR / "resource_collector_data" / "current.json"
 
 # ── Polling intervals (seconds) ────────────────────────────────────────────────
 PODS_INTERVAL = 5

@@ -19,6 +19,8 @@ After=network.target
 
 [Service]
 Type=simple
+Environment=LOBOT_CLUSTER_DIR=/opt/Lobot
+Environment=LOBOT_TOOLS_DIR=/opt/Lobot/tools
 WorkingDirectory=/opt/Lobot/tools
 ExecStart=/opt/Lobot/tools/lobot-collector.sh
 User=croot

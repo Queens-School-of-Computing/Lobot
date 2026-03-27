@@ -16,17 +16,21 @@ JUPYTERHUB_URL = f"https://{_HOSTNAME}"
 JUPYTERHUB_API_URL = f"{JUPYTERHUB_URL}/hub/api"
 
 # ── Cluster infrastructure ─────────────────────────────────────────────────────
-TOOLS_DIR = "/opt/Lobot/tools"
-REPO_DIR = "/opt/Lobot"
-ANNOUNCEMENT_YAML = "/opt/Lobot/announcement.yaml"
+# LOBOT_CLUSTER_DIR: path to the cluster-config repo (default: /opt/Lobot)
+# LOBOT_TOOLS_DIR:   path to the tools directory (default: <LOBOT_CLUSTER_DIR>/tools)
+# Set these when deploying on a cluster that isn't Queens — the Queens server
+# never needs to set them since /opt/Lobot is the default.
+REPO_DIR = Path(os.environ.get("LOBOT_CLUSTER_DIR", "/opt/Lobot"))
+TOOLS_DIR = Path(os.environ.get("LOBOT_TOOLS_DIR", str(REPO_DIR / "tools")))
+ANNOUNCEMENT_YAML = REPO_DIR / "announcement.yaml"
 
 # Helm: base config is the same on both; env config differs
-HELM_CONFIG = "/opt/Lobot/config.yaml.bk"
-HELM_CONFIG_ENV = "/opt/Lobot/config-dev.yaml.bk" if IS_DEV else "/opt/Lobot/config-prod.yaml.bk"
+HELM_CONFIG = REPO_DIR / "config.yaml.bk"
+HELM_CONFIG_ENV = REPO_DIR / ("config-dev.yaml.bk" if IS_DEV else "config-prod.yaml.bk")
 
 # Live output files written by apply-config.sh (reviewed after running action 3)
-HELM_CONFIG_LIVE = "/opt/Lobot/config.yaml"
-HELM_CONFIG_ENV_LIVE = "/opt/Lobot/config-env.yaml"
+HELM_CONFIG_LIVE = REPO_DIR / "config.yaml"
+HELM_CONFIG_ENV_LIVE = REPO_DIR / "config-env.yaml"
 
 JUPYTERHUB_NAMESPACE = "jhub"
 JUPYTERHUB_RELEASE = "jhub"
@@ -52,7 +56,7 @@ THEME_FILE = Path.home() / ".config" / "lobot-tui" / "theme.txt"
 
 # ── Audit log ─────────────────────────────────────────────────────────────────
 # All commands run via the TUI are appended here (rotates daily).
-LOG_DIR = Path("/opt/Lobot/logs")
+LOG_DIR = REPO_DIR / "logs"
 
 # ── Safety lock: when True, tool actions 1-5 are restricted to dry-run only ───
 # Set to False when ready to run tools live.

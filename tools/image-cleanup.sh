@@ -186,9 +186,11 @@ for IMG in "${KEEP_IMAGES[@]}"; do
 done
 KEEP_IMAGES_FULL=$(echo $KEEP_IMAGES_FULL | xargs)
 
-LOG_FILE="cleanup-results-$(date +%Y%m%d-%H%M%S).log"
+LOG_DIR="${LOBOT_CLUSTER_DIR:-/opt/Lobot}/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/cleanup-results-$(date +%Y%m%d-%H%M%S).log"
 if [ "$DRY_RUN" = "true" ]; then
-  LOG_FILE="cleanup-dryrun-$(date +%Y%m%d-%H%M%S).log"
+  LOG_FILE="$LOG_DIR/cleanup-dryrun-$(date +%Y%m%d-%H%M%S).log"
 fi
 
 exec > >(tee -a $LOG_FILE) 2>&1
