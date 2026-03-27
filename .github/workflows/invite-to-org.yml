@@ -16,6 +16,10 @@ jobs:
           echo "user_id=$id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Git checkout
+        uses: actions/checkout@v5
+
       - name: Send invitation to user
         run: |
           ./.github/scripts/invite-to-org.sh \
