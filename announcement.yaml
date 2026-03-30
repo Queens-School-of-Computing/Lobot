@@ -1,4 +1,4 @@
 announcement_prod: >
   Mar 13 2026 - Updated image to correct Small permissions issue. Added fun 401,403,404,500 pages. Resource Status tab is now live! Happy Computing! 
 announcement_dev: >
-  Mar 11 2026 - newcluster-dev github branch is no longer used.
+  Mar 30 2026 - main github branch is now the main branch.
