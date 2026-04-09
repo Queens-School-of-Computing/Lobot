@@ -59,8 +59,13 @@ roles:
   user: creategroup1
   members:
   - wiegerthefarmer
+  - emmawillis
+  - smwqueens
   - dashtiali
   - rebeccahisey
+  - deneshk
+  - nigelradhakrishnan4
+  - mckinleysmvanklei
   scopes:
   - access:servers!user={user}
   - read:users!user={user}
@@ -69,8 +74,13 @@ roles:
   user: creategroup2
   members:
   - wiegerthefarmer
+  - vnguyen16
   - dashtiali
   - rebeccahisey
+  - aryan-f
+  - ghaferimaryam-cmd
+  - nblackb5
+  - aquamarineaqua
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -79,8 +89,12 @@ roles:
   user: creategroup3
   members:
   - wiegerthefarmer
+  - guozhuoxin
   - dashtiali
   - rebeccahisey
+  - bininglong
+  - sophiasiliu
+  - kaitohl
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -89,8 +103,13 @@ roles:
   user: creategroup4
   members:
   - wiegerthefarmer
+  - emeseelkind
+  - dilakshansrikanthan
   - dashtiali
   - rebeccahisey
+  - meara-sanjayan
+  - jrpetersn
+  - claire9091
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -101,6 +120,10 @@ roles:
   - wiegerthefarmer
   - dashtiali
   - rebeccahisey
+  - robertpolicelli
+  - katin139
+  - elbertchao
+  - matthewpirie
   scopes:
   - access:servers!user={user}
   - servers!user={user}
