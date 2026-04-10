@@ -40,7 +40,7 @@ singleuser:
           - "sh"
           - "-c"
           - >
-            curl https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/setup_desktop.sh | bash
+            curl https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/setup_desktop.sh | bash
   image:
     name: queensschoolofcomputingdocker/gpu-jupyter-latest
     tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
@@ -129,7 +129,7 @@ hub:
     10-group-roles-from-yaml: |
       import os, urllib.request, yaml
 
-      GROUP_ROLES_URL = os.environ.get("LOBOT_GROUP_ROLES_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/group-roles.yaml")
+      GROUP_ROLES_URL = os.environ.get("LOBOT_GROUP_ROLES_URL", "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/group-roles.yaml")
 
       # Global set of collaboration users, based on roles whose name starts with 'group-'
       _COLLAB_USERS = set()
@@ -198,7 +198,7 @@ hub:
     15-group-servers-template-vars: |
       import os, urllib.request, yaml
 
-      GROUP_ROLES_URL = os.environ.get("LOBOT_GROUP_ROLES_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/group-roles.yaml")
+      GROUP_ROLES_URL = os.environ.get("LOBOT_GROUP_ROLES_URL", "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/group-roles.yaml")
 
       def _load_group_servers_by_user():
           """
@@ -246,7 +246,7 @@ hub:
 
       ANNOUNCEMENT_URL = os.environ.get(
           "LOBOT_ANNOUNCEMENT_URL",
-          "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/announcement.yaml",
+          "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/announcement.yaml",
       )
 
       def _fetch_announcement():
@@ -283,7 +283,7 @@ hub:
           @tornado.web.authenticated
           async def get(self):
               import os, urllib.request, yaml, json
-              RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
+              RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/runtime_setting.yaml")
               user = self.current_user
               allowed_labs_json = 'null'  # null = admin, sees all
               if not user.admin:
@@ -362,7 +362,7 @@ hub:
         import yaml
         import os
 
-        data = urllib.request.urlopen(os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")).read().decode('utf-8')
+        data = urllib.request.urlopen(os.environ.get("LOBOT_RUNTIME_URL", "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/runtime_setting.yaml")).read().decode('utf-8')
         data = yaml.safe_load(data)
         self.log.info(str(data))
         username = self.user.name.strip().lower()
@@ -451,7 +451,7 @@ hub:
             super().__init__(400, message)
             self.jupyterhub_message = message
 
-        RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
+        RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/runtime_setting.yaml")
         if spwnr.user.name in _COLLAB_USERS:
           spwnr.log.info(f"(DISABLED) Enabling RTC for collaboration user {spwnr.user.name}")
           #AV Feb 17 2026 - don't need specific RTC flags. Images are updated to support it.

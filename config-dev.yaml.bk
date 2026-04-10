@@ -8,7 +8,7 @@ hub:
     GitHubOAuthenticator:
       oauth_callback_url: https://lobot-dev.cs.queensu.ca/hub/oauth_callback
   extraEnv:
-    LOBOT_RUNTIME_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml"
-    LOBOT_ANNOUNCEMENT_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/announcement.yaml"
-    LOBOT_GROUP_ROLES_URL: "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/group-roles.yaml"
+    LOBOT_RUNTIME_URL: "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/runtime_setting.yaml"
+    LOBOT_ANNOUNCEMENT_URL: "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/announcement.yaml"
+    LOBOT_GROUP_ROLES_URL: "https://cdn.jsdelivr.net/gh/Queens-School-of-Computing/Lobot@main/group-roles.yaml"
     LOBOT_ANNOUNCEMENT_KEY: "announcement_dev"
