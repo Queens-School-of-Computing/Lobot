@@ -114,7 +114,9 @@ if [ -f "$HOME_DIR/.condarc" ]; then
 fi
 
 # Desktop and /opt/shortcuts
-[ -d "$DESKTOP_DIR" ] && chown -R jovyan:users "$DESKTOP_DIR" || true
-[ -d "$SRC_DIR" ] && chown -R jovyan:users "$SRC_DIR" || true
-
+#[ -d "$DESKTOP_DIR" ] && chown -R jovyan:users "$DESKTOP_DIR" || true
+#[ -d "$SRC_DIR" ] && chown -R jovyan:users "$SRC_DIR" || true
+# Desktop and /opt/shortcuts
+[ -d "$DESKTOP_DIR" ] && chown  jovyan:users "$DESKTOP_DIR" || true
+[ -d "$SRC_DIR" ] && chown  jovyan:users "$SRC_DIR" || true
 echo "[setup_desktop] Done"
