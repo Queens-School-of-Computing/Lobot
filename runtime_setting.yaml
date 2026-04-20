@@ -26,7 +26,6 @@ nodeaccess:
   devlab:
   - steven-hh-ding
   digilab:
-  - drdoog
   - group-csai801g14
   - group-csai801g24
   - group-csai801g37
@@ -85,6 +84,7 @@ nodeaccess:
   - creategroup3
   - creategroup4
   - creategroup5
+  - drdoog
   - ekimcisc452
   - emeseelkind
   - emmawillis
