@@ -546,12 +546,20 @@ hub:
                    {
                            "name": "pv-bamlab-ildpatients",
                            "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}
+                   },
+                   {
+                           "name": "nfs-nafiz25TB",
+                           "hostPath": {"path": "/mnt/nafiz25TB"}
                    }
             ])
             spwnr.volume_mounts.extend([
                    {
                            "mountPath": "/home/jovyan/bamlab_ildpatients",
                            "name": "pv-bamlab-ildpatients"
+                   },
+                   {
+                           "mountPath": "/home/jovyan/nafiz25TB",
+                           "name": "nfs-nafiz25TB"
                    }
             ])
         spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
