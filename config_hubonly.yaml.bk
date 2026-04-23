@@ -116,6 +116,11 @@ hub:
           ds = 'DEBI Compute Resources'
           sp_form = data['from_data_debilabgpu']   
           return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['quarrglab']:
+          ss = 'quarrglab-socsharedstorage'
+          ds = 'QUARRG Lab Compute Resources'
+          sp_form = data['from_data_debilabgpu']   
+          return sp_form.format(ss, ds)
         if username in data['nodeaccess']['devlab']:
           ss = 'devlab-socsharedstorage'
           ds = 'DEV Compute Resources'

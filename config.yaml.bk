@@ -400,6 +400,11 @@ hub:
           ds = 'Lobot Compute Resources (NVIDIA Problackwell GPU 96GB)'
           sp_form = data['from_data_lobot_problackwell']   
           return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['quarrglab']:
+          ss = 'quarrglab-socsharedstorage'
+          ds = 'QUARRG Lab Compute Resources'
+          sp_form = data['from_data_quarrglab']   
+          return sp_form.format(ss, ds)
         if username in data['nodeaccess']['devlab']:
           ss = 'devlab-socsharedstorage'
           ds = 'DEV Compute Resources'
