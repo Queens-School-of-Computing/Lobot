@@ -87,6 +87,7 @@ EOF
 fi
 
 chmod +x "$SRC_DIR"/code.desktop "$SRC_DIR"/matlab.desktop || true
+chown jovyan:users "$SRC_DIR"/code.desktop "$SRC_DIR"/matlab.desktop || true
 
 # 3b. Copy launchers directly onto the Desktop, if missing
 
@@ -103,6 +104,7 @@ if [ ! -f "$DESKTOP_DIR/matlab.desktop" ]; then
 fi
 
 chmod +x "$DESKTOP_DIR"/code.desktop "$DESKTOP_DIR"/matlab.desktop || true
+chown jovyan:users "$DESKTOP_DIR"/code.desktop "$DESKTOP_DIR"/matlab.desktop || true
 
 ###############################################################################
 # 4. Fix ownership only for files we touched
@@ -117,6 +119,7 @@ fi
 #[ -d "$DESKTOP_DIR" ] && chown -R jovyan:users "$DESKTOP_DIR" || true
 #[ -d "$SRC_DIR" ] && chown -R jovyan:users "$SRC_DIR" || true
 # Desktop and /opt/shortcuts
-[ -d "$DESKTOP_DIR" ] && chown  jovyan:users "$DESKTOP_DIR" || true
-[ -d "$SRC_DIR" ] && chown  jovyan:users "$SRC_DIR" || true
+# not having the -R broke this because the desktop icon was still owned by root. moved chown to after the copy.
+#[ -d "$DESKTOP_DIR" ] && chown  jovyan:users "$DESKTOP_DIR" || true
+#[ -d "$SRC_DIR" ] && chown  jovyan:users "$SRC_DIR" || true
 echo "[setup_desktop] Done"
