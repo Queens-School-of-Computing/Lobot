@@ -1,0 +1,74 @@
+---
+defaults:
+  imagesLabel: 'Base docker image to be deployed'
+  imagesSmall: 'Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca'
+  # FIXME Use this for images if labs[i].images is null
+  # ^^^^^ Useful if lots of duplicates (shrug)
+  imagesOptions: [todo]
+
+labs:
+  - name: bamlab
+    # TODO Use these to fetch?...values?
+    nodes:
+      - fz1
+      - fz2
+    # FIXME Just use defaults (these are all the same)
+    images:
+      - name: '*QSC* u24.04 matlab24.2 tf2.20 torch2.9.1 cuda13.0.2 ollama claude [20260313]'
+        value: 'queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313'
+        # FIXME Default to selected if only one item
+        #       Or actually, just always select first item
+        selected: true
+    # FIXME Probably don't need all values, just number, and steps (implicit)
+    cpus:
+      - name: '8 cores'
+        value: '8.0'
+        selected: true
+      - name: '10 cores'
+        value: '10.0'
+      - name: '16 cores'
+        value: '16.0'
+      - name: '24 cores'
+        value: '24.0'
+      - name: '32 cores'
+        value: '32.0'
+    # FIXME Probably don't need all values, just number, name, and steps
+    gpus:
+      - name: "I don't need a GPU for now."
+        value: '0'
+        selected: true
+      - name: '1x A100 (80G)'
+        value: '1'
+      - name: '2x A100 (80G)'
+        value: '2'
+      - name: '3x A100 (80G)'
+        value: '3'
+      - name: '4x A100 (80G)'
+        value: '4'
+    # FIXME Probably don't need all values, just number, and steps
+    ram:
+      - name: '64G RAM'
+        value: '64G'
+      - name: '128G RAM'
+        value: '128G'
+      - name: '256G RAM'
+        value: '256G'
+      - name: '384G RAM'
+        value: '384G'
+      - name: '512G RAM'
+        value: '512G'
+    # TODO Check if this is just same everywhere
+    pvc:
+
+  - name: devlab
+  - name: digilab
+  - name: edemsmithbusiness
+  - name: gandslab
+  - name: lobot_a16
+  - name: lobot_a40
+  - name: lobot_a5000
+  - name: lobot_problackwell
+  - name: miblab
+  - name: mulab
+  - name: riselab
+  - name: winemocollab
