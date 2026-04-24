@@ -122,4 +122,19 @@ fi
 # not having the -R broke this because the desktop icon was still owned by root. moved chown to after the copy.
 #[ -d "$DESKTOP_DIR" ] && chown  jovyan:users "$DESKTOP_DIR" || true
 #[ -d "$SRC_DIR" ] && chown  jovyan:users "$SRC_DIR" || true
+
+
+###############################################################################
+# 5. Ensure TurboVNC config exists for Blackwell GPU compatibility
+###############################################################################
+
+if [ ! -f "$HOME_DIR/.vnc/turbovncserver.conf" ]; then
+  echo "[setup_desktop] Creating TurboVNC config for Blackwell GLX fix"
+  mkdir -p "$HOME_DIR/.vnc"
+  echo '$serverArgs = "-extension GLX";' > "$HOME_DIR/.vnc/turbovncserver.conf"
+  chown -R jovyan:users "$HOME_DIR/.vnc"
+else
+  echo "[setup_desktop] TurboVNC config already exists, skipping"
+fi
+
 echo "[setup_desktop] Done"
