@@ -1,16 +1,16 @@
-<script>    
+<script>
   var lab = '{{ lab.name }}';
   var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
   $.getJSON(url_status, function(data){
     if(data){
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
-      $.each(data[lab].usage, function(index, value){        
+      $.each(data[lab].usage, function(index, value){
         let entry = $('<small>');
         entry.text(value);
         entry.addClass('form-text text-muted');
         $('#label-usage').append(entry);
-        $('#label-usage').append($('<br>'));        
+        $('#label-usage').append($('<br>'));
       })
     }
   })
@@ -29,7 +29,7 @@
 </div>
 <div class="form-group">
   <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL Intel Xeon Gold 6338]</label>
-  <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
+  <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
     {%- for option in lab.cpus %}
     <option value="{{ option.value }}" {%- if option.selected %} select="selected" {%- endif %}>{{ option.name }}</option>
     {%- endfor %}
@@ -47,7 +47,7 @@
 </div>
 <div class="form-group">
   <label for="inputRAM">RAM to be allocated</label>
-  <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
+  <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
     {%- for option in lab.ram %}
     <option value="{{ option.value }}" {%- if option.selected %} select="selected" {%- endif %}>{{ option.name }}</option>
     {%- endfor %}
@@ -60,10 +60,8 @@
     <option value="{}" selected="selected">{}</option>
   </select>
   <small id="gpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
-</div>          
-<div class="form-check">            
+</div>
+<div class="form-check">
   <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 72 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
   <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
 </div>
-
-

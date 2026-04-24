@@ -10,8 +10,9 @@ template = env.get_template('spawner_options_form.html')
 labs_config = yaml.safe_load(Path('./lab-spawn-page-resources.yaml').read_text())
 
 # TODO Loop this
+# TODO From {reso}_count infer steps and generate
 lab = labs_config['labs'][0]
 output = template.render(lab=lab)
 
 print(output)
-print(lab)
+print(labs_config['labs'][0]['cpu']['count'])

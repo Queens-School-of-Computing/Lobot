@@ -20,18 +20,19 @@ labs:
         #       Or actually, just always select first item
         selected: true
     # FIXME Probably don't need all values, just number, and steps (implicit)
-    cpus:
-      - name: '8 cores'
-        value: '8.0'
-        selected: true
-      - name: '10 cores'
-        value: '10.0'
-      - name: '16 cores'
-        value: '16.0'
-      - name: '24 cores'
-        value: '24.0'
-      - name: '32 cores'
-        value: '32.0'
+    cpu:
+      count: 32
+      #- name: '8 cores'
+      #  value: '8.0'
+      #  selected: true
+      #- name: '10 cores'
+      #  value: '10.0'
+      #- name: '16 cores'
+      #  value: '16.0'
+      #- name: '24 cores'
+      #  value: '24.0'
+      #- name: '32 cores'
+      #  value: '32.0'
     # FIXME Probably don't need all values, just number, name, and steps
     gpus:
       - name: "I don't need a GPU for now."
