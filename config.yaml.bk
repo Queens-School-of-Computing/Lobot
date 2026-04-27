@@ -71,7 +71,7 @@ singleuser:
         mountPath: /home/jovyan/scratchdata #The mountpoint inside the container
   extraFiles:
     jupyter_ydoc_config:
-      mountPath: /etc/jupyter/jupyter_ydoc_config.py
+      mountPath: /usr/local/etc/jupyter/jupyter_server_config.py
       stringData: |
         c = get_config()  # noqa: F821
         c.YDocExtension.file_poll_interval = 0
