@@ -4,8 +4,12 @@ on:
       - 'dev' # TODO Replace with main when working
 
 jobs:
-  echo:
+  push:
     runs-on: ubuntu-latest
     steps:
-      - name: echo the best cat
-        run: echo Maisy ^..^
+      - name: Push to GitLab
+        uses: kujov/gitlab-sync@2
+        with:
+          gitlab_url: ${{ secrets.GITLAB_URL }}
+          username: ${{ secrets.GITLAB_USERNAME }}
+          gitlab_pat: ${{ secrets.GITLAB_TOKEN }}
