@@ -1,0 +1,11 @@
+on:
+  push:
+    branches:
+      - 'dev' # TODO Replace with main when working
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: echo the best cat
+        run: echo Maisy ^..^
