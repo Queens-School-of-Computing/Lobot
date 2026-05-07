@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Push to GitLab
-        uses: kujov/gitlab-sync@2
+        uses: kujov/gitlab-sync@main
         with:
           gitlab_url: ${{ secrets.GITLAB_URL }}
           username: ${{ secrets.GITLAB_USERNAME }}
