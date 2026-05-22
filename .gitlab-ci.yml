@@ -3,6 +3,10 @@ default:
     name: lobot-runner:latest
     pull_policy: if-not-present
 
+workflow:
+  rules:
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
 # Debugging. Taken from:
 # https://gitlab.com/gitlab-org/gitlab/-/work_items/28252
 test-ci-vars:
@@ -20,5 +24,3 @@ stage_files:
     - echo "files=$files"
     - py_files=$(echo $files | grep \.py)
     - echo "py_files=$py_files"
-  rules:
-      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
