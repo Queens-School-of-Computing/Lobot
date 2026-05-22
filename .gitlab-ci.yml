@@ -1,5 +1,7 @@
 default:
-  image: lobot-runner:latest
+  image:
+    name: lobot-runner:latest
+    pull_policy: if-not-present
 
 stage_files:
   script:
