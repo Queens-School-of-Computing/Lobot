@@ -11,13 +11,14 @@ workflow:
 stage_files:
   script: |
     set -vx
+    set +e
     git --version
     echo "Checking for python files changed from 'main'..."
     git fetch origin main --depth 1
     git branch -a
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
     echo "files=$files"
-    py_files=$(echo $files | grep \.py)
+    py_files=$(echo -n $files | grep \.py)
     if [ -z "$py_files" ]
     then
       echo "no python files in changeset"
