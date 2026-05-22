@@ -12,9 +12,9 @@ stage_files:
   script: |
     set -vx
     git branch -a
-    echo "Checking for python files changed from 'origin/main'..."
+    echo "Checking for python files changed from 'main'..."
     git fetch origin main --depth 1
-    files=$(git diff-tree --name-only --no-commit-id origin/main..${CI_COMMIT_REF_NAME})
+    files=$(git diff-tree --name-only --no-commit-id main..${CI_COMMIT_REF_NAME})
     echo "files=$files"
     py_files=$(echo $files | grep \.py)
     echo "py_files=$py_files"
