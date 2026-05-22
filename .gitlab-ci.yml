@@ -10,6 +10,7 @@ workflow:
 
 stage_files:
   script: |
+    set -vx
     git branch -a
     echo "Checking for python files changed from 'origin/main'..."
     git fetch origin main --depth 1
