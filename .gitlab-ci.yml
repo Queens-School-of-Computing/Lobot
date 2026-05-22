@@ -10,6 +10,7 @@ workflow:
 
 stage_files:
   script: |
+    git branch -a
     echo "Checking for python files changed from '$CI_MERGE_REQUEST_TARGET_BRANCH_SHA'..."
     files=$(git diff-tree --name-only --no-commit-id main)
     echo "files=$files"
