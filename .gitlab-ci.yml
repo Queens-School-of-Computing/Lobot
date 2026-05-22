@@ -12,7 +12,7 @@ stage_files:
   script: |
     git branch -a
     echo "Checking for python files changed from 'origin/main'..."
-    files=$(git diff-tree --name-only --no-commit-id -- origin/main)
+    files=$(git diff-tree --name-only --no-commit-id origin/main)
     echo "files=$files"
     py_files=$(echo $files | grep \.py)
     echo "py_files=$py_files"
