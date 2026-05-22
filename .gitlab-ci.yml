@@ -8,16 +8,6 @@ workflow:
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
-# Debugging. Taken from:
-# https://gitlab.com/gitlab-org/gitlab/-/work_items/28252
-test-ci-vars:
-  script:
-    - echo CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
-    - echo CI_MERGE_REQUEST_SOURCE_BRANCH_SHA=${CI_MERGE_REQUEST_SOURCE_BRANCH_SHA}
-    - echo CI_MERGE_REQUEST_TARGET_BRANCH_SHA=${CI_MERGE_REQUEST_TARGET_BRANCH_SHA}
-    - echo CI_MERGE_REQUEST_SOURCE_BRANCH_NAME=${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
-    - echo CI_MERGE_REQUEST_TARGET_BRANCH_NAME=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
-
 stage_files:
   script:
     - echo "Checking for python files changed from '$CI_MERGE_REQUEST_TARGET_BRANCH_SHA'..."
