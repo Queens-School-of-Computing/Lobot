@@ -35,6 +35,9 @@ stage_files:
       exit 0
     fi
     echo "py_files=$py_files"
+  artifacts:
+    paths:
+      - ./changed-python-files.txt
 
 ruff-check:
   stage: check
