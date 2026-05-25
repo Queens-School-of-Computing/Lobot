@@ -39,14 +39,12 @@ stage_files:
 ruff-check:
   stage: check
   image: python:3.12
-  rules:
-    - if: $CI_PY_FILES_TO_CHECK
 
   script: |
     if [[ -f ./changed-python-files.txt ]]
     then
       pip install ruff
-      ruff check "$CI_PY_FILES_TO_CHECK"
+      ruff check $(cat ./changed-python-files.txt)
     else
       echo "No python files to check"
 
