@@ -28,17 +28,15 @@ stage_files:
     paths:
       - ./changed-python-files.txt
 
-ruff-check:
+ruff_check:
   stage: check
   image: python:3.12
 
   script: |
-    if [[ -f ./changed-python-files.txt ]]
-    then
-      pip install ruff
-      ruff check $(cat ./changed-python-files.txt)
-    else
+    if [[ ! -f ./changed-python-files.txt ]]
       echo "No python files to check"
-
       exit 0
     fi
+
+    pip install ruff
+    ruff check $(cat ./changed-python-files.txt)
