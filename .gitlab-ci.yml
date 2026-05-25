@@ -43,8 +43,8 @@ ruff_check:
 
     pip install ruff
 
-    # Check python syntax
+    echo "Checking python syntax ..."
     ruff check ${CHANGED_FILES}
 
-    # Check python format
+    echo "Checking python format ..."
     ruff format --check --diff ${CHANGED_FILES}
