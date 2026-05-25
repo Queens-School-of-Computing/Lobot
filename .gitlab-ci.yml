@@ -21,7 +21,7 @@ stage_files:
     git show-branch main dev HEAD
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
     echo "files=$files"
-    py_files=$(echo -n $files | grep \.py)
+    py_files=$(echo -n $files | xargs -n1 echo |grep \.py)
     if [ -z "$py_files" ]
     then
       echo "no python files in changeset"
