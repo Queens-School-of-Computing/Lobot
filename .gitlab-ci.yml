@@ -32,19 +32,22 @@ ruff_check:
   stage: check
   image: python:3.12
 
-  script: |
-    if [[ ! -f ./changed-python-files.txt ]]
-    then
-      echo "No python files to check"
-      exit 0
-    fi
+  script:
+    - |-
+      if [[ ! -f ./changed-python-files.txt ]]
+      then
+        echo "No python files to check"
+        exit 0
+      fi
 
-    CHANGED_FILES=$(cat ./changed-python-files.txt)
+      CHANGED_FILES=$(cat ./changed-python-files.txt)
 
-    pip install ruff
+      pip install ruff
 
-    echo "Checking python syntax ..."
-    ruff check ${CHANGED_FILES}
+    - |-
+      echo "Checking python syntax ..."
+      ruff check ${CHANGED_FILES}
 
-    echo "Checking python format ..."
-    ruff format --check --diff ${CHANGED_FILES}
+    - |-
+      echo "Checking python format ..."
+      ruff format --check --diff ${CHANGED_FILES}
