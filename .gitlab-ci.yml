@@ -9,6 +9,7 @@ workflow:
       - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
 stage_files:
+  stage: stage
   script: |
     set -vx
     set +e
@@ -22,9 +23,23 @@ stage_files:
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
     echo "files=$files"
     py_files=$(echo -n $files | xargs -n1 echo |grep \.py)
-    if [ -z "$py_files" ]
+    if [ -n "$py_files" ]
     then
-      echo "no python files in changeset"
+      echo "python files in changeset"
+      CI_PY_FILES_TO_CHECK="$py_files"
+
       exit 0
     fi
     echo "py_files=$py_files"
+
+ruff-check:
+  stage: test
+  image: python:3.12
+  needs:
+    - stage_files:stage
+  rules:
+    - if: $CI_PY_FILES_TO_CHECK
+
+  script:
+    - pip install ruff
+    - ruff check "$CI_PY_FILES_TO_CHECK"
