@@ -14,8 +14,11 @@ stage_files:
     set +e
     git --version
     echo "Checking for python files changed from 'main'..."
-    git fetch origin main --depth 1
+    git fetch origin main dev --depth 1
     git branch -a
+    git switch dev
+    git status -bs
+    git show-branch main dev HEAD
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
     echo "files=$files"
     py_files=$(echo -n $files | grep \.py)
