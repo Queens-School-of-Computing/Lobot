@@ -15,26 +15,15 @@ stages:
 stage_files:
   stage: stage
   script: |
-    set -vx
-    set +e
-    git --version
     echo "Checking for python files changed from 'main'..."
     git fetch origin main dev --depth 1
-    git branch -a
     git switch dev
-    git status -bs
-    git show-branch main dev HEAD
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
-    echo "files=$files"
     py_files=$(echo -n $files | xargs -n1 echo |grep \.py)
     if [ -n "$py_files" ]
     then
-      echo "python files in changeset"
       echo "$py_files" > changed-python-files.txt
-
-      exit 0
     fi
-    echo "py_files=$py_files"
   artifacts:
     paths:
       - ./changed-python-files.txt
