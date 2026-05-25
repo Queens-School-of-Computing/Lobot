@@ -42,6 +42,6 @@ ruff-check:
   rules:
     - if: $CI_PY_FILES_TO_CHECK
 
-  script:
-    - pip install ruff
-    - ruff check "$CI_PY_FILES_TO_CHECK"
+  script: |
+    pip install ruff
+    ruff check "$CI_PY_FILES_TO_CHECK"
