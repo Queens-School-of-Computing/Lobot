@@ -39,8 +39,6 @@ stage_files:
 ruff-check:
   stage: check
   image: python:3.12
-  needs:
-    - stage_files:stage
   rules:
     - if: $CI_PY_FILES_TO_CHECK
 
