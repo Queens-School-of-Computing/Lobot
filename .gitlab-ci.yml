@@ -30,7 +30,7 @@ stage_files:
     if [ -n "$py_files" ]
     then
       echo "python files in changeset"
-      CI_PY_FILES_TO_CHECK="$py_files"
+      export CI_PY_FILES_TO_CHECK="$py_files"
 
       exit 0
     fi
