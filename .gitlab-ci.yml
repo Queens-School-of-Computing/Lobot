@@ -8,6 +8,10 @@ workflow:
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
+stages:
+  - stage
+  - check
+
 stage_files:
   stage: stage
   script: |
@@ -33,7 +37,7 @@ stage_files:
     echo "py_files=$py_files"
 
 ruff-check:
-  stage: test
+  stage: check
   image: python:3.12
   needs:
     - stage_files:stage
