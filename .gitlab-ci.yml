@@ -38,5 +38,12 @@ ruff_check:
       exit 0
     fi
 
+    CHANGED_FILES=$(cat ./changed-python-files.txt)
+
     pip install ruff
-    ruff check $(cat ./changed-python-files.txt)
+
+    # Check python syntax
+    ruff check ${CHANGED_FILES}
+
+    # Check python format
+    ruff format --check --diff ${CHANGED_FILES}
