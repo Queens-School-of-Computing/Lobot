@@ -1,2 +1,7 @@
+default:
+  image:
+    name: lobot-runner:latest
+    pull_policy: if-not-present
+
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
