@@ -19,7 +19,7 @@ stage_files:
     git fetch origin main dev --depth 1
     git switch dev
     files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
-    py_files=$(echo -n $files | xargs -n1 echo |grep \.py)
+    py_files=$(echo -n $files | xargs -n1 echo |grep \\.py\$)
     if [ -n "$py_files" ]
     then
       echo "$py_files" > changed-python-files.txt
