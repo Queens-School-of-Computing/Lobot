@@ -1,2 +1,2 @@
 include:
-  - local: './.gitlab/workflows/check-python-formatting.yml'
+  - local: '.gitlab/workflows/check-python-formatting.yml'
