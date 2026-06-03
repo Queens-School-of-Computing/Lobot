@@ -439,6 +439,7 @@ hub:
           display = '' if is_first else ' style="display:none"'
           return f'<div id="lab-form-{lab}" class="lab-form-section"{display}>\n{html}\n</div>\n'
 
+        accessible_labs = sorted(accessible_labs, key=lambda l: lab_ds.get(l, l))
         sections = ''.join(make_section(lab, i == 0) for i, lab in enumerate(accessible_labs))
         pool_options = ''.join(
           f'<option value="{lab}">{lab_ds.get(lab, lab)}</option>\n'
