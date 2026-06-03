@@ -17,7 +17,7 @@ always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES', '[
 # Labs that inherit access from another lab's nodeaccess list.
 # A user in nodeaccess[primary] is also permitted to spawn on any lab listed here.
 LAB_GROUPS = {
-    'lobot_blackwell': ['lobot_blackwell', 'bamlab'],
+    'lobot_blackwell': ['lobot_blackwell', 'bamlab','lobot_a16','lobot_a40'],
 }
 
 
