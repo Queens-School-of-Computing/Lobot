@@ -441,40 +441,40 @@ hub:
         )
         first_lab = accessible_labs[0]
 
-        return f'''<script>
-function switchLab(labName) {{
-  document.querySelectorAll('.lab-form-section').forEach(function(el) {{
-    el.style.display = 'none';
-    el.querySelectorAll('select').forEach(function(s) {{ s.disabled = true; }});
-  }});
-  var section = document.getElementById('lab-form-' + labName);
-  section.style.display = '';
-  section.querySelectorAll('select').forEach(function(s) {{ s.disabled = false; }});
-  $('#label-usage').children('small, br').remove();
-  $('#label-summary').text('');
-  $('#label-summary-details').text('');
-  $.getJSON('https://' + window.location.hostname + '/allocationstatus/current.json', function(d) {{
-    if (d && d[labName]) {{
-      $('#label-summary').text(d[labName].summary_title);
-      $('#label-summary-details').text(d[labName].summary_details);
-      $.each(d[labName].usage, function(i, v) {{
-        $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted')).append($('<br>'));
-      }});
-    }}
-  }});
-}}
-</script>
-<div class="form-group">
-  <label for="lab_selector">Resource Pool</label>
-  <select id="lab_selector" class="form-control" onchange="switchLab(this.value)">
-    {pool_options}
-  </select>
-</div>
-<div class="form-group" id="label-usage">
-  <label id="label-summary"></label><br>
-  <label id="label-summary-details"></label><br>
-</div>
-{sections}<script>switchLab('{first_lab}');</script>'''
+        return f'''      <script>
+      function switchLab(labName) {{
+        document.querySelectorAll('.lab-form-section').forEach(function(el) {{
+          el.style.display = 'none';
+          el.querySelectorAll('select').forEach(function(s) {{ s.disabled = true; }});
+        }});
+        var section = document.getElementById('lab-form-' + labName);
+        section.style.display = '';
+        section.querySelectorAll('select').forEach(function(s) {{ s.disabled = false; }});
+        $('#label-usage').children('small, br').remove();
+        $('#label-summary').text('');
+        $('#label-summary-details').text('');
+        $.getJSON('https://' + window.location.hostname + '/allocationstatus/current.json', function(d) {{
+          if (d && d[labName]) {{
+            $('#label-summary').text(d[labName].summary_title);
+            $('#label-summary-details').text(d[labName].summary_details);
+            $.each(d[labName].usage, function(i, v) {{
+              $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted')).append($('<br>'));
+            }});
+          }}
+        }});
+      }}
+      </script>
+      <div class="form-group">
+        <label for="lab_selector">Resource Pool</label>
+        <select id="lab_selector" class="form-control" onchange="switchLab(this.value)">
+          {pool_options}
+        </select>
+      </div>
+      <div class="form-group" id="label-usage">
+        <label id="label-summary"></label><br>
+        <label id="label-summary-details"></label><br>
+      </div>
+      {sections}      <script>switchLab('{first_lab}');</script>'''
       #c.Spawner.start_timeout = 420 
       #c.Spawner.start_timeout = 3600 
       c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
