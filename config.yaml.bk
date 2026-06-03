@@ -558,6 +558,18 @@ hub:
             if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
               spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
               raise SpawnError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+          # 3. Validate image against allowed options for this lab
+          import re as _re
+          _lab_html = (data.get(f'from_data_{lab}') or '')
+          _img_select = _re.search(
+            r'<select[^>]+name=["\']image["\'][^>]*>(.*?)</select>',
+            _lab_html, flags=_re.DOTALL)
+          if _img_select:
+            _allowed_images = _re.findall(r'<option[^>]+value=["\']([^"\']*)["\']', _img_select.group(1))
+            req_image = options['image'][0]
+            if _allowed_images and req_image not in _allowed_images:
+              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized image {req_image!r}')
+              raise SpawnError(f'Image "{req_image}" is not permitted. Please select from the available options.')
         # --- End validation ---
 
         spwnr.image = options['image'][0]
