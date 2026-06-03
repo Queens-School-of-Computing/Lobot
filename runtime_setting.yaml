@@ -237,6 +237,8 @@ lab_groups:
   - bamlab
 superusers:
 - wiegerthefarmer
+- drdoog
+- jm-janzen
 from_data_bamlab: |2
     <script>
       var lab = 'bamlab';
