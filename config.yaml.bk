@@ -403,6 +403,11 @@ hub:
           ds = 'Digilians Compute Resources'
           sp_form = data['from_data_digilab']
           return sp_form.format(ss, ds)
+        if username in data['nodeaccess']['lobot_blackwell']:
+          ss = 'lobot_blackwell-socsharedstorage'
+          ds = 'Lobot Compute Resources (NVIDIA Blackwell GPU)'
+          sp_form = data['from_data_lobot_blackwell']   
+          return sp_form.format(ss, ds)
         if username in data['nodeaccess']['lobot_problackwell']:
           ss = 'lobot_problackwell-socsharedstorage'
           ds = 'Lobot Compute Resources (NVIDIA Problackwell GPU 96GB)'
@@ -533,7 +538,7 @@ hub:
         if sctype == 'socsharedstorage':
           spwnr.log.info('  socsharedstorage with ' + str(lab))
           spwnr.storage_class = str('caslab-retain-r1')
-        if lab == 'bamlab':
+        if lab in ('bamlab', 'lobot_blackwell'):
           spwnr.volumes.extend([
                  {
                          "name": "pv-bamlabshareddata",
