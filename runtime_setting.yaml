@@ -235,6 +235,8 @@ lab_groups:
   lobot_blackwell:
   - lobot_blackwell
   - bamlab
+  - lobot_a16
+  - lobot_a40
 from_data_bamlab: |2
     <script>
       var lab = 'bamlab';
