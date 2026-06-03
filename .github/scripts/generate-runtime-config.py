@@ -14,6 +14,13 @@ denied_resources = json.loads(os.getenv('DENIED_RESOURCES', '[]'))
 always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES', '[]'))
 
 
+# Labs that inherit access from another lab's nodeaccess list.
+# A user in nodeaccess[primary] is also permitted to spawn on any lab listed here.
+LAB_GROUPS = {
+    'bamlab': ['bamlab', 'lobot_blackwell'],
+}
+
+
 def main():
     payload = read_payload(input_file, 'users')
     if payload is None:
@@ -23,9 +30,14 @@ def main():
     resource_names = extract_resources_names(payload)
     resources = extract_resources(payload, resource_names)
     resources = sort_resources(resources)
-    pages = get_resource_pages(resource_names)
 
-    config = {'nodeaccess': resources, 'limits': get_limits(), **pages}
+    # Ensure every lab referenced in LAB_GROUPS has an HTML page even if it has
+    # no direct nodeaccess members (so dynamic_form can always render it).
+    group_labs = {lab for group in LAB_GROUPS.values() for lab in group}
+    all_page_names = sorted(set(resource_names) | group_labs)
+    pages = get_resource_pages(all_page_names)
+
+    config = {'nodeaccess': resources, 'limits': get_limits(), 'lab_groups': LAB_GROUPS, **pages}
 
     yaml.add_representer(str, str_presenter)
 
@@ -166,11 +178,15 @@ def _parse_limits(html):
     }
 
 
-def get_resource_pages(resource_names):
+def get_resource_pages(names):
     pages = {}
-    for name in resource_names:
-        with open(f"./assets/html/{name}.html") as f:
-            pages[f"from_data_{name}"] = f.read()
+    for name in names:
+        path = f"./assets/html/{name}.html"
+        try:
+            with open(path) as f:
+                pages[f"from_data_{name}"] = f.read()
+        except FileNotFoundError:
+            print(f"Warning: no HTML file found for '{name}' at {path}, skipping")
     return pages
 
 

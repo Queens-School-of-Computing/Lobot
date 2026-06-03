@@ -366,94 +366,115 @@ hub:
         options['storage_class'] = formdata['storage_class']  
         return options  
       async def dynamic_form(self):
-        import urllib.request
-        import yaml
-        import os
+        import urllib.request, yaml, os, re
 
-        data = urllib.request.urlopen(os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")).read().decode('utf-8')
-        data = yaml.safe_load(data)
+        data = yaml.safe_load(urllib.request.urlopen(
+          os.environ.get("LOBOT_RUNTIME_URL",
+            "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
+        ).read().decode('utf-8'))
         self.log.info(str(data))
         username = self.user.name.strip().lower()
         self.log.info(username)
-        ss = 'lobot_a16-socsharedstorage'
-        ds = 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)'
-        sp_form = data['from_data_lobot_a16']
-        if username in data['nodeaccess']['mulab']:
-          ss = 'mulab-socsharedstorage'
-          ds = 'MULab Compute Resources'
-          sp_form = data['from_data_mulab']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['bamlab']:
-          ss = 'bamlab-socsharedstorage'
-          ds = 'BAMLab Compute Resources'
-          sp_form = data['from_data_bamlab']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['riselab']:
-          ss = 'riselab-socsharedstorage'
-          ds = 'RISE Lab Compute Resources'
-          sp_form = data['from_data_riselab']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['lobot_a16']:
-          ss = 'lobot_a16-socsharedstorage'
-          ds = 'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'
-          sp_form = data['from_data_lobot_a16']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['digilab']:
-          ss = 'digilab-socsharedstorage'
-          ds = 'Digilians Compute Resources'
-          sp_form = data['from_data_digilab']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['lobot_blackwell']:
-          ss = 'lobot_blackwell-socsharedstorage'
-          ds = 'Lobot Compute Resources (NVIDIA Blackwell GPU)'
-          sp_form = data['from_data_lobot_blackwell']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['lobot_problackwell']:
-          ss = 'lobot_problackwell-socsharedstorage'
-          ds = 'Lobot Compute Resources (NVIDIA Problackwell GPU 96GB)'
-          sp_form = data['from_data_lobot_problackwell']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['quarrglab']:
-          ss = 'quarrglab-socsharedstorage'
-          ds = 'QUARRG Lab Compute Resources'
-          sp_form = data['from_data_quarrglab']   
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['devlab']:
-          ss = 'devlab-socsharedstorage'
-          ds = 'DEV Compute Resources'
-          sp_form = data['from_data_devlab']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['edemsmithbusiness']:
-          ss = 'edemsmithbusiness-socsharedstorage'
-          ds = 'Smith School of Business Compute Resources'
-          sp_form = data['from_data_edemsmithbusiness']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['miblab']:
-          ss = 'miblab-socsharedstorage'
-          ds = 'MIB Lab Compute Resources'
-          sp_form = data['from_data_miblab']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['winemocollab']:
-          ss = 'winemocollab-socsharedstorage'
-          ds = 'WineMocol Lab Compute Resources'
-          sp_form = data['from_data_winemocollab']
-          return sp_form.format(ss, ds) 
-        if username in data['nodeaccess']['gandslab']:
-          ss = 'gandslab-socsharedstorage'
-          ds = 'GAIN & SWIMS Labs Compute Resources'
-          sp_form = data['from_data_gandslab']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['lobot_a40']:
-          ss = 'lobot_a40-socsharedstorage'
-          ds = 'Lobot Compute Resources (NVIDIA A40 GPU 48G)'
-          sp_form = data['from_data_lobot_a40']
-          return sp_form.format(ss, ds)
-        if username in data['nodeaccess']['lobot_a5000']:
-          ss = 'lobot_a5000-socsharedstorage'
-          ds = 'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'
-          sp_form = data['from_data_lobot_a5000']   
-          return sp_form.format(ss, ds)
-        return sp_form.format(ss, ds)
+
+        nodeaccess = data.get('nodeaccess', {})
+        lab_groups = data.get('lab_groups', {})
+
+        # Priority-ordered list of (lab_key, storage_class, display_name)
+        LAB_META = [
+          ('mulab',              'mulab-socsharedstorage',              'MULab Compute Resources'),
+          ('bamlab',             'bamlab-socsharedstorage',             'BAMLab Compute Resources (A100 80G)'),
+          ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
+          ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
+          ('digilab',            'digilab-socsharedstorage',            'Digilians Compute Resources'),
+          ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
+          ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
+          ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
+          ('devlab',             'devlab-socsharedstorage',             'DEV Compute Resources'),
+          ('edemsmithbusiness',  'edemsmithbusiness-socsharedstorage',  'Smith School of Business Compute Resources'),
+          ('miblab',             'miblab-socsharedstorage',             'MIB Lab Compute Resources'),
+          ('winemocollab',       'winemocollab-socsharedstorage',       'WineMocol Lab Compute Resources'),
+          ('gandslab',           'gandslab-socsharedstorage',           'GAIN & SWIMS Labs Compute Resources'),
+          ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
+          ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
+        ]
+        lab_ss = {lab: ss for lab, ss, _ in LAB_META}
+        lab_ds = {lab: ds for lab, _, ds in LAB_META}
+
+        # Find primary lab (first nodeaccess match in priority order)
+        primary_lab = None
+        for lab, ss, ds in LAB_META:
+          if username in [u.strip().lower() for u in (nodeaccess.get(lab) or [])]:
+            primary_lab = lab
+            break
+
+        # Default fallback
+        if primary_lab is None:
+          return data['from_data_lobot_a16'].format(
+            'lobot_a16-socsharedstorage', 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)')
+
+        # Expand via lab_groups to get all accessible labs for this user
+        accessible_labs = lab_groups.get(primary_lab, [primary_lab])
+
+        # Single lab — existing single-form behavior
+        if len(accessible_labs) == 1:
+          return data[f'from_data_{primary_lab}'].format(
+            lab_ss[primary_lab], lab_ds[primary_lab])
+
+        # --- Multi-lab: build pool-selector form ---
+        def make_section(lab, is_first):
+          ss = lab_ss.get(lab, f'{lab}-socsharedstorage')
+          ds = lab_ds.get(lab, lab)
+          html = data.get(f'from_data_{lab}', '').format(ss, ds)
+          # Remove per-lab <script> and status div; the switcher provides a shared one
+          html = re.sub(r'\s*<script\b[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+          html = re.sub(r'\s*<div[^>]+id="label-usage"[^>]*>.*?</div>', '', html, flags=re.DOTALL)
+          if not is_first:
+            # Disable selects in hidden sections so they are not submitted
+            html = re.sub(r'(<select\b)', r'\1 disabled', html)
+          display = '' if is_first else ' style="display:none"'
+          return f'<div id="lab-form-{lab}" class="lab-form-section"{display}>\n{html}\n</div>\n'
+
+        sections = ''.join(make_section(lab, i == 0) for i, lab in enumerate(accessible_labs))
+        pool_options = ''.join(
+          f'<option value="{lab}">{lab_ds.get(lab, lab)}</option>\n'
+          for lab in accessible_labs
+        )
+        first_lab = accessible_labs[0]
+
+        return f'''<script>
+function switchLab(labName) {{
+  document.querySelectorAll('.lab-form-section').forEach(function(el) {{
+    el.style.display = 'none';
+    el.querySelectorAll('select').forEach(function(s) {{ s.disabled = true; }});
+  }});
+  var section = document.getElementById('lab-form-' + labName);
+  section.style.display = '';
+  section.querySelectorAll('select').forEach(function(s) {{ s.disabled = false; }});
+  $('#label-usage').children('small, br').remove();
+  $('#label-summary').text('');
+  $('#label-summary-details').text('');
+  $.getJSON('https://' + window.location.hostname + '/allocationstatus/current.json', function(d) {{
+    if (d && d[labName]) {{
+      $('#label-summary').text(d[labName].summary_title);
+      $('#label-summary-details').text(d[labName].summary_details);
+      $.each(d[labName].usage, function(i, v) {{
+        $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted')).append($('<br>'));
+      }});
+    }}
+  }});
+}}
+</script>
+<div class="form-group">
+  <label for="lab_selector">Resource Pool</label>
+  <select id="lab_selector" class="form-control" onchange="switchLab(this.value)">
+    {pool_options}
+  </select>
+</div>
+<div class="form-group" id="label-usage">
+  <label id="label-summary"></label><br>
+  <label id="label-summary-details"></label><br>
+</div>
+{sections}<script>switchLab('{first_lab}');</script>'''
       #c.Spawner.start_timeout = 420 
       #c.Spawner.start_timeout = 3600 
       c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
@@ -491,10 +512,17 @@ hub:
 
           # 1. Validate user has access to the submitted lab (prevents lab-switching)
           nodeaccess = data.get('nodeaccess', {})
+          lab_groups = data.get('lab_groups', {})
           lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
           if username not in lab_users:
-            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
-            raise SpawnError(f'You do not have access to {lab}.')
+            # Also allow access if user is in a primary lab whose lab_groups includes this lab
+            has_group_access = any(
+              lab in group_labs and username in [u.strip().lower() for u in (nodeaccess.get(primary) or [])]
+              for primary, group_labs in lab_groups.items()
+            )
+            if not has_group_access:
+              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
+              raise SpawnError(f'You do not have access to {lab}.')
 
           # 2. Validate resource limits against runtime_setting.yaml limits section
           limits = (data.get('limits') or {}).get(lab)
