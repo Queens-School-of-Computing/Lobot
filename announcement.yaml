@@ -1,4 +1,4 @@
 announcement_prod: >
-  Mar 30 2026 - Server stopping unexpectantly? Make sure you aren't running out of memory.
+  June 03 2026 - Additional security measures have been implemented. Unauthorized usage of cluster features will result in loss of access.
 announcement_dev: >
-  Mar 30 2026 - main github branch is now the main branch.
+  June 03 2026 -[dev] Additional security measures have been implemented. Unauthorized usage of cluster features will result in loss of access.
