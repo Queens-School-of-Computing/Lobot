@@ -23,7 +23,7 @@ LAB_GROUPS = {
 # Users who can spawn on any lab. Bypasses nodeaccess checks and sees all labs
 # in the Resource Pool dropdown. Independent of JupyterHub admin status.
 SUPERUSERS = [
-    'wiegerthefarmer',
+    'wiegerthefarmer','drdoog','jm-janzen',
 ]
 
 
