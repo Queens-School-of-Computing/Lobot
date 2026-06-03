@@ -358,13 +358,35 @@ hub:
       c.JupyterHub.api_page_default_limit = 200
     custom_options_form: |
       def options_from_form(formdata):
+        import urllib.request, yaml, os, re as _re
         options = {}
-        options['image'] = formdata['image']  
-        options['cpu_limit'] = formdata['cpu_limit']  
-        options['mem_limit'] = formdata['mem_limit']  
-        options['gpu_limit'] = formdata['gpu_limit']  
-        options['storage_class'] = formdata['storage_class']  
-        return options  
+        options['image'] = formdata['image']
+        options['cpu_limit'] = formdata['cpu_limit']
+        options['mem_limit'] = formdata['mem_limit']
+        options['gpu_limit'] = formdata['gpu_limit']
+        options['storage_class'] = formdata['storage_class']
+
+        # Validate image against the allowed options defined in this lab's form HTML.
+        # This runs before spawn-pending so JupyterHub can show the error on the spawn page.
+        lab = options['storage_class'][0].split('-')[0]
+        RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
+        try:
+          data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
+          lab_html = (data.get(f'from_data_{lab}') or '')
+          _img_select = _re.search(
+            r'<select[^>]+name=["\']image["\'][^>]*>(.*?)</select>',
+            lab_html, flags=_re.DOTALL)
+          if _img_select:
+            _allowed_images = _re.findall(r'<option[^>]+value=["\']([^"\']*)["\']', _img_select.group(1))
+            req_image = options['image'][0]
+            if _allowed_images and req_image not in _allowed_images:
+              raise ValueError(f'Image "{req_image}" is not permitted. Please select from the available options.')
+        except ValueError:
+          raise
+        except Exception:
+          pass  # Don't block spawn if YAML fetch fails; pre_spawn_hook will re-validate
+
+        return options
       async def dynamic_form(self):
         import urllib.request, yaml, os, re
 
@@ -507,69 +529,68 @@ hub:
         options = spwnr.user_options
         lab = options['storage_class'][0].split('-')[0]
 
-        # --- Server-side validation (non-admins only) ---
-        # TODO: re-enable once generate-runtime-config is updated to include limits
-        if not spwnr.user.admin:
-          try:
-            data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
-          except Exception as e:
-            spwnr.log.error(f'[pre_spawn_hook] Failed to load runtime settings: {e}')
-            raise SpawnError('Could not validate resource request. Please try again.')
+        # --- Server-side validation (all users) ---
+        try:
+          data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
+        except Exception as e:
+          spwnr.log.error(f'[pre_spawn_hook] Failed to load runtime settings: {e}')
+          raise SpawnError('Could not validate resource request. Please try again.')
 
-          # 1. Validate user has access to the submitted lab (prevents lab-switching)
-          nodeaccess = data.get('nodeaccess', {})
-          lab_groups = data.get('lab_groups', {})
-          superusers = [u.strip().lower() for u in (data.get('superusers') or [])]
-          lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
-          if username not in lab_users and username not in superusers:
-            # Also allow access if user is in a primary lab whose lab_groups includes this lab
-            has_group_access = any(
-              lab in group_labs and username in [u.strip().lower() for u in (nodeaccess.get(primary) or [])]
-              for primary, group_labs in lab_groups.items()
-            )
-            if not has_group_access:
-              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
-              raise SpawnError(f'You do not have access to {lab}.')
+        # 1. Validate user has access to the submitted lab (prevents lab-switching)
+        nodeaccess = data.get('nodeaccess', {})
+        lab_groups = data.get('lab_groups', {})
+        superusers = [u.strip().lower() for u in (data.get('superusers') or [])]
+        lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
+        if username not in lab_users and username not in superusers:
+          # Also allow access if user is in a primary lab whose lab_groups includes this lab
+          has_group_access = any(
+            lab in group_labs and username in [u.strip().lower() for u in (nodeaccess.get(primary) or [])]
+            for primary, group_labs in lab_groups.items()
+          )
+          if not has_group_access:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
+            raise SpawnError(f'You do not have access to {lab}.')
 
-          # 2. Validate resource limits against runtime_setting.yaml limits section
-          limits = (data.get('limits') or {}).get(lab)
-          if limits:
-            def parse_mem_gb(s):
-              s = str(s).upper()
-              if s.endswith('G'): return float(s[:-1])
-              if s.endswith('M'): return float(s[:-1]) / 1024
-              return float(s)
+        # 2. Validate resource limits against runtime_setting.yaml limits section
+        limits = (data.get('limits') or {}).get(lab)
+        if limits:
+          def parse_mem_gb(s):
+            s = str(s).upper()
+            if s.endswith('G'): return float(s[:-1])
+            if s.endswith('M'): return float(s[:-1]) / 1024
+            return float(s)
 
-            req_gpu = int(options['gpu_limit'][0])
-            if req_gpu < 0: req_gpu = 0
-            max_gpu = int(limits.get('max_gpu', 0))
-            if req_gpu > max_gpu:
-              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu} GPUs, max={max_gpu}')
-              raise SpawnError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
+          req_gpu = int(options['gpu_limit'][0])
+          if req_gpu < 0: req_gpu = 0
+          max_gpu = int(limits.get('max_gpu', 0))
+          if req_gpu > max_gpu:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu} GPUs, max={max_gpu}')
+            raise SpawnError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
 
-            req_cpu = float(options['cpu_limit'][0])
-            max_cpu = float(limits.get('max_cpu', 0))
-            if max_cpu > 0 and req_cpu > max_cpu:
-              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_cpu} CPUs, max={max_cpu}')
-              raise SpawnError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
+          req_cpu = float(options['cpu_limit'][0])
+          max_cpu = float(limits.get('max_cpu', 0))
+          if max_cpu > 0 and req_cpu > max_cpu:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_cpu} CPUs, max={max_cpu}')
+            raise SpawnError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
 
-            req_mem_gb = parse_mem_gb(options['mem_limit'][0])
-            max_mem_gb = float(limits.get('max_mem_gb', 0))
-            if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
-              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
-              raise SpawnError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
-          # 3. Validate image against allowed options for this lab
-          import re as _re
-          _lab_html = (data.get(f'from_data_{lab}') or '')
-          _img_select = _re.search(
-            r'<select[^>]+name=["\']image["\'][^>]*>(.*?)</select>',
-            _lab_html, flags=_re.DOTALL)
-          if _img_select:
-            _allowed_images = _re.findall(r'<option[^>]+value=["\']([^"\']*)["\']', _img_select.group(1))
-            req_image = options['image'][0]
-            if _allowed_images and req_image not in _allowed_images:
-              spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized image {req_image!r}')
-              raise SpawnError(f'Image "{req_image}" is not permitted. Please select from the available options.')
+          req_mem_gb = parse_mem_gb(options['mem_limit'][0])
+          max_mem_gb = float(limits.get('max_mem_gb', 0))
+          if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
+            raise SpawnError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+
+        # 3. Validate image against allowed options for this lab
+        import re as _re
+        _lab_html = (data.get(f'from_data_{lab}') or '')
+        _img_select = _re.search(
+          r'<select[^>]+name=["\']image["\'][^>]*>(.*?)</select>',
+          _lab_html, flags=_re.DOTALL)
+        if _img_select:
+          _allowed_images = _re.findall(r'<option[^>]+value=["\']([^"\']*)["\']', _img_select.group(1))
+          req_image = options['image'][0]
+          if _allowed_images and req_image not in _allowed_images:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized image {req_image!r}')
+            raise SpawnError(f'Image "{req_image}" is not permitted. Please select from the available options.')
         # --- End validation ---
 
         spwnr.image = options['image'][0]
