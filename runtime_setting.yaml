@@ -23,7 +23,6 @@ nodeaccess:
   - schorm
   - somiona
   - tahosinamoniranonna
-  - wiegerthefarmer
   devlab:
   - steven-hh-ding
   digilab:
@@ -126,6 +125,8 @@ nodeaccess:
   - ts-sl
   - vnguyen16
   - zackaw-jpg
+  lobot_blackwell:
+  - wiegerthefarmer
   lobot_problackwell:
   - jm-janzen
   miblab:
