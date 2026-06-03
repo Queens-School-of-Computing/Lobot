@@ -17,8 +17,14 @@ always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES', '[
 # Labs that inherit access from another lab's nodeaccess list.
 # A user in nodeaccess[primary] is also permitted to spawn on any lab listed here.
 LAB_GROUPS = {
-    'lobot_blackwell': ['lobot_blackwell', 'bamlab','lobot_a16','lobot_a40'],
+    'lobot_blackwell': ['lobot_blackwell', 'bamlab'],
 }
+
+# Users who can spawn on any lab. Bypasses nodeaccess checks and sees all labs
+# in the Resource Pool dropdown. Independent of JupyterHub admin status.
+SUPERUSERS = [
+    'wiegerthefarmer',
+]
 
 
 def main():
@@ -37,7 +43,7 @@ def main():
     all_page_names = sorted(set(resource_names) | group_labs)
     pages = get_resource_pages(all_page_names)
 
-    config = {'nodeaccess': resources, 'limits': get_limits(), 'lab_groups': LAB_GROUPS, **pages}
+    config = {'nodeaccess': resources, 'limits': get_limits(), 'lab_groups': LAB_GROUPS, 'superusers': SUPERUSERS, **pages}
 
     yaml.add_representer(str, str_presenter)
 

@@ -378,6 +378,7 @@ hub:
 
         nodeaccess = data.get('nodeaccess', {})
         lab_groups = data.get('lab_groups', {})
+        superusers = [u.strip().lower() for u in (data.get('superusers') or [])]
 
         # Priority-ordered list of (lab_key, storage_class, display_name)
         LAB_META = [
@@ -400,20 +401,24 @@ hub:
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}
         lab_ds = {lab: ds for lab, _, ds in LAB_META}
 
-        # Find primary lab (first nodeaccess match in priority order)
-        primary_lab = None
-        for lab, ss, ds in LAB_META:
-          if username in [u.strip().lower() for u in (nodeaccess.get(lab) or [])]:
-            primary_lab = lab
-            break
+        # Superusers get all labs
+        if username in superusers:
+          accessible_labs = [lab for lab, _, _ in LAB_META]
+        else:
+          # Find primary lab (first nodeaccess match in priority order)
+          primary_lab = None
+          for lab, ss, ds in LAB_META:
+            if username in [u.strip().lower() for u in (nodeaccess.get(lab) or [])]:
+              primary_lab = lab
+              break
 
-        # Default fallback
-        if primary_lab is None:
-          return data['from_data_lobot_a16'].format(
-            'lobot_a16-socsharedstorage', 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)')
+          # Default fallback
+          if primary_lab is None:
+            return data['from_data_lobot_a16'].format(
+              'lobot_a16-socsharedstorage', 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)')
 
-        # Expand via lab_groups to get all accessible labs for this user
-        accessible_labs = lab_groups.get(primary_lab, [primary_lab])
+          # Expand via lab_groups to get all accessible labs for this user
+          accessible_labs = lab_groups.get(primary_lab, [primary_lab])
 
         # Single lab — existing single-form behavior
         if len(accessible_labs) == 1:
@@ -513,8 +518,9 @@ hub:
           # 1. Validate user has access to the submitted lab (prevents lab-switching)
           nodeaccess = data.get('nodeaccess', {})
           lab_groups = data.get('lab_groups', {})
+          superusers = [u.strip().lower() for u in (data.get('superusers') or [])]
           lab_users = [u.strip().lower() for u in (nodeaccess.get(lab) or [])]
-          if username not in lab_users:
+          if username not in lab_users and username not in superusers:
             # Also allow access if user is in a primary lab whose lab_groups includes this lab
             has_group_access = any(
               lab in group_labs and username in [u.strip().lower() for u in (nodeaccess.get(primary) or [])]
