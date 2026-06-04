@@ -366,12 +366,14 @@ hub:
         options['gpu_limit'] = formdata['gpu_limit']
         options['storage_class'] = formdata['storage_class']
 
-        # Validate image against the allowed options defined in this lab's form HTML.
-        # This runs before spawn-pending so JupyterHub can show the error on the spawn page.
+        # All validation runs before spawn-pending so errors show on the spawn form.
+        # If the YAML fetch fails, silently pass — pre_spawn_hook will re-validate.
         lab = options['storage_class'][0].split('-')[0]
         RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
         try:
           data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
+
+          # Validate image against allowed options for this lab
           lab_html = (data.get(f'from_data_{lab}') or '')
           _img_select = _re.search(
             r'<select[^>]+name=["\']image["\'][^>]*>(.*?)</select>',
@@ -381,6 +383,32 @@ hub:
             req_image = options['image'][0]
             if _allowed_images and req_image not in _allowed_images:
               raise ValueError(f'Image "{req_image}" is not permitted. Please select from the available options.')
+
+          # Validate resource limits
+          limits = (data.get('limits') or {}).get(lab)
+          if limits:
+            def parse_mem_gb(s):
+              s = str(s).upper()
+              if s.endswith('G'): return float(s[:-1])
+              if s.endswith('M'): return float(s[:-1]) / 1024
+              return float(s)
+
+            req_gpu = int(options['gpu_limit'][0])
+            if req_gpu < 0: req_gpu = 0
+            max_gpu = int(limits.get('max_gpu', 0))
+            if req_gpu > max_gpu:
+              raise ValueError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
+
+            req_cpu = float(options['cpu_limit'][0])
+            max_cpu = float(limits.get('max_cpu', 0))
+            if max_cpu > 0 and req_cpu > max_cpu:
+              raise ValueError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
+
+            req_mem_gb = parse_mem_gb(options['mem_limit'][0])
+            max_mem_gb = float(limits.get('max_mem_gb', 0))
+            if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
+              raise ValueError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+
         except ValueError:
           raise
         except Exception:
