@@ -358,7 +358,20 @@ hub:
       c.JupyterHub.api_page_default_limit = 200
     custom_options_form: |
       def options_from_form(formdata):
-        import urllib.request, yaml, os, re as _re
+        import urllib.request, yaml, os, re as _re, smtplib
+        from email.mime.text import MIMEText
+
+        def _send_violation_email(subject, body):
+          try:
+            msg = MIMEText(body)
+            msg['Subject'] = subject
+            msg['From'] = 'lobot@cs.queensu.ca'
+            msg['To'] = 'aaron@cs.queensu.ca'
+            with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
+              s.sendmail('lobot@cs.queensu.ca', ['aaron@cs.queensu.ca'], msg.as_string())
+          except Exception:
+            pass
+
         options = {}
         options['image'] = formdata['image']
         options['cpu_limit'] = formdata['cpu_limit']
@@ -382,7 +395,15 @@ hub:
             _allowed_images = _re.findall(r'<option[^>]+value=["\']([^"\']*)["\']', _img_select.group(1))
             req_image = options['image'][0]
             if _allowed_images and req_image not in _allowed_images:
-              raise ValueError(f'Image "{req_image}" is not permitted. Please select from the available options.')
+              _send_violation_email(
+                f'[Lobot] Policy Violation: Unauthorized image on {lab}',
+                f'A policy violation was detected during spawn form submission.\n\n'
+                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'Lab:             {lab}\n'
+                f'Attempted image: {req_image}\n'
+                f'Allowed images:  {", ".join(_allowed_images)}\n'
+              )
+              raise ValueError(f'POLICY VIOLATION: Image "{req_image}" is not permitted on this system. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
           # Validate resource limits
           limits = (data.get('limits') or {}).get(lab)
@@ -397,17 +418,41 @@ hub:
             if req_gpu < 0: req_gpu = 0
             max_gpu = int(limits.get('max_gpu', 0))
             if req_gpu > max_gpu:
-              raise ValueError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
+              _send_violation_email(
+                f'[Lobot] Policy Violation: GPU limit exceeded on {lab}',
+                f'A policy violation was detected during spawn form submission.\n\n'
+                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'Lab:         {lab}\n'
+                f'Requested:   {req_gpu} GPU(s)\n'
+                f'Limit:       {max_gpu} GPU(s)\n'
+              )
+              raise ValueError(f'POLICY VIOLATION: Requested {req_gpu} GPU(s) exceeds your allocated limit of {max_gpu}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
             req_cpu = float(options['cpu_limit'][0])
             max_cpu = float(limits.get('max_cpu', 0))
             if max_cpu > 0 and req_cpu > max_cpu:
-              raise ValueError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
+              _send_violation_email(
+                f'[Lobot] Policy Violation: CPU limit exceeded on {lab}',
+                f'A policy violation was detected during spawn form submission.\n\n'
+                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'Lab:         {lab}\n'
+                f'Requested:   {req_cpu} CPU cores\n'
+                f'Limit:       {max_cpu} CPU cores\n'
+              )
+              raise ValueError(f'POLICY VIOLATION: Requested {req_cpu} CPU cores exceeds your allocated limit of {max_cpu}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
             req_mem_gb = parse_mem_gb(options['mem_limit'][0])
             max_mem_gb = float(limits.get('max_mem_gb', 0))
             if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
-              raise ValueError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+              _send_violation_email(
+                f'[Lobot] Policy Violation: Memory limit exceeded on {lab}',
+                f'A policy violation was detected during spawn form submission.\n\n'
+                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'Lab:         {lab}\n'
+                f'Requested:   {req_mem_gb}G\n'
+                f'Limit:       {max_mem_gb}G\n'
+              )
+              raise ValueError(f'POLICY VIOLATION: Requested {req_mem_gb}G memory exceeds your allocated limit of {max_mem_gb}G. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
         except ValueError:
           raise
@@ -538,13 +583,25 @@ hub:
       c.Spawner.options_from_form = options_from_form 
     pre_spawn_hook: |
       async def my_pre_spawn_hook(spwnr):
-        import os, urllib.request, yaml
+        import os, urllib.request, yaml, smtplib
         from tornado.web import HTTPError
+        from email.mime.text import MIMEText
 
         class SpawnError(HTTPError):
           def __init__(self, message):
             super().__init__(400, message)
             self.jupyterhub_message = message
+
+        def _send_violation_email(subject, body):
+          try:
+            msg = MIMEText(body)
+            msg['Subject'] = subject
+            msg['From'] = 'lobot@cs.queensu.ca'
+            msg['To'] = 'aaron@cs.queensu.ca'
+            with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
+              s.sendmail('lobot@cs.queensu.ca', ['aaron@cs.queensu.ca'], msg.as_string())
+          except Exception as _e:
+            spwnr.log.warning(f'[pre_spawn_hook] Failed to send violation email: {_e}')
 
         RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
         if spwnr.user.name in _COLLAB_USERS:
@@ -577,7 +634,11 @@ hub:
           )
           if not has_group_access:
             spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized access to lab {lab}')
-            raise SpawnError(f'You do not have access to {lab}.')
+            _send_violation_email(
+              f'[Lobot] Policy Violation: Unauthorized lab access by {username}',
+              f'GitHub user: {username}\nAttempted lab: {lab}\nAction: unauthorized lab access\n'
+            )
+            raise SpawnError(f'POLICY VIOLATION: You do not have access to {lab}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
         # 2. Validate resource limits against runtime_setting.yaml limits section
         limits = (data.get('limits') or {}).get(lab)
@@ -593,19 +654,31 @@ hub:
           max_gpu = int(limits.get('max_gpu', 0))
           if req_gpu > max_gpu:
             spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu} GPUs, max={max_gpu}')
-            raise SpawnError(f'Requested {req_gpu} GPU(s) exceeds your limit of {max_gpu}.')
+            _send_violation_email(
+              f'[Lobot] Policy Violation: GPU limit exceeded by {username} on {lab}',
+              f'GitHub user: {username}\nLab: {lab}\nRequested: {req_gpu} GPU(s)\nLimit: {max_gpu} GPU(s)\n'
+            )
+            raise SpawnError(f'POLICY VIOLATION: Requested {req_gpu} GPU(s) exceeds your allocated limit of {max_gpu}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
           req_cpu = float(options['cpu_limit'][0])
           max_cpu = float(limits.get('max_cpu', 0))
           if max_cpu > 0 and req_cpu > max_cpu:
             spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_cpu} CPUs, max={max_cpu}')
-            raise SpawnError(f'Requested {req_cpu} CPU cores exceeds your limit of {max_cpu}.')
+            _send_violation_email(
+              f'[Lobot] Policy Violation: CPU limit exceeded by {username} on {lab}',
+              f'GitHub user: {username}\nLab: {lab}\nRequested: {req_cpu} CPU cores\nLimit: {max_cpu} CPU cores\n'
+            )
+            raise SpawnError(f'POLICY VIOLATION: Requested {req_cpu} CPU cores exceeds your allocated limit of {max_cpu}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
           req_mem_gb = parse_mem_gb(options['mem_limit'][0])
           max_mem_gb = float(limits.get('max_mem_gb', 0))
           if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
             spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_mem_gb}G memory, max={max_mem_gb}G')
-            raise SpawnError(f'Requested {req_mem_gb}G memory exceeds your limit of {max_mem_gb}G.')
+            _send_violation_email(
+              f'[Lobot] Policy Violation: Memory limit exceeded by {username} on {lab}',
+              f'GitHub user: {username}\nLab: {lab}\nRequested: {req_mem_gb}G\nLimit: {max_mem_gb}G\n'
+            )
+            raise SpawnError(f'POLICY VIOLATION: Requested {req_mem_gb}G memory exceeds your allocated limit of {max_mem_gb}G. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
         # 3. Validate image against allowed options for this lab
         import re as _re
@@ -618,7 +691,11 @@ hub:
           req_image = options['image'][0]
           if _allowed_images and req_image not in _allowed_images:
             spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} attempted unauthorized image {req_image!r}')
-            raise SpawnError(f'Image "{req_image}" is not permitted. Please select from the available options.')
+            _send_violation_email(
+              f'[Lobot] Policy Violation: Unauthorized image by {username} on {lab}',
+              f'GitHub user: {username}\nLab: {lab}\nAttempted image: {req_image}\nAllowed images: {", ".join(_allowed_images)}\n'
+            )
+            raise SpawnError(f'POLICY VIOLATION: Image "{req_image}" is not permitted on this system. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
         # --- End validation ---
 
         spwnr.image = options['image'][0]
