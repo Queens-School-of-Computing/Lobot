@@ -198,7 +198,7 @@ limits:
   lobot_a40:
     max_cpu: 16.0
     max_gpu: 2
-    max_mem_gb: 256
+    max_mem_gb: 512
   lobot_a5000:
     max_cpu: 32.0
     max_gpu: 1
@@ -722,6 +722,8 @@ from_data_lobot_a40: |2
                   <option value="64G" select="selected">64G RAM</option>
                   <option value="128G">128G RAM</option>
                   <option value="256G">256G RAM</option>
+                  <option value="384G">384G RAM</option>
+                  <option value="512G">512G RAM</option>
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
               </div>
