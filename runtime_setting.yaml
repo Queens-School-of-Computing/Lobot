@@ -10,7 +10,6 @@ nodeaccess:
   bamlab:
   - 20aanm
   - 21at45
-  - 23wm13
   - drishti2996
   - elyasrashno
   - haoran-qi
@@ -18,7 +17,6 @@ nodeaccess:
   - ianpepin
   - jacksoncaii
   - nbcstevenchen
-  - schorm
   - somiona
   - tahosinamoniranonna
   devlab:
@@ -123,9 +121,11 @@ nodeaccess:
   - vnguyen16
   - zackaw-jpg
   lobot_blackwell:
+  - 23wm13
   - aaronvisser
   - ameskandari
   - nafiz95
+  - schorm
   - wiegerthefarmer
   lobot_problackwell:
   - jm-janzen
