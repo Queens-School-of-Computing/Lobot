@@ -713,28 +713,17 @@ hub:
           spwnr.storage_class = str('caslab-retain-r1')
         
         if lab in ('lobot_blackwell'):
-          
+
           if username == 'nafiz95':
-            spwnr.volumes.extend([
-                   {
-                           "name": "pv-bamlab-ildpatients",
-                           "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}
-                   },
-                   {
-                           "name": "nfs-nafiz25tb",
-                           "hostPath": {"path": "/mnt/nafiz25TB"}
-                   }
-            ])
-            spwnr.volume_mounts.extend([
-                   {
-                           "mountPath": "/home/jovyan/bamlab_ildpatients",
-                           "name": "pv-bamlab-ildpatients"
-                   },
-                   {
-                           "mountPath": "/home/jovyan/nafiz25TB",
-                           "name": "nfs-nafiz25tb"
-                   }
-            ])
+            pass  # NFS mounts disabled: 130.15.6.127 offline
+            # spwnr.volumes.extend([
+            #        {"name": "pv-bamlab-ildpatients", "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}},
+            #        {"name": "nfs-nafiz25tb", "hostPath": {"path": "/mnt/nafiz25TB"}},
+            # ])
+            # spwnr.volume_mounts.extend([
+            #        {"mountPath": "/home/jovyan/bamlab_ildpatients", "name": "pv-bamlab-ildpatients"},
+            #        {"mountPath": "/home/jovyan/nafiz25TB", "name": "nfs-nafiz25tb"},
+            # ])
         #if lab in ('bamlab', 'lobot_blackwell'):    #commented out to fix up RWO with other shared volumes.
         if lab in ('bamlab'):
           spwnr.volumes.extend([
@@ -758,26 +747,15 @@ hub:
                  }
           ])
           if username == 'nafiz95':
-            spwnr.volumes.extend([
-                   {
-                           "name": "pv-bamlab-ildpatients",
-                           "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}
-                   },
-                   {
-                           "name": "nfs-nafiz25tb",
-                           "hostPath": {"path": "/mnt/nafiz25TB"}
-                   }
-            ])
-            spwnr.volume_mounts.extend([
-                   {
-                           "mountPath": "/home/jovyan/bamlab_ildpatients",
-                           "name": "pv-bamlab-ildpatients"
-                   },
-                   {
-                           "mountPath": "/home/jovyan/nafiz25TB",
-                           "name": "nfs-nafiz25tb"
-                   }
-            ])
+            pass  # NFS mounts disabled: 130.15.6.127 offline
+            # spwnr.volumes.extend([
+            #        {"name": "pv-bamlab-ildpatients", "persistentVolumeClaim": {"claimName": "pvc-bamlab-ildpatients"}},
+            #        {"name": "nfs-nafiz25tb", "hostPath": {"path": "/mnt/nafiz25TB"}},
+            # ])
+            # spwnr.volume_mounts.extend([
+            #        {"mountPath": "/home/jovyan/bamlab_ildpatients", "name": "pv-bamlab-ildpatients"},
+            #        {"mountPath": "/home/jovyan/nafiz25TB", "name": "nfs-nafiz25tb"},
+            # ])
         spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
         if int(options["gpu_limit"][0]) == 0:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
