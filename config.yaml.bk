@@ -357,9 +357,13 @@ hub:
       c.LocalProcessSpawner.debug = False
       c.JupyterHub.api_page_default_limit = 200
     custom_options_form: |
-      def options_from_form(formdata):
+      from kubespawner import KubeSpawner
+
+      def options_from_form(self, formdata):
         import urllib.request, yaml, os, re as _re, smtplib
         from email.mime.text import MIMEText
+
+        username = self.user.name.strip().lower()
 
         def _send_violation_email(subject, body):
           try:
@@ -396,9 +400,8 @@ hub:
             req_image = options['image'][0]
             if _allowed_images and req_image not in _allowed_images:
               _send_violation_email(
-                f'[Lobot] Policy Violation: Unauthorized image on {lab}',
-                f'A policy violation was detected during spawn form submission.\n\n'
-                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'[Lobot] Policy Violation: Unauthorized image by {username} on {lab}',
+                f'GitHub user:     {username}\n'
                 f'Lab:             {lab}\n'
                 f'Attempted image: {req_image}\n'
                 f'Allowed images:  {", ".join(_allowed_images)}\n'
@@ -419,9 +422,8 @@ hub:
             max_gpu = int(limits.get('max_gpu', 0))
             if req_gpu > max_gpu:
               _send_violation_email(
-                f'[Lobot] Policy Violation: GPU limit exceeded on {lab}',
-                f'A policy violation was detected during spawn form submission.\n\n'
-                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'[Lobot] Policy Violation: GPU limit exceeded by {username} on {lab}',
+                f'GitHub user: {username}\n'
                 f'Lab:         {lab}\n'
                 f'Requested:   {req_gpu} GPU(s)\n'
                 f'Limit:       {max_gpu} GPU(s)\n'
@@ -432,9 +434,8 @@ hub:
             max_cpu = float(limits.get('max_cpu', 0))
             if max_cpu > 0 and req_cpu > max_cpu:
               _send_violation_email(
-                f'[Lobot] Policy Violation: CPU limit exceeded on {lab}',
-                f'A policy violation was detected during spawn form submission.\n\n'
-                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'[Lobot] Policy Violation: CPU limit exceeded by {username} on {lab}',
+                f'GitHub user: {username}\n'
                 f'Lab:         {lab}\n'
                 f'Requested:   {req_cpu} CPU cores\n'
                 f'Limit:       {max_cpu} CPU cores\n'
@@ -445,9 +446,8 @@ hub:
             max_mem_gb = float(limits.get('max_mem_gb', 0))
             if max_mem_gb > 0 and req_mem_gb > max_mem_gb:
               _send_violation_email(
-                f'[Lobot] Policy Violation: Memory limit exceeded on {lab}',
-                f'A policy violation was detected during spawn form submission.\n\n'
-                f'Note: GitHub username is unavailable at the form submission stage.\n\n'
+                f'[Lobot] Policy Violation: Memory limit exceeded by {username} on {lab}',
+                f'GitHub user: {username}\n'
                 f'Lab:         {lab}\n'
                 f'Requested:   {req_mem_gb}G\n'
                 f'Limit:       {max_mem_gb}G\n'
@@ -580,7 +580,7 @@ hub:
       #c.Spawner.start_timeout = 3600 
       c.KubeSpawner.pod_security_context = {'fsGroup': 100,'fsGroupChangePolicy': "OnRootMismatch"}
       c.Spawner.options_form = dynamic_form
-      c.Spawner.options_from_form = options_from_form 
+      KubeSpawner.options_from_form = options_from_form
     pre_spawn_hook: |
       async def my_pre_spawn_hook(spwnr):
         import os, urllib.request, yaml, smtplib
