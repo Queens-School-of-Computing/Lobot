@@ -199,7 +199,7 @@ def get_resource_pages(names):
 def write_out(content, file_path):
     with open(file_path, 'w') as f:
         f.write(get_generated_disclaimer())
-        yaml.dump(content, f, indent=2, sort_keys=False)
+        yaml.dump(content, f, indent=2, sort_keys=False, allow_unicode=True)
 
 
 def get_generated_disclaimer():
