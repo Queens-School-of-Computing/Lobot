@@ -6,7 +6,11 @@ default:
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
 
+stages:
+  - trigger
+
 stub:
+  stage: trigger
   variables:
     CAT: "MEOW"
   rules:
