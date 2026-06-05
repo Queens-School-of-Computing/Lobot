@@ -14,3 +14,5 @@ stub:
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
       when: always
     - when: never
+  script: |
+    echo "meow meow $CAT"
