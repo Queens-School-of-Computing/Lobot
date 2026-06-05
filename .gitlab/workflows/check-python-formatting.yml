@@ -6,6 +6,7 @@ workflow:
 stages:
   - stage
   - check
+  - test
 
 stage_files:
   stage: stage
