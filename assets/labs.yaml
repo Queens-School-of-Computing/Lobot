@@ -30,15 +30,29 @@
 #     default: true       # pre-selected option — can be on any item, not just the first.
                       # Exactly one per list. If omitted, browser picks the first.
 #
-# Image override example — add this inside a lab to give it its own image list:
+# Full example lab (all fields shown):
 #   mylab:
-#     images:
+#     cpu_label: DUAL Intel Xeon Gold 6338
+#     cpu_help: "Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically."
+#     cpu_options:
+#       - {value: "8.0",  label: "8 cores",  default: true}
+#       - {value: "16.0", label: "16 cores"}
+#       - {value: "32.0", label: "32 cores"}
+#     gpu_options:
+#       - {value: "0", label: "I don't need a GPU for now.", default: true}
+#       - {value: "1", label: "1x A100 (80G)"}
+#       - {value: "2", label: "2x A100 (80G)"}
+#     ram_options:
+#       - {value: "64G",  label: "64G RAM",  default: true}
+#       - {value: "128G", label: "128G RAM"}
+#       - {value: "256G", label: "256G RAM"}
+#     ram_help: "The amount of memory to be allocated."
+#     images:                                                # omit to use global list
 #       - tag: 13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly
 #         label: "CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)"
 #         default: true
 #       - tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
 #         label: "CUDA 13.0 · TF 2.20 · Mar 13, 2026"
-#     cpu_options: ...
 #
 # =============================================================================
 
