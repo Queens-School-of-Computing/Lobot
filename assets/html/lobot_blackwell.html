@@ -5,7 +5,7 @@
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
-      $.each(data[lab].usage, function(index, value){{
+      $.each(data[lab].usage, function(index, value){{        
         let entry = $('<small>');
         entry.text(value);
         entry.addClass('form-text text-muted');
@@ -14,6 +14,19 @@
       }})
     }}
     }})
+
+    // Restore last selections from localStorage
+    $(document).ready(function() {
+      var restoreSelect = function(id, key) {
+        var saved = localStorage.getItem(key);
+        if (saved) { $(id).val(saved); }
+        $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
+      };
+      restoreSelect('#inputIMG', 'lobot_blackwell_image');
+      restoreSelect('#inputCPU', 'lobot_blackwell_cpu');
+      restoreSelect('#inputGPU', 'lobot_blackwell_gpu');
+      restoreSelect('#inputRAM', 'lobot_blackwell_ram');
+    });
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label><br>
@@ -22,7 +35,7 @@
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" select="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424">CUDA 13.2 · TF 2.20 · Apr 24, 2026</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313">CUDA 13.0 · TF 2.20 · Mar 13, 2026</option>
@@ -38,7 +51,7 @@
                 <option value="24.0">24 cores</option>
                 <option value="32.0">32 cores</option>
               </select>
-              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores. Choose minimum. Server will use more if needed and available automatically.</small>
+              <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
@@ -62,7 +75,7 @@
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                <option value="8G" select="selected">8G RAM</option>
+                <option value="8G" selected="selected">8G RAM</option>
                 <option value="16G">16G RAM</option>
                 <option value="32G">32G RAM</option>
                 <option value="64G">64G RAM</option>

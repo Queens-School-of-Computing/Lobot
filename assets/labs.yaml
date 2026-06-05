@@ -1,0 +1,366 @@
+# =============================================================================
+# labs.yaml — JupyterHub spawner form configuration
+# Edit this file, then run:  python3 assets/generate_html.py
+# =============================================================================
+#
+# LAB CONFIGURATION REFERENCE
+# ----------------------------
+# Each entry under `labs:` maps to one HTML file in assets/html/<lab_id>.html
+#
+# Required fields per lab:
+#   cpu_options   - list of CPU core choices
+#   gpu_options   - list of GPU choices
+#   ram_options   - list of RAM choices
+#
+# Optional fields per lab:
+#   cpu_label     - CPU model shown in brackets, e.g. [DUAL Intel Xeon Gold 6338]
+#                   Omit entirely if you don't want a model name shown.
+#   cpu_help      - Override the default CPU help text shown below the dropdown.
+#                   Default: "Reserved number of cores.  Choose minimum. Server
+#                             will use more if needed and available automatically."
+#   ram_help      - Override the default RAM help text shown below the dropdown.
+#                   Default: "The amount of memory to be allocated."
+#   images        - Override the global image list for this lab only.
+#                   Uses the same format as the top-level `images` list.
+#                   Omit to use the global list.
+#
+# Option format (cpu_options / gpu_options / ram_options):
+#   - value: "8.0"        # the form value submitted to JupyterHub (required)
+#     label: "8 cores"    # the text shown to the user (required)
+#     default: true       # pre-selected option — can be on any item, not just the first.
+                      # Exactly one per list. If omitted, browser picks the first.
+#
+# Image override example — add this inside a lab to give it its own image list:
+#   mylab:
+#     images:
+#       - tag: 13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly
+#         label: "CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)"
+#         default: true
+#       - tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
+#         label: "CUDA 13.0 · TF 2.20 · Mar 13, 2026"
+#     cpu_options: ...
+#
+# =============================================================================
+
+image_registry: queensschoolofcomputingdocker/gpu-jupyter-latest
+
+images:
+  - tag: 13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly
+    label: "CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)"
+    default: true
+  - tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly
+    label: "CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)"
+  - tag: 13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424
+    label: "CUDA 13.2 · TF 2.20 · Apr 24, 2026"
+  - tag: 13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313
+    label: "CUDA 13.0 · TF 2.20 · Mar 13, 2026"
+
+labs:
+  bamlab:
+    cpu_label: DUAL Intel Xeon Gold 6338
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x A100 (80G)"}
+      - {value: "2", label: "2x A100 (80G)"}
+      - {value: "3", label: "3x A100 (80G)"}
+      - {value: "4", label: "4x A100 (80G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  devlab:
+    cpu_options:
+      - {value: "2.0",   label: "2",                        default: true}
+      - {value: "4.0",   label: "4"}
+      - {value: "8.0",   label: "8"}
+      - {value: "16.0",  label: "16"}
+      - {value: "999.0", label: "999 (force spawn pending)"}
+    gpu_options:
+      - {value: "1",  label: "1 A16 (16G)"}
+      - {value: "0",  label: "I don't need a GPU for now.", default: true}
+      - {value: "-1", label: "*Experimental* Share All GPUs with other sessions"}
+    ram_options:
+      - {value: "8G",  label: "8G",  default: true}
+      - {value: "32G", label: "32G"}
+      - {value: "64G", label: "64G"}
+      - {value: "96G", label: "96G"}
+
+  digilab:
+    cpu_label: DUAL AMD EPYC 7H12
+    cpu_help: "Reserved number of cores. Server will use more if needed and available automatically."
+    cpu_options:
+      - {value: "8.0", label: "8 cores", default: true}
+    gpu_options:
+      - {value: "1", label: "1x A16 (16G)", default: true}
+      - {value: "0", label: "I don't need a GPU for now."}
+    ram_options:
+      - {value: "16G",  label: "16G RAM",  default: true}
+      - {value: "32G",  label: "32G RAM"}
+      - {value: "64G",  label: "64G RAM"}
+      - {value: "96G",  label: "96G RAM"}
+      - {value: "128G", label: "128G RAM"}
+    ram_help: "The amount of memory to be allocated. Choose minimum, only choose >32G if authorized."
+
+  edemsmithbusiness:
+    cpu_label: Intel Xeon Platinum 8268 CPU
+    cpu_options:
+      - {value: "8.0",  label: "8",  default: true}
+      - {value: "16.0", label: "16"}
+      - {value: "32.0", label: "32"}
+    gpu_options:
+      - {value: "1", label: "1x A16 (16G)"}
+      - {value: "2", label: "2x A16 (16G)"}
+      - {value: "3", label: "3x A16 (16G)"}
+      - {value: "4", label: "4x A16 (16G)"}
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  gandslab:
+    cpu_label: Intel Xeon Gold 6438Y+ 2.0GHz
+    cpu_options:
+      - {value: "4.0",  label: "4",  default: true}
+      - {value: "8.0",  label: "8"}
+      - {value: "16.0", label: "16"}
+      - {value: "32.0", label: "32"}
+    gpu_options:
+      - {value: "1",  label: "1x H100 NVL (96G)"}
+      - {value: "2",  label: "2x H100 NVL (96G)"}
+      - {value: "0",  label: "I don't need a GPU for now."}
+      - {value: "-1", label: "*Experimental* Share All GPUs with other sessions", default: true}
+    ram_options:
+      - {value: "8G",   label: "8G",   default: true}
+      - {value: "32G",  label: "32G"}
+      - {value: "64G",  label: "64G"}
+      - {value: "96G",  label: "96G"}
+      - {value: "128G", label: "128G"}
+      - {value: "192G", label: "192G"}
+
+  lobot_a16:
+    cpu_label: DUAL AMD EPYC 7H12
+    cpu_help: "Reserved number of cores. Server will use more if needed and available automatically."
+    cpu_options:
+      - {value: "8.0", label: "8 cores", default: true}
+    gpu_options:
+      - {value: "1", label: "1x A16 (16G)", default: true}
+      - {value: "0", label: "I don't need a GPU for now."}
+    ram_options:
+      - {value: "16G", label: "16G RAM", default: true}
+      - {value: "32G", label: "32G RAM"}
+
+  lobot_a40:
+    cpu_label: DUAL Intel Xeon Gold 6338
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x A40 (48G)"}
+      - {value: "2", label: "2x A40 (48G) WARNING: ONLY PICK TWO IF AUTHORIZED."}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  lobot_a5000:
+    cpu_label: DUAL AMD EPYC 7H12
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "32.0", label: "32 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x A5000 (24G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "96G",  label: "96G RAM"}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+
+  lobot_blackwell:
+    cpu_label: AMD EPYC 9455 48-Core Processor
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+    gpu_options:
+      - {value: "0",  label: "I don't need a GPU for now.", default: true}
+      - {value: "1",  label: "1x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "2",  label: "2x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "3",  label: "3x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "4",  label: "4x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "5",  label: "5x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "6",  label: "6x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "7",  label: "7x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "8",  label: "8x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "9",  label: "9x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "10", label: "10x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "11", label: "11x RTX PRO 6000 Blackwell (48G)"}
+      - {value: "12", label: "12x RTX PRO 6000 Blackwell (48G)"}
+    ram_options:
+      - {value: "8G",   label: "8G RAM",   default: true}
+      - {value: "16G",  label: "16G RAM"}
+      - {value: "32G",  label: "32G RAM"}
+      - {value: "64G",  label: "64G RAM"}
+      - {value: "96G",  label: "96G RAM"}
+      - {value: "128G", label: "128G RAM"}
+
+  lobot_problackwell:
+    cpu_label: DUAL AMD EPYC 9455
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "32.0", label: "32 cores"}
+      - {value: "64.0", label: "64 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x NVIDIA RTX 6000 Pro Blackwell (96G)"}
+      - {value: "2", label: "2x NVIDIA RTX 6000 Pro Blackwell (96G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+
+  miblab:
+    cpu_label: "Intel Xeon Platinum 8558 2.2GHz"
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+      - {value: "64.0", label: "64 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x RTX6000-ADA (48G)"}
+      - {value: "2", label: "2x RTX6000-ADA (48G)"}
+      - {value: "3", label: "3x RTX6000-ADA (48G)"}
+      - {value: "4", label: "4x RTX6000-ADA (48G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  mulab:
+    cpu_label: "AMD Epyc 2.6/3.3GHz"
+    cpu_options:
+      - {value: "10.0", label: "10 cores", default: true}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+      - {value: "64.0", label: "64 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x A40 (48G)"}
+      - {value: "2", label: "2x A40 (48G)"}
+      - {value: "3", label: "3x A40 (48G)"}
+      - {value: "4", label: "4x A40 (48G)"}
+      - {value: "5", label: "5x A40 (48G)"}
+      - {value: "6", label: "6x A40 (48G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  quarrglab:
+    cpu_label: "Intel(R) Xeon(R) 6710E"
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+      - {value: "48.0", label: "48 cores"}
+      - {value: "64.0", label: "64 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "2", label: "2x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "3", label: "3x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "4", label: "4x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "5", label: "5x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "6", label: "6x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "7", label: "7x RTX PRO 6000 Blackwell (24G)"}
+      - {value: "8", label: "8x RTX PRO 6000 Blackwell (24G)"}
+    ram_options:
+      - {value: "8G",   label: "8G RAM",   default: true}
+      - {value: "16G",  label: "16G RAM"}
+      - {value: "32G",  label: "32G RAM"}
+      - {value: "64G",  label: "64G RAM"}
+      - {value: "96G",  label: "96G RAM"}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "192G", label: "192G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+      - {value: "768G", label: "768G RAM"}
+
+  riselab:
+    cpu_label: DUAL AMD EPYC 7H12
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+      - {value: "32.0", label: "32 cores"}
+      - {value: "64.0", label: "64 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x A6000 (48G)"}
+      - {value: "2", label: "2x A6000 (48G)"}
+      - {value: "3", label: "3x A6000 (48G)"}
+      - {value: "4", label: "4x A6000 (48G)"}
+      - {value: "5", label: "5x A6000 (48G)"}
+      - {value: "6", label: "6x A6000 (48G)"}
+      - {value: "7", label: "7x A6000 (48G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}
+
+  winemocollab:
+    cpu_label: DUAL Intel Xeon Gold 6530
+    cpu_options:
+      - {value: "8.0",  label: "8 cores",  default: true}
+      - {value: "10.0", label: "10 cores"}
+      - {value: "16.0", label: "16 cores"}
+      - {value: "24.0", label: "24 cores"}
+    gpu_options:
+      - {value: "0", label: "I don't need a GPU for now.", default: true}
+      - {value: "1", label: "1x RTX6000-ADA (48G)"}
+      - {value: "2", label: "2x RTX6000-ADA (48G)"}
+      - {value: "3", label: "3x RTX6000-ADA (48G)"}
+      - {value: "4", label: "4x RTX6000-ADA (48G)"}
+    ram_options:
+      - {value: "64G",  label: "64G RAM",  default: true}
+      - {value: "128G", label: "128G RAM"}
+      - {value: "256G", label: "256G RAM"}
+      - {value: "384G", label: "384G RAM"}
+      - {value: "512G", label: "512G RAM"}

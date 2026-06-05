@@ -1,7 +1,7 @@
   <script>    
     var lab = 'bamlab';
     var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
-    $.getJSON(url_status, function(data){{    
+    $.getJSON(url_status, function(data){{
     if(data){{
       $('#label-summary').text(data[lab].summary_title);
       $('#label-summary-details').text(data[lab].summary_details);
@@ -14,6 +14,19 @@
       }})
     }}
     }})
+
+    // Restore last selections from localStorage
+    $(document).ready(function() {
+      var restoreSelect = function(id, key) {
+        var saved = localStorage.getItem(key);
+        if (saved) { $(id).val(saved); }
+        $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
+      };
+      restoreSelect('#inputIMG', 'bamlab_image');
+      restoreSelect('#inputCPU', 'bamlab_cpu');
+      restoreSelect('#inputGPU', 'bamlab_gpu');
+      restoreSelect('#inputRAM', 'bamlab_ram');
+    });
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label><br>
@@ -22,7 +35,7 @@
   <div class="form-group">
               <label for="inputIMG">Base docker image to be deployed</label>
               <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" select="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
+                <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424">CUDA 13.2 · TF 2.20 · Apr 24, 2026</option>
                 <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313">CUDA 13.0 · TF 2.20 · Mar 13, 2026</option>
@@ -31,8 +44,8 @@
   </div>
   <div class="form-group">
               <label for="inputCPU">Guaranteed Number of CPU Cores [DUAL Intel Xeon Gold 6338]</label>
-              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">              
-                <option value="8.0" select="selected">8 cores</option>
+              <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
+                <option value="8.0" selected="selected">8 cores</option>
                 <option value="10.0">10 cores</option>
                 <option value="16.0">16 cores</option>
                 <option value="24.0">24 cores</option>
@@ -48,18 +61,17 @@
                 <option value="2">2x A100 (80G)</option>
                 <option value="3">3x A100 (80G)</option>
                 <option value="4">4x A100 (80G)</option>
-                <!--<option value="-1">*Experimental* Share All GPUs with other sessions</option>-->
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
-              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">        
-                <option value="64G" select="selected">64G RAM</option>
+              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
+                <option value="64G" selected="selected">64G RAM</option>
                 <option value="128G">128G RAM</option>
                 <option value="256G">256G RAM</option>
                 <option value="384G">384G RAM</option>
-                <option value="512G">512G RAM</option>   
+                <option value="512G">512G RAM</option>
               </select>
               <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
@@ -69,9 +81,8 @@
                 <option value="{}" selected="selected">{}</option>
               </select>
               <small id="gpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
-              </div>          
-          <div class="form-check">            
+              </div>
+          <div class="form-check">
           <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 72 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
           <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
   </div>
-
