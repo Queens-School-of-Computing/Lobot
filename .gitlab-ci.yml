@@ -7,7 +7,6 @@ include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
 
 stub:
-  stage: deploy
   variables:
     CAT: "MEOW"
   rules:
