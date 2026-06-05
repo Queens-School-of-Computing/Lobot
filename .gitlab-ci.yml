@@ -5,3 +5,12 @@ default:
 
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
+
+stub:
+  stage: deploy
+  variables:
+    CAT: "MEOW"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+      when: always
+    - when: never
