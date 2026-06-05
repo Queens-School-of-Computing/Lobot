@@ -14,19 +14,6 @@
       }})
     }}
     }})
-
-    // Restore last selections from localStorage
-    $(document).ready(function() {
-      var restoreSelect = function(id, key) {
-        var saved = localStorage.getItem(key);
-        if (saved) { $(id).val(saved); }
-        $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-      };
-      restoreSelect('#inputIMG', 'mulab_image');
-      restoreSelect('#inputCPU', 'mulab_cpu');
-      restoreSelect('#inputGPU', 'mulab_gpu');
-      restoreSelect('#inputRAM', 'mulab_ram');
-    });
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label><br>

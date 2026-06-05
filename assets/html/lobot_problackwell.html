@@ -14,19 +14,6 @@
       }})
     }}
     }})
-
-    // Restore last selections from localStorage
-    $(document).ready(function() {
-      var restoreSelect = function(id, key) {
-        var saved = localStorage.getItem(key);
-        if (saved) { $(id).val(saved); }
-        $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-      };
-      restoreSelect('#inputIMG', 'lobot_problackwell_image');
-      restoreSelect('#inputCPU', 'lobot_problackwell_cpu');
-      restoreSelect('#inputGPU', 'lobot_problackwell_gpu');
-      restoreSelect('#inputRAM', 'lobot_problackwell_ram');
-    });
   </script>
   <div class="form-group" id="label-usage">
   <label id="label-summary"></label><br>

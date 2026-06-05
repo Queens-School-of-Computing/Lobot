@@ -256,19 +256,6 @@ from_data_bamlab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'bamlab_image');
-        restoreSelect('#inputCPU', 'bamlab_cpu');
-        restoreSelect('#inputGPU', 'bamlab_gpu');
-        restoreSelect('#inputRAM', 'bamlab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -345,19 +332,6 @@ from_data_devlab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'devlab_image');
-        restoreSelect('#inputCPU', 'devlab_cpu');
-        restoreSelect('#inputGPU', 'devlab_gpu');
-        restoreSelect('#inputRAM', 'devlab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -431,19 +405,6 @@ from_data_digilab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'digilab_image');
-        restoreSelect('#inputCPU', 'digilab_cpu');
-        restoreSelect('#inputGPU', 'digilab_gpu');
-        restoreSelect('#inputRAM', 'digilab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -513,19 +474,6 @@ from_data_edemsmithbusiness: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'edemsmithbusiness_image');
-        restoreSelect('#inputCPU', 'edemsmithbusiness_cpu');
-        restoreSelect('#inputGPU', 'edemsmithbusiness_gpu');
-        restoreSelect('#inputRAM', 'edemsmithbusiness_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -600,19 +548,6 @@ from_data_gandslab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'gandslab_image');
-        restoreSelect('#inputCPU', 'gandslab_cpu');
-        restoreSelect('#inputGPU', 'gandslab_gpu');
-        restoreSelect('#inputRAM', 'gandslab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -688,19 +623,6 @@ from_data_lobot_a16: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'lobot_a16_image');
-        restoreSelect('#inputCPU', 'lobot_a16_cpu');
-        restoreSelect('#inputGPU', 'lobot_a16_gpu');
-        restoreSelect('#inputRAM', 'lobot_a16_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -767,19 +689,6 @@ from_data_lobot_a40: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'lobot_a40_image');
-        restoreSelect('#inputCPU', 'lobot_a40_cpu');
-        restoreSelect('#inputGPU', 'lobot_a40_gpu');
-        restoreSelect('#inputRAM', 'lobot_a40_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -852,19 +761,6 @@ from_data_lobot_a5000: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'lobot_a5000_image');
-        restoreSelect('#inputCPU', 'lobot_a5000_cpu');
-        restoreSelect('#inputGPU', 'lobot_a5000_gpu');
-        restoreSelect('#inputRAM', 'lobot_a5000_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -936,19 +832,6 @@ from_data_lobot_blackwell: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'lobot_blackwell_image');
-        restoreSelect('#inputCPU', 'lobot_blackwell_cpu');
-        restoreSelect('#inputGPU', 'lobot_blackwell_gpu');
-        restoreSelect('#inputRAM', 'lobot_blackwell_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1034,19 +917,6 @@ from_data_lobot_problackwell: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'lobot_problackwell_image');
-        restoreSelect('#inputCPU', 'lobot_problackwell_cpu');
-        restoreSelect('#inputGPU', 'lobot_problackwell_gpu');
-        restoreSelect('#inputRAM', 'lobot_problackwell_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1120,19 +990,6 @@ from_data_miblab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'miblab_image');
-        restoreSelect('#inputCPU', 'miblab_cpu');
-        restoreSelect('#inputGPU', 'miblab_gpu');
-        restoreSelect('#inputRAM', 'miblab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1210,19 +1067,6 @@ from_data_mulab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'mulab_image');
-        restoreSelect('#inputCPU', 'mulab_cpu');
-        restoreSelect('#inputGPU', 'mulab_gpu');
-        restoreSelect('#inputRAM', 'mulab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1301,19 +1145,6 @@ from_data_quarrglab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'quarrglab_image');
-        restoreSelect('#inputCPU', 'quarrglab_cpu');
-        restoreSelect('#inputGPU', 'quarrglab_gpu');
-        restoreSelect('#inputRAM', 'quarrglab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1402,19 +1233,6 @@ from_data_riselab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'riselab_image');
-        restoreSelect('#inputCPU', 'riselab_cpu');
-        restoreSelect('#inputGPU', 'riselab_gpu');
-        restoreSelect('#inputRAM', 'riselab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>
@@ -1495,19 +1313,6 @@ from_data_winemocollab: |2-
         }})
       }}
       }})
-
-      // Restore last selections from localStorage
-      $(document).ready(function() {
-        var restoreSelect = function(id, key) {
-          var saved = localStorage.getItem(key);
-          if (saved) { $(id).val(saved); }
-          $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });
-        };
-        restoreSelect('#inputIMG', 'winemocollab_image');
-        restoreSelect('#inputCPU', 'winemocollab_cpu');
-        restoreSelect('#inputGPU', 'winemocollab_gpu');
-        restoreSelect('#inputRAM', 'winemocollab_ram');
-      });
     </script>
     <div class="form-group" id="label-usage">
     <label id="label-summary"></label><br>

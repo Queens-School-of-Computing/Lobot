@@ -46,11 +46,6 @@ def render(lab_id, lab, global_images, registry):
     gpu_opts = options_html(lab['gpu_options'])
     ram_opts = options_html(lab['ram_options'])
 
-    ls_image = f'{lab_id}_image'
-    ls_cpu   = f'{lab_id}_cpu'
-    ls_gpu   = f'{lab_id}_gpu'
-    ls_ram   = f'{lab_id}_ram'
-
     lines = []
     lines.append('  <script>    \n')
     lines.append(f"    var lab = '{lab_id}';\n")
@@ -68,19 +63,6 @@ def render(lab_id, lab, global_images, registry):
     lines.append("      }})\n")
     lines.append("    }}\n")
     lines.append("    }})\n")
-    lines.append("\n")
-    lines.append("    // Restore last selections from localStorage\n")
-    lines.append("    $(document).ready(function() {\n")
-    lines.append("      var restoreSelect = function(id, key) {\n")
-    lines.append("        var saved = localStorage.getItem(key);\n")
-    lines.append("        if (saved) { $(id).val(saved); }\n")
-    lines.append("        $(id).on('change', function() { localStorage.setItem(key, $(this).val()); });\n")
-    lines.append("      };\n")
-    lines.append(f"      restoreSelect('#inputIMG', '{ls_image}');\n")
-    lines.append(f"      restoreSelect('#inputCPU', '{ls_cpu}');\n")
-    lines.append(f"      restoreSelect('#inputGPU', '{ls_gpu}');\n")
-    lines.append(f"      restoreSelect('#inputRAM', '{ls_ram}');\n")
-    lines.append("    });\n")
     lines.append("  </script>\n")
     lines.append('  <div class="form-group" id="label-usage">\n')
     lines.append('  <label id="label-summary"></label><br>\n')
