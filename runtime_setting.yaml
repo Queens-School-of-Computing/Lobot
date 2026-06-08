@@ -122,11 +122,12 @@ nodeaccess:
   - zackaw-jpg
   lobot_blackwell:
   - 23wm13
-  - aaronvisser
   - ameskandari
   - nafiz95
   - schorm
   - wiegerthefarmer
+  lobot_cse2026:
+  - aaronvisser
   lobot_problackwell:
   - jm-janzen
   miblab:
