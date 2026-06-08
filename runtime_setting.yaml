@@ -235,6 +235,10 @@ lab_groups:
   lobot_blackwell:
   - lobot_blackwell
   - bamlab
+  lobot_cse2026:
+  - digilab
+  - lobot_a5000
+  - lobot_a40
 superusers:
 - wiegerthefarmer
 - drdoog
