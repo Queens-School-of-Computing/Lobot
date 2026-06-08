@@ -347,7 +347,8 @@ hub:
 
           @tornado.web.authenticated
           async def post(self):
-              import smtplib
+              import smtplib, html as _html
+              from email.mime.multipart import MIMEMultipart
               from email.mime.text import MIMEText
               self.check_xsrf_cookie()
               user = self.current_user
@@ -366,16 +367,53 @@ hub:
                   return
 
               try:
-                  subject = f'[Lobot Request] {request_type} from {username}'
-                  body    = (f'GitHub username: {username}\n'
-                             f'Reply-to:        {reply_email}\n'
-                             f'Request type:    {request_type}\n'
-                             f'\n{message}\n')
-                  msg = MIMEText(body)
+                  subject    = f'[Lobot Request] {request_type} from {username}'
+                  esc_type   = _html.escape(request_type)
+                  esc_user   = _html.escape(username)
+                  esc_email  = _html.escape(reply_email)
+                  esc_msg    = _html.escape(message)
+                  body_html  = (
+                    '<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
+                    '<body style="margin:0;padding:0;background:#f5f5f5;font-family:sans-serif">'
+                    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0">'
+                    '<tr><td align="center">'
+                    '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
+                    '<tr><td style="background:#2c3e50;padding:24px 32px">'
+                    '<span style="color:#fff;font-size:20px;font-weight:600">Lobot Cluster</span>'
+                    '<span style="color:#95a5a6;font-size:14px;margin-left:10px">Queen\'s School of Computing</span>'
+                    '</td></tr>'
+                    '<tr><td style="padding:24px 32px 0">'
+                    f'<span style="background:#e8f0fe;color:#1a56db;font-size:13px;font-weight:600;padding:4px 14px;border-radius:12px">{esc_type}</span>'
+                    '</td></tr>'
+                    '<tr><td style="padding:16px 32px 0">'
+                    '<table cellpadding="0" cellspacing="0" width="100%">'
+                    '<tr>'
+                    '<td style="padding:6px 0;color:#6c757d;font-size:13px;width:140px">GitHub username</td>'
+                    f'<td style="padding:6px 0;font-size:13px;font-weight:500">{esc_user}</td>'
+                    '</tr><tr>'
+                    '<td style="padding:6px 0;color:#6c757d;font-size:13px">Reply to</td>'
+                    f'<td style="padding:6px 0;font-size:13px"><a href="mailto:{esc_email}" style="color:#1a56db">{esc_email}</a></td>'
+                    '</tr>'
+                    '</table>'
+                    '</td></tr>'
+                    '<tr><td style="padding:16px 32px"><hr style="border:none;border-top:1px solid #e9ecef;margin:0"></td></tr>'
+                    '<tr><td style="padding:0 32px 32px">'
+                    '<p style="margin:0 0 8px;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Message</p>'
+                    f'<div style="background:#f8f9fa;border-left:4px solid #2c3e50;padding:16px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap">{esc_msg}</div>'
+                    '</td></tr>'
+                    '<tr><td style="background:#f8f9fa;padding:16px 32px;border-top:1px solid #e9ecef">'
+                    '<p style="margin:0;font-size:11px;color:#6c757d">Sent via Lobot &mdash; lobot.cs.queensu.ca</p>'
+                    '</td></tr>'
+                    '</table>'
+                    '</td></tr></table>'
+                    '</body></html>'
+                  )
+                  msg = MIMEMultipart('alternative')
                   msg['Subject']  = subject
                   msg['From']     = 'lobot@cs.queensu.ca'
                   msg['To']       = 'help@cs.queensu.ca'
                   msg['Reply-To'] = reply_email
+                  msg.attach(MIMEText(body_html, 'html'))
                   with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
                       s.sendmail('lobot@cs.queensu.ca', ['help@cs.queensu.ca'], msg.as_string())
                   self.finish(await _render(submitted=True))
