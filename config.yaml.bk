@@ -335,9 +335,59 @@ hub:
               html = await self.render_template('status.html', allowed_labs_json=allowed_labs_json, status_url=status_url)
               self.finish(html)
 
+      class RequestPageHandler(BaseHandler):
+          @tornado.web.authenticated
+          async def get(self):
+              user = self.current_user
+              username = user.name.strip().lower() if user else ''
+              xsrf = self.xsrf_token.decode('ascii') if isinstance(self.xsrf_token, bytes) else self.xsrf_token
+              html = await self.render_template('request.html',
+                  username=username, submitted=False, error=None, xsrf_token=xsrf)
+              self.finish(html)
+
+          @tornado.web.authenticated
+          async def post(self):
+              import smtplib
+              from email.mime.text import MIMEText
+              self.check_xsrf_cookie()
+              user = self.current_user
+              username = user.name.strip().lower() if user else 'unknown'
+              request_type = self.get_body_argument('request_type', '').strip()
+              reply_email  = self.get_body_argument('reply_email', '').strip()
+              message      = self.get_body_argument('message', '').strip()
+              xsrf = self.xsrf_token.decode('ascii') if isinstance(self.xsrf_token, bytes) else self.xsrf_token
+
+              async def _render(submitted=False, error=None):
+                  return await self.render_template('request.html',
+                      username=username, submitted=submitted, error=error, xsrf_token=xsrf)
+
+              if not request_type or not reply_email or not message:
+                  self.finish(await _render(error='Please fill in all fields.'))
+                  return
+
+              try:
+                  subject = f'[Lobot Request] {request_type} from {username}'
+                  body    = (f'GitHub username: {username}\n'
+                             f'Reply-to:        {reply_email}\n'
+                             f'Request type:    {request_type}\n'
+                             f'\n{message}\n')
+                  msg = MIMEText(body)
+                  msg['Subject']  = subject
+                  msg['From']     = 'lobot@cs.queensu.ca'
+                  msg['To']       = 'help@cs.queensu.ca'
+                  msg['Reply-To'] = reply_email
+                  with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
+                      s.sendmail('lobot@cs.queensu.ca', ['help@cs.queensu.ca'], msg.as_string())
+                  self.finish(await _render(submitted=True))
+              except Exception as e:
+                  self.log.error(f'[request-page] Failed to send email: {e}')
+                  self.finish(await _render(error='Failed to send your request. Please email help@cs.queensu.ca directly.'))
+
       c.JupyterHub.extra_handlers = [
-          (r'/status', StatusPageHandler),
-          (r'/status/', StatusPageHandler),
+          (r'/status',   StatusPageHandler),
+          (r'/status/',  StatusPageHandler),
+          (r'/request',  RequestPageHandler),
+          (r'/request/', RequestPageHandler),
       ]
     20-rtc: |
       # Make JupyterLab the default and enable RTC
