@@ -298,7 +298,9 @@ hub:
                   try:
                       username = user.name.strip().lower()
                       self.log.info(f'[status-page] username={username}')
-                      nodeaccess = (yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=3).read().decode('utf-8')) or {}).get('nodeaccess', {})
+                      data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=3).read().decode('utf-8')) or {}
+                      nodeaccess = data.get('nodeaccess', {})
+                      lab_groups = data.get('lab_groups', {})
                       self.log.info(f'[status-page] nodeaccess keys={list(nodeaccess.keys())}')
 
                       def labs_for_user(uname):
@@ -318,6 +320,12 @@ hub:
                           self.log.info(f'[status-page] group owner={owner} labs={group_labs}')
                           if owner:
                               allowed.update(group_labs)
+
+                      # Expand virtual lab groups to their actual resource labs
+                      expanded = set()
+                      for lab in allowed:
+                          expanded.update(lab_groups.get(lab, [lab]))
+                      allowed = expanded
 
                       self.log.info(f'[status-page] final allowed={sorted(allowed)}')
                       allowed_labs_json = json.dumps(sorted(allowed))
