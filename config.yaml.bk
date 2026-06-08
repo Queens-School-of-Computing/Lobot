@@ -481,7 +481,7 @@ hub:
           ('bamlab',             'bamlab-socsharedstorage',             'BAMLab Compute Resources (A100 80G)'),
           ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
           ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
-          ('digilab',            'digilab-socsharedstorage',            'Digilians Compute Resources'),
+          ('digilab',            'digilab-socsharedstorage',            'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
           ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
           ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
           ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
