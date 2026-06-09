@@ -7,6 +7,7 @@ workflow:
   rules:
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      - if: $CI_PIPELINE_SOURCE == "trigger"
 
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
