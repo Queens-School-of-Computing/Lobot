@@ -21,3 +21,4 @@ stub:
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
   script: |
     echo "meow meow $CAT"
+    echo "PAYLOAD: ${PAYLOAD}" # From request
