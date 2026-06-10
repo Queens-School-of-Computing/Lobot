@@ -293,8 +293,7 @@ hub:
           "LOBOT_RUNTIME_URL",
           "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml"
       )
-      # TODO: change to help@cs.queensu.ca after testing
-      _REQUEST_DEST = 'aaron.visser@queensu.ca'
+      _REQUEST_DEST = 'help@cs.queensu.ca'
 
       def _fetch_runtime():
           return yaml.safe_load(urllib.request.urlopen(_RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
@@ -343,12 +342,13 @@ hub:
               f'message for informative purposes.</em></td></tr>'
           )
 
-      def _send_email(subject, body_html, reply_email, supervisor_email=''):
-          recipients = [_REQUEST_DEST]
+      def _send_email(subject, body_html, reply_email, supervisor_email='', dest=None):
+          to = dest or _REQUEST_DEST
+          recipients = [to]
           msg = MIMEMultipart('alternative')
           msg['Subject']  = subject
           msg['From']     = 'lobot@cs.queensu.ca'
-          msg['To']       = _REQUEST_DEST
+          msg['To']       = to
           msg['Reply-To'] = reply_email
           if supervisor_email:
               msg['Cc'] = supervisor_email
@@ -520,7 +520,8 @@ hub:
                               + _td('GitHub field', esc_user or '<em style="color:#6c757d">empty</em>'))
                       body_html = _email_html('Honeypot', rows, '&mdash;')
                       _send_email('[Lobot] Honeypot triggered on access-request form',
-                                  body_html, 'lobot@cs.queensu.ca')
+                                  body_html, 'lobot@cs.queensu.ca',
+                                  dest='aaron.visser@queensu.ca')
                   except Exception as e:
                       self.log.error(f'[access-request] Failed to send honeypot email: {e}')
                   self.finish(await self.render_template('access-request.html',
