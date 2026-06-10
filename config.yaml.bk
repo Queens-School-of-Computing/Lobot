@@ -712,6 +712,24 @@ hub:
             "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
         ).read().decode('utf-8'))
         self.log.info(str(data))
+
+        # Stamp nightly image options with the date of the last nightly build.
+        # build_date comes from component-versions.json, pushed by the build
+        # server after each changed nightly. Fail-soft: labels stay unstamped
+        # if the fetch fails.
+        try:
+          import json as _json, datetime as _dt
+          _manifest = _json.loads(urllib.request.urlopen(
+            os.environ.get("LOBOT_VERSIONS_URL",
+              "https://raw.githubusercontent.com/Queens-School-of-Computing/gpu-jupyter-latest/master/component-versions.json"),
+            timeout=5).read().decode('utf-8'))
+          _built = _dt.datetime.strptime(str(_manifest.get('build_date')), '%Y%m%d').strftime('%b %-d, %Y')
+          for _k, _v in list(data.items()):
+            if _k.startswith('from_data_') and isinstance(_v, str):
+              data[_k] = _v.replace('(nightly)', '(nightly · updated ' + _built + ')')
+        except Exception:
+          pass
+
         username = self.user.name.strip().lower()
         self.log.info(username)
 
