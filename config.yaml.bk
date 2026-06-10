@@ -294,10 +294,6 @@ hub:
           "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml"
       )
       _REQUEST_DEST = 'help@cs.queensu.ca'
-      # Shared mailbox watched by the SharePoint Power Automate flow (Cluster
-      # Users list). Each access request also sends a plain-JSON copy there.
-      # Leave '' to disable the machine copy.
-      _ACCESS_REQUEST_MAILBOX = os.environ.get('LOBOT_ACCESS_REQUEST_MAILBOX', '')
 
       def _fetch_runtime():
           return yaml.safe_load(urllib.request.urlopen(_RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
@@ -596,25 +592,6 @@ hub:
                   _send_email(f'[Lobot Access Request] {github_username} - {lab_display}',
                               body_html, reply_email, supervisor_email,
                               json_attachment=payload_json)
-
-                  # Machine copy for the SharePoint Power Automate flow.
-                  # Fail-soft: never blocks the user's submission.
-                  if _ACCESS_REQUEST_MAILBOX:
-                      try:
-                          from email.mime.application import MIMEApplication
-                          m = MIMEMultipart('mixed')
-                          m['Subject'] = f'[Lobot Access Request Data] {github_username} - {lab_key}'
-                          m['From'] = 'lobot@cs.queensu.ca'
-                          m['To'] = _ACCESS_REQUEST_MAILBOX
-                          m.attach(MIMEText(payload_json, 'plain'))
-                          part = MIMEApplication(payload_json.encode('utf-8'), _subtype='json')
-                          part.add_header('Content-Disposition', 'attachment', filename='access-request.json')
-                          m.attach(part)
-                          with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
-                              s.sendmail('lobot@cs.queensu.ca', [_ACCESS_REQUEST_MAILBOX], m.as_string())
-                      except Exception as e:
-                          self.log.error(f'[access-request] Failed to send machine copy: {e}')
-
                   self.finish(await _render(submitted=True))
               except Exception as e:
                   self.log.error(f'[access-request] Failed to send email: {e}')
