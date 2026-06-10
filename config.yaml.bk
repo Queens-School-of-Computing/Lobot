@@ -551,7 +551,7 @@ hub:
         var section = document.getElementById('lab-form-' + labName);
         section.style.display = '';
         section.querySelectorAll('select').forEach(function(s) {{ s.disabled = false; }});
-        $('#label-usage').children('small, br').remove();
+        $('#label-usage').find('.lab-usage-entry').remove();
         $('#label-summary').text('');
         $('#label-summary-details').text('');
         $.getJSON('https://' + window.location.hostname + '/allocationstatus/current.json', function(d) {{
@@ -559,7 +559,7 @@ hub:
             $('#label-summary').text(d[labName].summary_title);
             $('#label-summary-details').text(d[labName].summary_details);
             $.each(d[labName].usage, function(i, v) {{
-              $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted')).append($('<br>'));
+              $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted lab-usage-entry')).append($('<br>').addClass('lab-usage-entry'));
             }});
           }}
         }});
