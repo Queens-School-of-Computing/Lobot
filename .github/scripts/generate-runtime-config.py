@@ -40,6 +40,8 @@ LAB_SUPERVISORS = {
                            'supervisor_name': '', 'supervisor_email': ''},
     'lobot_a5000':        {'display': 'Lobot Compute Resources (NVIDIA A5000 GPU 24G)',
                            'supervisor_name': '', 'supervisor_email': ''},
+    'lobot_cse2026':      {'display': 'Lobot Compute Resources for CSE2026',
+                           'supervisor_name': '', 'supervisor_email': ''},
     'bamlab':             {'display': 'BAMLab Compute Resources (A100 80G)',
                            'supervisor_name': '', 'supervisor_email': ''},
     'digilab':            {'display': 'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
