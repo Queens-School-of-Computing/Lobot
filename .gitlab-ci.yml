@@ -12,8 +12,6 @@ workflow:
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
 
-# XXX Resolve this error
-# "The pipeline did not run. Review the workflow:rules configuration for the pipeline."
 stub:
   variables:
     CAT: "MEOW"
