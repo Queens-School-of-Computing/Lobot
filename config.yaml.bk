@@ -298,7 +298,9 @@ hub:
                   try:
                       username = user.name.strip().lower()
                       self.log.info(f'[status-page] username={username}')
-                      nodeaccess = (yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=3).read().decode('utf-8')) or {}).get('nodeaccess', {})
+                      data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=3).read().decode('utf-8')) or {}
+                      nodeaccess = data.get('nodeaccess', {})
+                      lab_groups = data.get('lab_groups', {})
                       self.log.info(f'[status-page] nodeaccess keys={list(nodeaccess.keys())}')
 
                       def labs_for_user(uname):
@@ -319,6 +321,12 @@ hub:
                           if owner:
                               allowed.update(group_labs)
 
+                      # Expand virtual lab groups to their actual resource labs
+                      expanded = set()
+                      for lab in allowed:
+                          expanded.update(lab_groups.get(lab, [lab]))
+                      allowed = expanded
+
                       self.log.info(f'[status-page] final allowed={sorted(allowed)}')
                       allowed_labs_json = json.dumps(sorted(allowed))
                   except Exception as e:
@@ -327,9 +335,97 @@ hub:
               html = await self.render_template('status.html', allowed_labs_json=allowed_labs_json, status_url=status_url)
               self.finish(html)
 
+      class RequestPageHandler(BaseHandler):
+          @tornado.web.authenticated
+          async def get(self):
+              user = self.current_user
+              username = user.name.strip().lower() if user else ''
+              xsrf = self.xsrf_token.decode('ascii') if isinstance(self.xsrf_token, bytes) else self.xsrf_token
+              html = await self.render_template('request.html',
+                  username=username, submitted=False, error=None, xsrf_token=xsrf)
+              self.finish(html)
+
+          @tornado.web.authenticated
+          async def post(self):
+              import smtplib, html as _html
+              from email.mime.multipart import MIMEMultipart
+              from email.mime.text import MIMEText
+              self.check_xsrf_cookie()
+              user = self.current_user
+              username = user.name.strip().lower() if user else 'unknown'
+              request_type = self.get_body_argument('request_type', '').strip()
+              reply_email  = self.get_body_argument('reply_email', '').strip()
+              message      = self.get_body_argument('message', '').strip()
+              xsrf = self.xsrf_token.decode('ascii') if isinstance(self.xsrf_token, bytes) else self.xsrf_token
+
+              async def _render(submitted=False, error=None):
+                  return await self.render_template('request.html',
+                      username=username, submitted=submitted, error=error, xsrf_token=xsrf)
+
+              if not request_type or not reply_email or not message:
+                  self.finish(await _render(error='Please fill in all fields.'))
+                  return
+
+              try:
+                  subject    = f'[Lobot Request] {request_type} from {username}'
+                  esc_type   = _html.escape(request_type)
+                  esc_user   = _html.escape(username)
+                  esc_email  = _html.escape(reply_email)
+                  esc_msg    = _html.escape(message)
+                  body_html  = (
+                    '<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
+                    '<body style="margin:0;padding:0;background:#f5f5f5;font-family:sans-serif">'
+                    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0">'
+                    '<tr><td align="center">'
+                    '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">'
+                    '<tr><td style="background:#2c3e50;padding:24px 32px">'
+                    '<span style="color:#fff;font-size:20px;font-weight:600">Lobot Cluster</span>'
+                    '<span style="color:#95a5a6;font-size:14px;margin-left:10px">Queen\'s School of Computing</span>'
+                    '</td></tr>'
+                    '<tr><td style="padding:24px 32px 0">'
+                    f'<span style="background:#e8f0fe;color:#1a56db;font-size:13px;font-weight:600;padding:4px 14px;border-radius:12px">{esc_type}</span>'
+                    '</td></tr>'
+                    '<tr><td style="padding:16px 32px 0">'
+                    '<table cellpadding="0" cellspacing="0" width="100%">'
+                    '<tr>'
+                    '<td style="padding:6px 0;color:#6c757d;font-size:13px;width:140px">GitHub username</td>'
+                    f'<td style="padding:6px 0;font-size:13px;font-weight:500">{esc_user}</td>'
+                    '</tr><tr>'
+                    '<td style="padding:6px 0;color:#6c757d;font-size:13px">Reply to</td>'
+                    f'<td style="padding:6px 0;font-size:13px"><a href="mailto:{esc_email}" style="color:#1a56db">{esc_email}</a></td>'
+                    '</tr>'
+                    '</table>'
+                    '</td></tr>'
+                    '<tr><td style="padding:16px 32px"><hr style="border:none;border-top:1px solid #e9ecef;margin:0"></td></tr>'
+                    '<tr><td style="padding:0 32px 32px">'
+                    '<p style="margin:0 0 8px;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Message</p>'
+                    f'<div style="background:#f8f9fa;border-left:4px solid #2c3e50;padding:16px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap">{esc_msg}</div>'
+                    '</td></tr>'
+                    '<tr><td style="background:#f8f9fa;padding:16px 32px;border-top:1px solid #e9ecef">'
+                    '<p style="margin:0;font-size:11px;color:#6c757d">Sent via Lobot &mdash; lobot.cs.queensu.ca</p>'
+                    '</td></tr>'
+                    '</table>'
+                    '</td></tr></table>'
+                    '</body></html>'
+                  )
+                  msg = MIMEMultipart('alternative')
+                  msg['Subject']  = subject
+                  msg['From']     = 'lobot@cs.queensu.ca'
+                  msg['To']       = 'help@cs.queensu.ca'
+                  msg['Reply-To'] = reply_email
+                  msg.attach(MIMEText(body_html, 'html'))
+                  with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
+                      s.sendmail('lobot@cs.queensu.ca', ['help@cs.queensu.ca'], msg.as_string())
+                  self.finish(await _render(submitted=True))
+              except Exception as e:
+                  self.log.error(f'[request-page] Failed to send email: {e}')
+                  self.finish(await _render(error='Failed to send your request. Please email help@cs.queensu.ca directly.'))
+
       c.JupyterHub.extra_handlers = [
-          (r'/status', StatusPageHandler),
-          (r'/status/', StatusPageHandler),
+          (r'/status',   StatusPageHandler),
+          (r'/status/',  StatusPageHandler),
+          (r'/request',  RequestPageHandler),
+          (r'/request/', RequestPageHandler),
       ]
     20-rtc: |
       # Make JupyterLab the default and enable RTC
@@ -481,7 +577,7 @@ hub:
           ('bamlab',             'bamlab-socsharedstorage',             'BAMLab Compute Resources (A100 80G)'),
           ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
           ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
-          ('digilab',            'digilab-socsharedstorage',            'Digilians Compute Resources'),
+          ('digilab',            'digilab-socsharedstorage',            'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
           ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
           ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
           ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
@@ -492,6 +588,7 @@ hub:
           ('gandslab',           'gandslab-socsharedstorage',           'GAIN & SWIMS Labs Compute Resources'),
           ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
           ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
+          ('lobot_cse2026',        'lobot_cse2026-socsharedstorage',    'Lobot Compute Resources for CSE2026'),
         ]
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}
         lab_ds = {lab: ds for lab, _, ds in LAB_META}
