@@ -365,7 +365,7 @@ from_data_bamlab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -441,7 +441,7 @@ from_data_digilab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -510,7 +510,7 @@ from_data_edemsmithbusiness: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -584,7 +584,7 @@ from_data_gandslab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -659,7 +659,7 @@ from_data_lobot_a16: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -725,7 +725,7 @@ from_data_lobot_a40: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -797,7 +797,7 @@ from_data_lobot_a5000: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -868,7 +868,7 @@ from_data_lobot_blackwell: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -953,7 +953,7 @@ from_data_lobot_problackwell: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -1026,7 +1026,7 @@ from_data_miblab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -1103,7 +1103,7 @@ from_data_mulab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -1181,7 +1181,7 @@ from_data_quarrglab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -1269,7 +1269,7 @@ from_data_riselab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
@@ -1349,7 +1349,7 @@ from_data_winemocollab: |2-
     <label id="label-summary-details"></label><br>
     </div>
     <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/component-versions.json" target="_blank" rel="noopener" title="View the current component versions of this image on GitHub"><i class="fa fa-info-circle"></i></a></label>
+                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
                 <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
                   <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
