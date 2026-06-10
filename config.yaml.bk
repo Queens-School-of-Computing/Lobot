@@ -297,7 +297,7 @@ hub:
       # Shared mailbox watched by the SharePoint Power Automate flow (Cluster
       # Users list). Each access request also sends a plain-JSON copy there.
       # Leave '' to disable the machine copy.
-      _ACCESS_REQUEST_MAILBOX = os.environ.get('LOBOT_ACCESS_REQUEST_MAILBOX', 'qsc-lobot@queensu.ca')
+      _ACCESS_REQUEST_MAILBOX = os.environ.get('LOBOT_ACCESS_REQUEST_MAILBOX', '')
 
       def _fetch_runtime():
           return yaml.safe_load(urllib.request.urlopen(_RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
