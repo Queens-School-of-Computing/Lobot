@@ -97,6 +97,10 @@
       {% else %}
       <form method="POST" action="">
         <input type="hidden" name="_xsrf" value="{{ xsrf_token }}">
+        <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
 
         <div class="mb-3">
           <label for="full_name" class="form-label">Full name <span class="text-danger">*</span></label>

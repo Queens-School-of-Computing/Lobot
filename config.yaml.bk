@@ -497,6 +497,7 @@ hub:
                   supervisors = _fetch_runtime().get('supervisors', {})
               except Exception:
                   pass
+              honeypot        = self.get_body_argument('website', '').strip()
               full_name       = self.get_body_argument('full_name', '').strip()
               github_username = self.get_body_argument('github_username', '').strip()
               net_id          = self.get_body_argument('net_id', '').strip()
@@ -504,6 +505,28 @@ hub:
               lab_key         = self.get_body_argument('lab_key', '').strip()
               message         = self.get_body_argument('message', '').strip()
               xsrf = self.xsrf_token.decode('ascii') if isinstance(self.xsrf_token, bytes) else self.xsrf_token
+
+              if honeypot:
+                  ip = self.request.remote_ip
+                  self.log.warning(f'[access-request] honeypot triggered from {ip}')
+                  try:
+                      esc_ip   = _html.escape(ip or 'unknown')
+                      esc_hp   = _html.escape(honeypot[:200])
+                      esc_name = _html.escape(full_name[:200])
+                      esc_user = _html.escape(github_username[:200])
+                      rows = (_td('IP address', esc_ip)
+                              + _td('Honeypot value', esc_hp)
+                              + _td('Name field', esc_name or '<em style="color:#6c757d">empty</em>')
+                              + _td('GitHub field', esc_user or '<em style="color:#6c757d">empty</em>'))
+                      body_html = _email_html('Honeypot', rows, '&mdash;')
+                      _send_email('[Lobot] Honeypot triggered on access-request form',
+                                  body_html, 'lobot@cs.queensu.ca')
+                  except Exception as e:
+                      self.log.error(f'[access-request] Failed to send honeypot email: {e}')
+                  self.finish(await self.render_template('access-request.html',
+                      lab_options=_lab_options(supervisors), submitted=True, error=None,
+                      xsrf_token=xsrf, github_username=github_username))
+                  return
 
               async def _render(submitted=False, error=None):
                   return await self.render_template('access-request.html',
