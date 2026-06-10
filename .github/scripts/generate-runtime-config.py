@@ -27,6 +27,39 @@ SUPERUSERS = [
     'wiegerthefarmer','drdoog','jm-janzen',
 ]
 
+# Per-lab supervisor contacts. Fill in supervisor_name and supervisor_email for each lab
+# to automatically CC the supervisor on access requests. Set supervisor_email to '' to omit CC.
+LAB_SUPERVISORS = {
+    'lobot_a16':          {'display': 'Lobot Compute Resources (NVIDIA A16 GPU 16GB)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'lobot_blackwell':    {'display': 'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)',
+                           'supervisor_name': 'WiegerTheFarmer', 'supervisor_email': 'aaron.visser@gmail.com'},
+    'lobot_problackwell': {'display': 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'lobot_a40':          {'display': 'Lobot Compute Resources (NVIDIA A40 GPU 48G)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'lobot_a5000':        {'display': 'Lobot Compute Resources (NVIDIA A5000 GPU 24G)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'bamlab':             {'display': 'BAMLab Compute Resources (A100 80G)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'digilab':            {'display': 'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'mulab':              {'display': 'MULab Compute Resources',
+                           'supervisor_name': 'Christian Muise', 'supervisor_email': 'christian.muise@queensu.ca'},
+    'riselab':            {'display': 'RISE Lab Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'quarrglab':          {'display': 'QUARRG Lab Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'edemsmithbusiness':  {'display': 'Smith School of Business Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'miblab':             {'display': 'MIB Lab Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'winemocollab':       {'display': 'WineMocol Lab Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+    'gandslab':           {'display': 'GAIN & SWIMS Labs Compute Resources',
+                           'supervisor_name': '', 'supervisor_email': ''},
+}
+
 
 def main():
     payload = read_payload(input_file, 'users')
@@ -44,7 +77,7 @@ def main():
     all_page_names = sorted(set(resource_names) | group_labs)
     pages = get_resource_pages(all_page_names)
 
-    config = {'nodeaccess': resources, 'limits': get_limits(), 'lab_groups': LAB_GROUPS, 'superusers': SUPERUSERS, **pages}
+    config = {'nodeaccess': resources, 'limits': get_limits(), 'lab_groups': LAB_GROUPS, 'superusers': SUPERUSERS, 'supervisors': LAB_SUPERVISORS, **pages}
 
     yaml.add_representer(str, str_presenter)
 

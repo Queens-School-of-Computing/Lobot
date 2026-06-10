@@ -1,0 +1,154 @@
+{% extends "page.html" %}
+
+{% block title %}Request Lobot Access | Lobot{% endblock %}
+
+{% block stylesheet %}
+  {{ super() }}
+  <style>
+    .request-container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .request-card {
+      background: white;
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #dee2e6;
+    }
+
+    .request-card h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .request-card .subtitle {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .alert-success {
+      background: #d1e7dd;
+      border: 1px solid #a3cfbb;
+      border-radius: 6px;
+      padding: 20px 24px;
+      color: #0a3622;
+    }
+
+    .alert-danger {
+      background: #f8d7da;
+      border: 1px solid #f1aeb5;
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: #58151c;
+      margin-bottom: 20px;
+    }
+
+    [data-bs-theme="dark"] .request-card {
+      background: #2d2d2d;
+      border-color: #404040;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    [data-bs-theme="dark"] .request-card .subtitle {
+      color: #9ca3af;
+    }
+
+    [data-bs-theme="dark"] .alert-success {
+      background: #0d3321;
+      border-color: #1a5c37;
+      color: #75d8a4;
+    }
+
+    [data-bs-theme="dark"] .alert-danger {
+      background: #3b1217;
+      border-color: #6e1c24;
+      color: #f7a9af;
+    }
+  </style>
+{% endblock stylesheet %}
+
+{% block main %}
+<div class="request-container">
+  <div class="request-card">
+    <h2>Request Access to Lobot</h2>
+    <p class="subtitle">
+      Fill out this form to request access to the Lobot GPU cluster.
+      Your request will be reviewed by the School of Computing systems team.
+    </p>
+
+    {% if submitted %}
+      <div class="alert-success">
+        <strong>Request sent.</strong> We'll follow up at the email address you provided.
+      </div>
+    {% else %}
+      {% if error %}
+        <div class="alert-danger">{{ error }}</div>
+      {% endif %}
+
+      {% if not lab_options %}
+        <div class="alert-danger">
+          Resource group list is temporarily unavailable. Please email
+          <a href="mailto:help@cs.queensu.ca">help@cs.queensu.ca</a> directly to request access.
+        </div>
+      {% else %}
+      <form method="POST" action="">
+        <input type="hidden" name="_xsrf" value="{{ xsrf_token }}">
+
+        <div class="mb-3">
+          <label for="full_name" class="form-label">Full name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="full_name" name="full_name"
+                 placeholder="Jane Smith" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="github_username" class="form-label">GitHub username <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="github_username" name="github_username"
+                 value="{{ github_username }}" placeholder="your-github-username" required>
+          <div class="form-text text-muted">Your username on github.com (e.g. github.com/<strong>your-username</strong>).</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="net_id" class="form-label">NetID <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="net_id" name="net_id"
+                 placeholder="abc123">
+          <div class="form-text text-muted">Your Queen's University NetID (e.g. <strong>abc123</strong>). Required for Queen's users.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="reply_email" class="form-label">Email address <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" id="reply_email" name="reply_email"
+                 placeholder="you@queensu.ca" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="lab_key" class="form-label">Resource group <span class="text-danger">*</span></label>
+          <select class="form-select" id="lab_key" name="lab_key" required>
+            <option value="" disabled selected>Select a resource group&hellip;</option>
+            {% for key, display in lab_options %}
+            <option value="{{ key }}"{% if key == 'lobot_a16' %} selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text text-muted">
+            Default access is <strong>Lobot A16</strong>, which provides access to NVIDIA A16 GPUs with 16GB of memory. 
+            If you need access to a different resource group, please select it here and provide justification in the message below. 
+            Selecting a resource group of a lab will automatically send an email to the lab supervisor.
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="message" class="form-label">Reason for access <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="message" name="message" rows="5"
+                    placeholder="Briefly describe  why you need Lobot access. Include course code or project details&hellip; " required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send request</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock main %}
