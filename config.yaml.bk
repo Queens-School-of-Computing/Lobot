@@ -346,10 +346,10 @@ hub:
               f'message for informative purposes.</em></td></tr>'
           )
 
-      def _send_email(subject, body_html, reply_email, supervisor_email='', dest=None):
+      def _send_email(subject, body_html, reply_email, supervisor_email='', dest=None, json_attachment=None):
           to = dest or _REQUEST_DEST
           recipients = [to]
-          msg = MIMEMultipart('alternative')
+          msg = MIMEMultipart('mixed' if json_attachment else 'alternative')
           msg['Subject']  = subject
           msg['From']     = 'lobot@cs.queensu.ca'
           msg['To']       = to
@@ -358,6 +358,11 @@ hub:
               msg['Cc'] = supervisor_email
               recipients.append(supervisor_email)
           msg.attach(MIMEText(body_html, 'html'))
+          if json_attachment:
+              from email.mime.application import MIMEApplication
+              part = MIMEApplication(json_attachment.encode('utf-8'), _subtype='json')
+              part.add_header('Content-Disposition', 'attachment', filename='access-request.json')
+              msg.attach(part)
           with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
               s.sendmail('lobot@cs.queensu.ca', recipients, msg.as_string())
 
@@ -563,32 +568,43 @@ hub:
                   )
                   body_html = _email_html('Access Request', rows, esc_msg,
                                           _supervisor_note_html(supervisor_name, supervisor_email))
-                  _send_email(f'[Lobot Access Request] {github_username} - {lab_display}',
-                              body_html, reply_email, supervisor_email)
 
-                  # Machine-readable copy for the SharePoint Power Automate flow.
+                  # Machine-readable payload, attached as access-request.json to
+                  # every copy (and used as the machine-copy body) so the
+                  # SharePoint Power Automate flow never parses styled HTML.
+                  import json as _json
+                  from datetime import datetime as _dtm, timezone as _tz
+                  payload_json = _json.dumps({
+                      'kind': 'lobot-access-request',
+                      'submitted_at': _dtm.now(_tz.utc).isoformat(timespec='seconds'),
+                      'full_name': full_name,
+                      'github_username': github_username,
+                      'net_id': net_id,
+                      'email': reply_email,
+                      'lab_key': lab_key,
+                      'lab_display': lab_display,
+                      'supervisor_name': supervisor_name,
+                      'supervisor_email': supervisor_email,
+                      'message': message,
+                  }, indent=2)
+
+                  _send_email(f'[Lobot Access Request] {github_username} - {lab_display}',
+                              body_html, reply_email, supervisor_email,
+                              json_attachment=payload_json)
+
+                  # Machine copy for the SharePoint Power Automate flow.
                   # Fail-soft: never blocks the user's submission.
                   if _ACCESS_REQUEST_MAILBOX:
                       try:
-                          import json as _json
-                          from datetime import datetime as _dtm, timezone as _tz
-                          payload = {
-                              'kind': 'lobot-access-request',
-                              'submitted_at': _dtm.now(_tz.utc).isoformat(timespec='seconds'),
-                              'full_name': full_name,
-                              'github_username': github_username,
-                              'net_id': net_id,
-                              'email': reply_email,
-                              'lab_key': lab_key,
-                              'lab_display': lab_display,
-                              'supervisor_name': supervisor_name,
-                              'supervisor_email': supervisor_email,
-                              'message': message,
-                          }
-                          m = MIMEText(_json.dumps(payload, indent=2), 'plain')
+                          from email.mime.application import MIMEApplication
+                          m = MIMEMultipart('mixed')
                           m['Subject'] = f'[Lobot Access Request Data] {github_username} - {lab_key}'
                           m['From'] = 'lobot@cs.queensu.ca'
                           m['To'] = _ACCESS_REQUEST_MAILBOX
+                          m.attach(MIMEText(payload_json, 'plain'))
+                          part = MIMEApplication(payload_json.encode('utf-8'), _subtype='json')
+                          part.add_header('Content-Disposition', 'attachment', filename='access-request.json')
+                          m.attach(part)
                           with smtplib.SMTP('innovate.cs.queensu.ca', 25, timeout=5) as s:
                               s.sendmail('lobot@cs.queensu.ca', [_ACCESS_REQUEST_MAILBOX], m.as_string())
                       except Exception as e:
