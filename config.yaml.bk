@@ -297,7 +297,7 @@ hub:
       # Shared mailbox watched by the SharePoint Power Automate flow (Cluster
       # Users list). Each access request also sends a plain-JSON copy there.
       # Leave '' to disable the machine copy.
-      _ACCESS_REQUEST_MAILBOX = os.environ.get('LOBOT_ACCESS_REQUEST_MAILBOX', '')
+      _ACCESS_REQUEST_MAILBOX = os.environ.get('LOBOT_ACCESS_REQUEST_MAILBOX', 'qsc-lobot@queensu.ca')
 
       def _fetch_runtime():
           return yaml.safe_load(urllib.request.urlopen(_RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
@@ -574,10 +574,15 @@ hub:
                   # SharePoint Power Automate flow never parses styled HTML.
                   import json as _json
                   from datetime import datetime as _dtm, timezone as _tz
+                  # first/last split matches the SharePoint list's separate
+                  # name columns: last word = last name, rest = first name(s)
+                  _name_parts = full_name.rsplit(None, 1)
                   payload_json = _json.dumps({
                       'kind': 'lobot-access-request',
                       'submitted_at': _dtm.now(_tz.utc).isoformat(timespec='seconds'),
                       'full_name': full_name,
+                      'first_name': _name_parts[0] if len(_name_parts) > 1 else '',
+                      'last_name': _name_parts[-1],
                       'github_username': github_username,
                       'net_id': net_id,
                       'email': reply_email,
