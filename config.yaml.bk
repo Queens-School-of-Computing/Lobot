@@ -758,6 +758,43 @@ hub:
           for _k, _v in list(data.items()):
             if _k.startswith('from_data_') and isinstance(_v, str):
               data[_k] = _v.replace('(nightly)', '(nightly · updated ' + _built + ')')
+
+          # Render a collapsible component-version summary under the image
+          # select, from the same manifest (enriched fields written by
+          # update_image_metadata.py — see BUILD-PUSH-QSCIMAGES.md, "Build
+          # changelog"). Older manifests without pinned_common/images render
+          # just the nightly-tools line. Injected HTML must not contain
+          # literal braces — these templates go through .format() later.
+          _tools = _manifest.get('components') or {}
+          _pins = _manifest.get('pinned_common') or {}
+          _imgs = _manifest.get('images') or {}
+          _tool_names = {'vscode': 'VS Code', 'code_server': 'code-server',
+                         'chrome': 'Chrome', 'ollama': 'Ollama',
+                         'claude_code': 'Claude Code', 'opencode': 'opencode',
+                         'uv': 'uv', 'selenium': 'Selenium'}
+          _parts = []
+          if _tools:
+            _parts.append('<b>Developer tools</b> (refreshed nightly in "(nightly)" images): '
+              + ' · '.join(_tool_names[k] + ' ' + str(v) for k, v in sorted(_tools.items()) if k in _tool_names))
+          for _d, _p in sorted(_imgs.items(), reverse=True):
+            _stack = [('Python', _p.get('python')), ('TensorFlow', _p.get('tensorflow')),
+                      ('Keras', _p.get('keras')), ('PyTorch', _p.get('pytorch')),
+                      ('CUDA', _p.get('cuda')), ('Ubuntu', _p.get('ubuntu')),
+                      ('MATLAB', _pins.get('matlab'))]
+            _img_date = _dt.datetime.strptime(_d, '%Y%m%d').strftime('%b %-d, %Y')
+            _parts.append('<b>' + _img_date + ' image:</b> '
+              + ' · '.join(n + ' ' + str(v) for n, v in _stack if v))
+          if _parts:
+            _summary = ('<details style="margin-top:6px;"><summary style="cursor:pointer;" class="text-muted">'
+              + '<small>What is in these images? (versions as of ' + _built + ')</small></summary>'
+              + '<div class="text-muted" style="font-size:0.85em; line-height:1.7; margin:6px 0 0 2px;">'
+              + '<br>'.join(_parts)
+              + '<br><a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener">Full component list</a>'
+              + ' · <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-CHANGELOG.md" target="_blank" rel="noopener">What changed and when</a>'
+              + '</div></details>')
+            for _k, _v in list(data.items()):
+              if _k.startswith('from_data_') and isinstance(_v, str) and '<small id="imageHelp"' in _v:
+                data[_k] = _v.replace('<small id="imageHelp"', _summary + '<small id="imageHelp"', 1)
         except Exception:
           pass
 
