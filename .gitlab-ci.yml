@@ -24,7 +24,6 @@ stub:
     - |-
       # TODO Stage actual changes
       echo "$PAYLOAD" >> bar.deleteme
-      git add bar.deleteme
 
     - |-
       _CREATE_BRANCH_NAME=update-jupyter-configs
@@ -37,5 +36,6 @@ stub:
       MEOW
       )
       _CREATE_MR_ASSIGNED=jm-zen
+      _CREATE_ADD_PATH=bar.deleteme
 
       ./.gitlab/scripts/git-create-mr
