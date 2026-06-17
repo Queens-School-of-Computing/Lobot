@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -xe
+
+_CREATE_BRANCH_NAME=$1
+_CREATE_COMMIT_TITLE=$2
+_CREATE_MR_TITLE=$3
+_CREATE_MR_DESCRIPTION=$4
+_CREATE_MR_ASSIGNED=$5
+_CREATE_ADD_PATH=$6
+
+# FIXME Better way to remove or omit last newline
+# (newlines not allowed as push options)
+MR_DESCRIPTION=$(echo $MR_DESCRIPTION|sed -z 's|\n|<br>|g')
+
+# FIXME Check if exists first
+git switch --create $BRANCH_NAME
+
+git add "$_CREATE_ADD_PATH"
+
+git status -bs
+
+# TODO Wrap this into a reusable script
+git commit -m "$COMMIT_TITLE"
+git push -u origin $BRANCH_NAME \
+  -o merge_request.create \
+  -o merge_request.label=bot \
+  -o merge_request.label=infra \
+  -o merge_request.target=main \
+  -o merge_request.title="$MR_TITLE" \
+  -o merge_request.description="$MR_DESCRIPTION" \
+  -o merge_request.assign="$_CREATE_MR_ASSIGNED"
+
+  # TODO Put both these fellas in a group, then assign to *it*
+  #-o merge_request.assign="av10"
