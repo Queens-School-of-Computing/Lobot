@@ -11,7 +11,7 @@ _CREATE_ADD_PATH=$6
 
 # FIXME Better way to remove or omit last newline
 # (newlines not allowed as push options)
-MR_DESCRIPTION=$(echo $MR_DESCRIPTION|sed -z 's|\n|<br>|g')
+MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr --delete '\n')
 
 # FIXME Check if exists first
 git switch --create $BRANCH_NAME
