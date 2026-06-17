@@ -17,6 +17,25 @@ stub:
     CAT: "MEOW"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
-  script: |
-    echo "meow meow $CAT"
-    echo "PAYLOAD: ${PAYLOAD}" # From request
+  script:
+    - |-
+      echo "meow meow $CAT"
+      echo "PAYLOAD: ${PAYLOAD}" # From request
+    - |-
+      # TODO Stage actual changes
+      echo "$PAYLOAD" >> bar.deleteme
+      git add bar.deleteme
+
+    - |-
+      _CREATE_BRANCH_NAME=update-jupyter-configs
+      _CREATE_COMMIT_TITLE="chore: automated config update"
+      _CREATE_MR_TITLE=$COMMIT_TITLE
+      _CREATE_MR_DESCRIPTION=$(cat <<MEOW
+      This pull request was triggered by a change in the
+      \"Cluster Users\" data source. Please cross-reference
+      that the change here matches the corresponding items there.
+      MEOW
+      )
+      _CREATE_MR_ASSIGNED=jm-zen
+
+      ./.gitlab/scripts/git-create-mr
