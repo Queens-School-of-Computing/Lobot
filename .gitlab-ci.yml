@@ -16,6 +16,7 @@ stub:
   variables:
     CAT: "MEOW"
   rules:
+    - when: never
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
   script:
     - |-
