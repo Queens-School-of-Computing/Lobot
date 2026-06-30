@@ -99,3 +99,12 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-explorers-users
+  user: group-explorers
+  members:
+  - wiegerthefarmer
+  - ibrahimkettaneh
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
