@@ -125,6 +125,7 @@ nodeaccess:
   lobot_blackwell:
   - 23wm13
   - ameskandari
+  - group-explorers
   - nafiz95
   - schorm
   lobot_cse2026:
@@ -188,7 +189,6 @@ nodeaccess:
   - victoriaaarmstrong
   - wiegerthefarmer
   quarrglab:
-  - group-explorers
   - prmd-araujo
   - silvathiago
   riselab:
