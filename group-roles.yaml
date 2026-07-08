@@ -103,6 +103,7 @@ roles:
   user: group-explorers
   members:
   - wiegerthefarmer
+  - ameskandari
   - ibrahimkettaneh
   scopes:
   - access:servers!user={user}
