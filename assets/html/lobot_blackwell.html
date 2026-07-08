@@ -40,6 +40,19 @@
               </select>
               <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
             </div>
+  <div class="form-group">
+              <label for="inputMIG">GPU memory partitioning</label>
+              <select name="mig_profile" class="form-control" id="inputMIG" aria-describedby="emailHelp">
+                <option value="all-disabled">No partitioning (full 96G GPUs)</option>
+                <option value="all-1g.24gb">1g.24gb (24G slices)</option>
+                <option value="all-1g.24gb+gfx">1g.24gb+gfx (24G slices, graphics engine)</option>
+                <option value="all-1g.24gb+me">1g.24gb+me (24G slice, media engine)</option>
+                <option value="all-2g.48gb" selected="selected">2g.48gb (48G slices)</option>
+                <option value="all-2g.48gb+gfx">2g.48gb+gfx (48G slices, graphics engine)</option>
+              </select>
+              <small id="migHelp" class="form-text text-muted">How each physical GPU on this node is split into MIG instances. Changing this from the node's current mode will repartition the node at spawn time — only possible when no session on the node is using a GPU.</small>
+              <small id="migBusyWarning" class="form-text" style="display:none; color:#c0392b; font-weight:bold;"></small>
+  </div>
             <div class="form-group">
               <label for="inputGPU">Number of GPU accelerators</label>
               <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
@@ -59,6 +72,38 @@
               </select>
               <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
             </div>
+  <script>
+    var migModes_lobot_blackwell = {{"all-disabled": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 96G slice"}}, {{"value": "2", "label": "2x MIG 96G slices"}}, {{"value": "3", "label": "3x MIG 96G slices"}}, {{"value": "4", "label": "4x MIG 96G slices"}}, {{"value": "5", "label": "5x MIG 96G slices"}}, {{"value": "6", "label": "6x MIG 96G slices"}}], "all-1g.24gb": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 24G slice"}}, {{"value": "2", "label": "2x MIG 24G slices"}}, {{"value": "3", "label": "3x MIG 24G slices"}}, {{"value": "4", "label": "4x MIG 24G slices"}}, {{"value": "5", "label": "5x MIG 24G slices"}}, {{"value": "6", "label": "6x MIG 24G slices"}}, {{"value": "7", "label": "7x MIG 24G slices"}}, {{"value": "8", "label": "8x MIG 24G slices"}}, {{"value": "9", "label": "9x MIG 24G slices"}}, {{"value": "10", "label": "10x MIG 24G slices"}}, {{"value": "11", "label": "11x MIG 24G slices"}}, {{"value": "12", "label": "12x MIG 24G slices"}}, {{"value": "13", "label": "13x MIG 24G slices"}}, {{"value": "14", "label": "14x MIG 24G slices"}}, {{"value": "15", "label": "15x MIG 24G slices"}}, {{"value": "16", "label": "16x MIG 24G slices"}}, {{"value": "17", "label": "17x MIG 24G slices"}}, {{"value": "18", "label": "18x MIG 24G slices"}}, {{"value": "19", "label": "19x MIG 24G slices"}}, {{"value": "20", "label": "20x MIG 24G slices"}}, {{"value": "21", "label": "21x MIG 24G slices"}}, {{"value": "22", "label": "22x MIG 24G slices"}}, {{"value": "23", "label": "23x MIG 24G slices"}}, {{"value": "24", "label": "24x MIG 24G slices"}}], "all-1g.24gb+gfx": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 24G slice"}}, {{"value": "2", "label": "2x MIG 24G slices"}}, {{"value": "3", "label": "3x MIG 24G slices"}}, {{"value": "4", "label": "4x MIG 24G slices"}}, {{"value": "5", "label": "5x MIG 24G slices"}}, {{"value": "6", "label": "6x MIG 24G slices"}}, {{"value": "7", "label": "7x MIG 24G slices"}}, {{"value": "8", "label": "8x MIG 24G slices"}}, {{"value": "9", "label": "9x MIG 24G slices"}}, {{"value": "10", "label": "10x MIG 24G slices"}}, {{"value": "11", "label": "11x MIG 24G slices"}}, {{"value": "12", "label": "12x MIG 24G slices"}}, {{"value": "13", "label": "13x MIG 24G slices"}}, {{"value": "14", "label": "14x MIG 24G slices"}}, {{"value": "15", "label": "15x MIG 24G slices"}}, {{"value": "16", "label": "16x MIG 24G slices"}}, {{"value": "17", "label": "17x MIG 24G slices"}}, {{"value": "18", "label": "18x MIG 24G slices"}}, {{"value": "19", "label": "19x MIG 24G slices"}}, {{"value": "20", "label": "20x MIG 24G slices"}}, {{"value": "21", "label": "21x MIG 24G slices"}}, {{"value": "22", "label": "22x MIG 24G slices"}}, {{"value": "23", "label": "23x MIG 24G slices"}}, {{"value": "24", "label": "24x MIG 24G slices"}}], "all-1g.24gb+me": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 24G slice"}}, {{"value": "2", "label": "2x MIG 24G slices"}}, {{"value": "3", "label": "3x MIG 24G slices"}}, {{"value": "4", "label": "4x MIG 24G slices"}}, {{"value": "5", "label": "5x MIG 24G slices"}}, {{"value": "6", "label": "6x MIG 24G slices"}}], "all-2g.48gb": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 48G slice"}}, {{"value": "2", "label": "2x MIG 48G slices"}}, {{"value": "3", "label": "3x MIG 48G slices"}}, {{"value": "4", "label": "4x MIG 48G slices"}}, {{"value": "5", "label": "5x MIG 48G slices"}}, {{"value": "6", "label": "6x MIG 48G slices"}}, {{"value": "7", "label": "7x MIG 48G slices"}}, {{"value": "8", "label": "8x MIG 48G slices"}}, {{"value": "9", "label": "9x MIG 48G slices"}}, {{"value": "10", "label": "10x MIG 48G slices"}}, {{"value": "11", "label": "11x MIG 48G slices"}}, {{"value": "12", "label": "12x MIG 48G slices"}}], "all-2g.48gb+gfx": [{{"value": "0", "label": "I don't need a GPU for now."}}, {{"value": "1", "label": "1x MIG 48G slice"}}, {{"value": "2", "label": "2x MIG 48G slices"}}, {{"value": "3", "label": "3x MIG 48G slices"}}, {{"value": "4", "label": "4x MIG 48G slices"}}, {{"value": "5", "label": "5x MIG 48G slices"}}, {{"value": "6", "label": "6x MIG 48G slices"}}, {{"value": "7", "label": "7x MIG 48G slices"}}, {{"value": "8", "label": "8x MIG 48G slices"}}, {{"value": "9", "label": "9x MIG 48G slices"}}, {{"value": "10", "label": "10x MIG 48G slices"}}, {{"value": "11", "label": "11x MIG 48G slices"}}, {{"value": "12", "label": "12x MIG 48G slices"}}]}};
+    function migRenderGpuOptions_lobot_blackwell(profile) {{
+      var opts = migModes_lobot_blackwell[profile] || [];
+      var sel = document.getElementById("inputGPU");
+      var current = sel.value;
+      sel.innerHTML = "";
+      opts.forEach(function(o) {{{{
+        var el = document.createElement("option");
+        el.value = o.value; el.textContent = o.label;
+        sel.appendChild(el);
+      }}}});
+      if (opts.some(function(o) {{{{ return o.value === current; }}}})) {{{{ sel.value = current; }}}}
+    }}
+    var migSel_lobot_blackwell = document.getElementById('inputMIG');
+    var migWarn_lobot_blackwell = document.getElementById('migBusyWarning');
+    function migUpdateWarning_lobot_blackwell() {{
+      if (window.migNodeBusy && migSel_lobot_blackwell.value !== window.migCurrentProfile) {{
+        migWarn_lobot_blackwell.textContent = 'A session on this node is currently using a GPU — repartitioning is blocked until it ends. Spawning now will keep the current partitioning.';
+        migWarn_lobot_blackwell.style.display = '';
+      }} else {{
+        migWarn_lobot_blackwell.style.display = 'none';
+      }}
+    }}
+    if (window.migCurrentProfile) {{ migSel_lobot_blackwell.value = window.migCurrentProfile; }}
+    migSel_lobot_blackwell.addEventListener('change', function() {{
+      migRenderGpuOptions_lobot_blackwell(this.value);
+      migUpdateWarning_lobot_blackwell();
+    }});
+    migRenderGpuOptions_lobot_blackwell(migSel_lobot_blackwell.value);
+    migUpdateWarning_lobot_blackwell();
+  </script>
             <div class="form-group">
               <label for="inputRAM">RAM to be allocated</label>
               <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">

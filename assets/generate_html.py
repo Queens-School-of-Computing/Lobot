@@ -30,11 +30,41 @@ def options_html(opts, indent='                '):
     return ''.join(lines)
 
 
+def mig_gpu_options(mig_profiles, gpu_count):
+    """Build a JS object mapping each MIG profile value to its <option> list,
+    so the browser can swap the GPU-count select when the partitioning
+    selector changes. Slice count for a mode = gpu_count * slices."""
+    import json
+    modes = {}
+    for prof in mig_profiles:
+        max_slices = gpu_count * prof['slices']
+        mem = prof['mem_gb']
+        opts = [{'value': '0', 'label': "I don't need a GPU for now."}]
+        for n in range(1, max_slices + 1):
+            opts.append({'value': str(n), 'label': f'{n}x MIG {mem}G slice' + ('s' if n > 1 else '')})
+        modes[prof['value']] = opts
+    return json.dumps(modes)
+
+
+def mig_profile_select(mig_profiles):
+    lines = []
+    lines.append('  <div class="form-group">\n')
+    lines.append('              <label for="inputMIG">GPU memory partitioning</label>\n')
+    lines.append('              <select name="mig_profile" class="form-control" id="inputMIG" aria-describedby="emailHelp">\n')
+    lines.append(options_html(mig_profiles))
+    lines.append('              </select>\n')
+    lines.append('              <small id="migHelp" class="form-text text-muted">How each physical GPU on this node is split into MIG instances. Changing this from the node\'s current mode will repartition the node at spawn time — only possible when no session on the node is using a GPU.</small>\n')
+    lines.append('              <small id="migBusyWarning" class="form-text" style="display:none; color:#c0392b; font-weight:bold;"></small>\n')
+    lines.append('  </div>\n')
+    return ''.join(lines)
+
+
 def render(lab_id, lab, global_images, registry):
     cpu_label   = lab.get('cpu_label', '')
     cpu_bracket = f' [{cpu_label}]' if cpu_label else ''
     cpu_help    = lab.get('cpu_help', DEFAULT_CPU_HELP)
     ram_help    = lab.get('ram_help', DEFAULT_RAM_HELP)
+    mig_profiles = lab.get('mig_profiles')
 
     # Lab-specific images override global list
     images = lab.get('images', global_images)
@@ -69,7 +99,7 @@ def render(lab_id, lab, global_images, registry):
     lines.append('  <label id="label-summary-details"></label><br>\n')
     lines.append('  </div>\n')
     lines.append('  <div class="form-group">\n')
-    lines.append('              <label for="inputIMG">Base docker image to be deployed</label>\n')
+    lines.append('              <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>\n')
     lines.append('              <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">\n')
     lines.append(img_opts)
     lines.append('              </select>\n')
@@ -82,6 +112,8 @@ def render(lab_id, lab, global_images, registry):
     lines.append('              </select>\n')
     lines.append(f'              <small id="cpuLimitHelp" class="form-text text-muted">{cpu_help}</small>\n')
     lines.append('            </div>\n')
+    if mig_profiles:
+        lines.append(mig_profile_select(mig_profiles))
     lines.append('            <div class="form-group">\n')
     lines.append('              <label for="inputGPU">Number of GPU accelerators</label>\n')
     lines.append('              <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">\n')
@@ -89,6 +121,44 @@ def render(lab_id, lab, global_images, registry):
     lines.append('              </select>\n')
     lines.append('              <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>\n')
     lines.append('            </div>\n')
+    if mig_profiles:
+        gpu_count = lab.get('gpu_count', 1)
+        modes_json = mig_gpu_options(mig_profiles, gpu_count)
+        # Doubled braces throughout: this string is later run through .format().
+        # window.migCurrentProfile / migCurrentState / migNodeBusy are injected
+        # server-side by dynamic_form() in config.yaml.bk before this script runs.
+        lines.append('  <script>\n')
+        lines.append(f"    var migModes_{lab_id} = {modes_json.replace('{', '{{').replace('}', '}}')};\n")
+        lines.append(f"    function migRenderGpuOptions_{lab_id}(profile) {{{{\n")
+        lines.append(f"      var opts = migModes_{lab_id}[profile] || [];\n")
+        lines.append('      var sel = document.getElementById("inputGPU");\n')
+        lines.append('      var current = sel.value;\n')
+        lines.append('      sel.innerHTML = "";\n')
+        lines.append('      opts.forEach(function(o) {{{{\n')
+        lines.append('        var el = document.createElement("option");\n')
+        lines.append('        el.value = o.value; el.textContent = o.label;\n')
+        lines.append('        sel.appendChild(el);\n')
+        lines.append('      }}}});\n')
+        lines.append('      if (opts.some(function(o) {{{{ return o.value === current; }}}})) {{{{ sel.value = current; }}}}\n')
+        lines.append(f"    }}}}\n")
+        lines.append(f"    var migSel_{lab_id} = document.getElementById('inputMIG');\n")
+        lines.append(f"    var migWarn_{lab_id} = document.getElementById('migBusyWarning');\n")
+        lines.append(f"    function migUpdateWarning_{lab_id}() {{{{\n")
+        lines.append(f"      if (window.migNodeBusy && migSel_{lab_id}.value !== window.migCurrentProfile) {{{{\n")
+        lines.append(f"        migWarn_{lab_id}.textContent = 'A session on this node is currently using a GPU — repartitioning is blocked until it ends. Spawning now will keep the current partitioning.';\n")
+        lines.append(f"        migWarn_{lab_id}.style.display = '';\n")
+        lines.append(f"      }}}} else {{{{\n")
+        lines.append(f"        migWarn_{lab_id}.style.display = 'none';\n")
+        lines.append(f"      }}}}\n")
+        lines.append(f"    }}}}\n")
+        lines.append(f"    if (window.migCurrentProfile) {{{{ migSel_{lab_id}.value = window.migCurrentProfile; }}}}\n")
+        lines.append(f"    migSel_{lab_id}.addEventListener('change', function() {{{{\n")
+        lines.append(f"      migRenderGpuOptions_{lab_id}(this.value);\n")
+        lines.append(f"      migUpdateWarning_{lab_id}();\n")
+        lines.append(f"    }}}});\n")
+        lines.append(f"    migRenderGpuOptions_{lab_id}(migSel_{lab_id}.value);\n")
+        lines.append(f"    migUpdateWarning_{lab_id}();\n")
+        lines.append('  </script>\n')
     lines.append('            <div class="form-group">\n')
     lines.append('              <label for="inputRAM">RAM to be allocated</label>\n')
     lines.append('              <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">\n')

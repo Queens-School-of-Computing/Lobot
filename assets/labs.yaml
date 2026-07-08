@@ -23,6 +23,17 @@
 #   images        - Override the global image list for this lab only.
 #                   Uses the same format as the top-level `images` list.
 #                   Omit to use the global list.
+#   mig_profiles  - Only for MIG-partitioned labs (e.g. lobot_blackwell).
+#                   List of {value, label, slices, mem_gb} — one entry per
+#                   NVIDIA MIG profile. `value` must match a key in the
+#                   gpu-operator `mig-config` ConfigMap (see
+#                   Lobot-tools/lobot_gpu_timeslicing_mig.md). `slices` is
+#                   the number of GPU instances per physical GPU under that
+#                   profile (used to compute the gpu_options list per mode
+#                   client-side). Presence of this key adds a "GPU memory
+#                   partitioning" selector to the form.
+#   gpu_count     - Physical GPU count on the node (used with mig_profiles
+#                   to compute max slices per mode: gpu_count * slices).
 #
 # Option format (cpu_options / gpu_options / ram_options):
 #   - value: "8.0"        # the form value submitted to JupyterHub (required)
@@ -216,6 +227,17 @@ labs:
       - {value: "16.0", label: "16 cores"}
       - {value: "24.0", label: "24 cores"}
       - {value: "32.0", label: "32 cores"}
+    gpu_count: 6
+    mig_profiles:
+      - {value: "all-disabled",    label: "No partitioning (full 96G GPUs)", slices: 1, mem_gb: 96}
+      - {value: "all-1g.24gb",     label: "1g.24gb (24G slices)",            slices: 4, mem_gb: 24}
+      - {value: "all-1g.24gb+gfx", label: "1g.24gb+gfx (24G slices, graphics engine)", slices: 4, mem_gb: 24}
+      - {value: "all-1g.24gb+me",  label: "1g.24gb+me (24G slice, media engine)",      slices: 1, mem_gb: 24}
+      - {value: "all-2g.48gb",     label: "2g.48gb (48G slices)",            slices: 2, mem_gb: 48, default: true}
+      - {value: "all-2g.48gb+gfx", label: "2g.48gb+gfx (48G slices, graphics engine)", slices: 2, mem_gb: 48}
+    # gpu_options below are for the default mig_profile (all-2g.48gb, 2 slices/GPU x 6 GPUs = 12).
+    # Per-mode option sets are generated from mig_profiles + gpu_count and swapped
+    # client-side when the partitioning selector changes (see generate_html.py).
     gpu_options:
       - {value: "0",  label: "I don't need a GPU for now.", default: true}
       - {value: "1",  label: "1x RTX PRO 6000 Blackwell (48G)"}

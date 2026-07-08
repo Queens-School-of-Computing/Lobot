@@ -623,16 +623,34 @@ hub:
       c.Spawner.debug = False 
 
       # add some extra timeouts
-      c.Spawner.http_timeout = 150 
-      c.Spawner.start_timeout = 150 
-      #c.Spawner.http_timeout = 3600 
-      #c.Spawner.start_timeout = 3600 
+      # 480s covers the worst case for lobot_blackwell MIG repartitioning in
+      # pre_spawn_hook: up to two poll cycles of MIG_STATE_POLL_TIMEOUT (180s
+      # each, one retry on failure) plus normal pod start time.
+      c.Spawner.http_timeout = 480
+      c.Spawner.start_timeout = 480
+      #c.Spawner.http_timeout = 3600
+      #c.Spawner.start_timeout = 3600
       
       # Enable debug-logging of the single-user server
       c.LocalProcessSpawner.debug = False
       c.JupyterHub.api_page_default_limit = 200
     custom_options_form: |
       from kubespawner import KubeSpawner
+
+      # MIG profiles available on the lobot_blackwell node. Keep in sync with
+      # the gpu-operator `mig-config` ConfigMap and assets/labs.yaml
+      # mig_profiles. Duplicated in pre_spawn_hook (extraConfig blocks don't
+      # share Python state).
+      MIG_PROFILES = {
+        'all-disabled':    1,
+        'all-1g.24gb':     4,
+        'all-1g.24gb+gfx': 4,
+        'all-1g.24gb+me':  1,
+        'all-2g.48gb':     2,
+        'all-2g.48gb+gfx': 2,
+      }
+      MIG_LAB = 'lobot_blackwell'
+      MIG_NODE_LABEL_SELECTOR = 'lab=lobot_blackwell'
 
       def options_from_form(self, formdata):
         import urllib.request, yaml, os, re as _re, smtplib
@@ -657,6 +675,11 @@ hub:
         options['mem_limit'] = formdata['mem_limit']
         options['gpu_limit'] = formdata['gpu_limit']
         options['storage_class'] = formdata['storage_class']
+        if 'mig_profile' in formdata:
+          mig_profile = formdata['mig_profile'][0]
+          if mig_profile not in MIG_PROFILES:
+            raise ValueError(f'POLICY VIOLATION: "{mig_profile}" is not a recognized GPU partitioning mode.')
+          options['mig_profile'] = formdata['mig_profile']
 
         # All validation runs before spawn-pending so errors show on the spawn form.
         # If the YAML fetch fails, silently pass — pre_spawn_hook will re-validate.
@@ -704,6 +727,20 @@ hub:
                 f'Limit:       {max_gpu} GPU(s)\n'
               )
               raise ValueError(f'POLICY VIOLATION: Requested {req_gpu} GPU(s) exceeds your allocated limit of {max_gpu}. Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
+
+            if lab == MIG_LAB and 'mig_profile' in options:
+              mig_profile = options['mig_profile'][0]
+              max_slices = MIG_PROFILES.get(mig_profile, 0) * 6  # 6 physical GPUs on the node
+              if req_gpu > max_slices:
+                _send_violation_email(
+                  f'[Lobot] Policy Violation: MIG slice count exceeded by {username} on {lab}',
+                  f'GitHub user: {username}\n'
+                  f'Lab:         {lab}\n'
+                  f'MIG mode:    {mig_profile}\n'
+                  f'Requested:   {req_gpu} GPU slice(s)\n'
+                  f'Max for mode:{max_slices} GPU slice(s)\n'
+                )
+                raise ValueError(f'POLICY VIOLATION: Requested {req_gpu} GPU slice(s) exceeds the maximum of {max_slices} for MIG mode "{mig_profile}". Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
 
             req_cpu = float(options['cpu_limit'][0])
             max_cpu = float(limits.get('max_cpu', 0))
@@ -797,6 +834,49 @@ hub:
                 data[_k] = _v.replace('<small id="imageHelp"', _summary + '<small id="imageHelp"', 1)
         except Exception:
           pass
+
+        # Inject current MIG partitioning state for the lobot_blackwell form,
+        # so the fragment JS (migRenderGpuOptions_lobot_blackwell in
+        # generate_html.py) can preselect the node's current mode and warn
+        # if the node is currently busy (a GPU pod is running on it).
+        # Fail-soft: form still renders (defaulting to the mig_profile
+        # marked `default: true` in labs.yaml) if the k8s API is unreachable.
+        try:
+          from kubernetes_asyncio import client as _k8s_client, config as _k8s_config
+          try:
+            _k8s_config.load_incluster_config()
+          except Exception:
+            await _k8s_config.load_kube_config()
+          async with _k8s_client.ApiClient() as _api:
+            _core = _k8s_client.CoreV1Api(_api)
+            _nodes = await _core.list_node(label_selector=MIG_NODE_LABEL_SELECTOR)
+            if _nodes.items:
+              _node = _nodes.items[0]
+              _node_name = _node.metadata.name
+              _cur_profile = (_node.metadata.labels or {}).get('nvidia.com/mig.config', '')
+              _cur_state = (_node.metadata.labels or {}).get('nvidia.com/mig.config.state', '')
+              _pods = await _core.list_pod_for_all_namespaces(
+                field_selector=f'spec.nodeName={_node_name}')
+              _busy = False
+              for _pod in _pods.items:
+                if (_pod.status.phase or '') in ('Succeeded', 'Failed'):
+                  continue
+                for _c in (_pod.spec.containers or []):
+                  _req = ((_c.resources and _c.resources.requests) or {})
+                  if int(_req.get('nvidia.com/gpu', 0) or 0) > 0:
+                    _busy = True
+                    break
+                if _busy:
+                  break
+              import json as _json2
+              _mig_state_js = ('<script>window.migCurrentProfile=' + _json2.dumps(_cur_profile)
+                + ';window.migCurrentState=' + _json2.dumps(_cur_state)
+                + ';window.migNodeBusy=' + _json2.dumps(_busy) + ';</script>')
+              _k = f'from_data_{MIG_LAB}'
+              if isinstance(data.get(_k), str) and 'id="inputMIG"' in data[_k]:
+                data[_k] = data[_k].replace('id="inputMIG"', _mig_state_js + 'id="inputMIG"', 1)
+        except Exception as _e:
+          self.log.warning(f'[dynamic_form] Could not fetch MIG node state: {_e}')
 
         username = self.user.name.strip().lower()
         self.log.info(username)
@@ -913,8 +993,25 @@ hub:
       c.Spawner.options_form = dynamic_form
       KubeSpawner.options_from_form = options_from_form
     pre_spawn_hook: |
+      # Duplicated from custom_options_form (extraConfig blocks don't share
+      # Python state). Keep in sync with the gpu-operator mig-config
+      # ConfigMap and assets/labs.yaml mig_profiles.
+      MIG_PROFILES = {
+        'all-disabled':    1,
+        'all-1g.24gb':     4,
+        'all-1g.24gb+gfx': 4,
+        'all-1g.24gb+me':  1,
+        'all-2g.48gb':     2,
+        'all-2g.48gb+gfx': 2,
+      }
+      MIG_LAB = 'lobot_blackwell'
+      MIG_NODE_LABEL_SELECTOR = 'lab=lobot_blackwell'
+      MIG_GPU_COUNT = 6
+      MIG_STATE_POLL_TIMEOUT = 180   # seconds to wait for mig.config.state == success
+      MIG_STATE_POLL_INTERVAL = 5
+
       async def my_pre_spawn_hook(spwnr):
-        import os, urllib.request, yaml, smtplib
+        import os, urllib.request, yaml, smtplib, asyncio
         from tornado.web import HTTPError
         from email.mime.text import MIMEText
 
@@ -922,6 +1019,69 @@ hub:
           def __init__(self, message):
             super().__init__(400, message)
             self.jupyterhub_message = message
+
+        async def _ensure_mig_profile(target_profile):
+          """Repartition the lobot_blackwell node to target_profile if it
+          isn't already there. Blocks (raises SpawnError) if any pod on the
+          node currently has an active GPU request. Best-effort: any
+          unexpected k8s error surfaces as a SpawnError rather than silently
+          proceeding, since a wrong partition size would misallocate GPUs."""
+          from kubernetes_asyncio import client as _k8s_client, config as _k8s_config
+          try:
+            _k8s_config.load_incluster_config()
+          except Exception:
+            await _k8s_config.load_kube_config()
+          async with _k8s_client.ApiClient() as _api:
+            _core = _k8s_client.CoreV1Api(_api)
+            _nodes = await _core.list_node(label_selector=MIG_NODE_LABEL_SELECTOR)
+            if not _nodes.items:
+              raise SpawnError('Could not find the GPU node for this lab. Please contact help@cs.queensu.ca.')
+            _node = _nodes.items[0]
+            _node_name = _node.metadata.name
+            _cur_profile = (_node.metadata.labels or {}).get('nvidia.com/mig.config', '')
+
+            if _cur_profile == target_profile:
+              return  # already in the desired mode, nothing to do
+
+            # Block if any pod on the node has an active GPU request.
+            _pods = await _core.list_pod_for_all_namespaces(
+              field_selector=f'spec.nodeName={_node_name}')
+            for _pod in _pods.items:
+              if (_pod.status.phase or '') in ('Succeeded', 'Failed'):
+                continue
+              for _c in (_pod.spec.containers or []):
+                _req = ((_c.resources and _c.resources.requests) or {})
+                if int(_req.get('nvidia.com/gpu', 0) or 0) > 0:
+                  raise SpawnError(
+                    'GPU repartitioning blocked — another session on this node is '
+                    'currently using a GPU. Wait for it to finish, or spawn with the '
+                    'current partitioning mode instead.')
+
+            async def _patch_and_wait(profile):
+              await _core.patch_node(_node_name, {'metadata': {'labels': {'nvidia.com/mig.config': profile}}})
+              _elapsed = 0
+              while _elapsed < MIG_STATE_POLL_TIMEOUT:
+                await asyncio.sleep(MIG_STATE_POLL_INTERVAL)
+                _elapsed += MIG_STATE_POLL_INTERVAL
+                _n = await _core.read_node(_node_name)
+                _state = (_n.metadata.labels or {}).get('nvidia.com/mig.config.state', '')
+                if _state == 'success':
+                  return True
+                if _state == 'failed':
+                  return False
+              return False  # timed out
+
+            spwnr.log.info(f'[pre_spawn_hook] Repartitioning {_node_name}: {_cur_profile!r} -> {target_profile!r}')
+            _ok = await _patch_and_wait(target_profile)
+            if not _ok:
+              # Bounce the label once and retry — mig.config.state is not
+              # self-healing on failure (see lobot_gpu_timeslicing_mig.md).
+              spwnr.log.warning(f'[pre_spawn_hook] MIG repartition to {target_profile!r} did not succeed; retrying once')
+              _ok = await _patch_and_wait(target_profile)
+            if not _ok:
+              raise SpawnError(
+                f'GPU repartitioning to "{target_profile}" failed or timed out. '
+                'The node may need manual attention — please contact help@cs.queensu.ca.')
 
         def _send_violation_email(subject, body):
           try:
@@ -1074,10 +1234,21 @@ hub:
                    {"mountPath": "/home/jovyan/bamlab_ildpatients", "name": "pv-bamlab-ildpatients"},
                    {"mountPath": "/home/jovyan/nafiz25TB", "name": "nfs-nafiz25tb"},  
             ])
-        spwnr.extra_resource_limits = {"nvidia.com/gpu": int(options["gpu_limit"][0])}
-        if int(options["gpu_limit"][0]) == 0:
+        req_gpu_slices = int(options["gpu_limit"][0])
+        if lab == MIG_LAB and 'mig_profile' in options and req_gpu_slices > 0:
+          mig_profile = options['mig_profile'][0]
+          if mig_profile not in MIG_PROFILES:
+            raise SpawnError(f'POLICY VIOLATION: "{mig_profile}" is not a recognized GPU partitioning mode.')
+          max_slices = MIG_PROFILES[mig_profile] * MIG_GPU_COUNT
+          if req_gpu_slices > max_slices:
+            spwnr.log.warning(f'[pre_spawn_hook] SECURITY: {username} requested {req_gpu_slices} MIG slices, max={max_slices} for mode {mig_profile}')
+            raise SpawnError(f'POLICY VIOLATION: Requested {req_gpu_slices} GPU slice(s) exceeds the maximum of {max_slices} for MIG mode "{mig_profile}". Misuse of Lobot is automatically reported to help@cs.queensu.ca and may result in immediate loss of access.')
+          await _ensure_mig_profile(mig_profile)
+
+        spwnr.extra_resource_limits = {"nvidia.com/gpu": req_gpu_slices}
+        if req_gpu_slices == 0:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
-        if int(options["gpu_limit"][0]) == -1:
+        if req_gpu_slices == -1:
           spwnr.extra_resource_limits = {"nvidia.com/gpu": 0}
         spwnr.node_selector = {'lab': lab}
         spwnr.log.info('  spawner: ' + str(spwnr))

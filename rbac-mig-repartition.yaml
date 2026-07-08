@@ -1,0 +1,40 @@
+# RBAC granting the JupyterHub hub ServiceAccount enough cluster-scoped
+# access to automate MIG repartitioning of the lobot_blackwell node from the
+# spawn page (see custom_options_form / pre_spawn_hook in config.yaml.bk and
+# Lobot-tools/lobot_gpu_timeslicing_mig.md).
+#
+# The z2jh chart's default hub ServiceAccount is named `hub` and lives in the
+# release namespace (jhub on both dev and prod). Apply with:
+#   kubectl apply -f rbac-mig-repartition.yaml
+#
+# NOTE: the `resourceNames` list for the node `patch` rule must be updated if
+# the Blackwell MIG-partitioned node is renamed or additional MIG nodes are
+# added (e.g. if metroidblackwelltest is renamed after leaving test status).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lobot-mig-repartition
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["patch"]
+    resourceNames: ["metroidblackwelltest"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lobot-mig-repartition
+subjects:
+  - kind: ServiceAccount
+    name: hub
+    namespace: jhub
+roleRef:
+  kind: ClusterRole
+  name: lobot-mig-repartition
+  apiGroup: rbac.authorization.k8s.io
