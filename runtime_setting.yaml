@@ -31,8 +31,6 @@ nodeaccess:
   - mirnaembaby
   - mostafa235
   - zainbmaged
-  edemsmithbusiness:
-  - eklobodu
   gandslab:
   - ameekbains
   - anas-s-m
@@ -84,6 +82,7 @@ nodeaccess:
   - creategroup5
   - drdoog
   - ekimcisc452
+  - eklobodu
   - emeseelkind
   - emmawillis
   - guozhuoxin
@@ -252,7 +251,7 @@ limits:
     max_mem_gb: 256
   lobot_blackwell:
     max_cpu: 32.0
-    max_gpu: 24
+    max_gpu: 12
     max_mem_gb: 128
   lobot_problackwell:
     max_cpu: 64.0
@@ -484,80 +483,6 @@ from_data_digilab: |2-
                   <option value="128G">128G RAM</option>
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated. Choose minimum, only choose >32G if authorized.</small>
-              </div>
-              <div class="form-group" style="display:none;">
-                <label for="inputPVC">Storage volume claim</label>
-                <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
-                  <option value="{}" selected="selected">{}</option>
-                </select>
-                <small id="gpuHelp" class="form-text text-muted">The storage volume will be created for you only once. If you need to upgrade the storage (change PV), please let us know. </small>
-                </div>
-            <div class="form-check">
-            <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 72 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
-            <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
-    </div>
-from_data_edemsmithbusiness: |2-
-    <script>
-      var lab = 'edemsmithbusiness';
-      var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
-      $.getJSON(url_status, function(data){{
-      if(data){{
-        $('#label-summary').text(data[lab].summary_title);
-        $('#label-summary-details').text(data[lab].summary_details);
-        $.each(data[lab].usage, function(index, value){{
-          let entry = $('<small>');
-          entry.text(value);
-          entry.addClass('form-text text-muted');
-          $('#label-usage').append(entry);
-          $('#label-usage').append($('<br>'));
-        }})
-      }}
-      }})
-    </script>
-    <div class="form-group" id="label-usage">
-    <label id="label-summary"></label><br>
-    <label id="label-summary-details"></label><br>
-    </div>
-    <div class="form-group">
-                <label for="inputIMG">Base docker image to be deployed <a href="https://github.com/Queens-School-of-Computing/gpu-jupyter-latest/blob/master/IMAGE-COMPONENTS.md" target="_blank" rel="noopener" title="View what is included in this image"><i class="fa fa-info-circle"></i></a></label>
-                <select name="image" class="form-control" id="inputIMG" aria-describedby="emailHelp">
-                  <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424-nightly" selected="selected">CUDA 13.2 · TF 2.20 · Apr 24, 2026 (nightly)</option>
-                  <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313-nightly">CUDA 13.0 · TF 2.20 · Mar 13, 2026 (nightly)</option>
-                  <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.2.1cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260424">CUDA 13.2 · TF 2.20 · Apr 24, 2026</option>
-                  <option value="queensschoolofcomputingdocker/gpu-jupyter-latest:13.0.2cudnn-2.20.0tf-matlab-ollama-claude-qsc-u24.04-20260313">CUDA 13.0 · TF 2.20 · Mar 13, 2026</option>
-                </select>
-                <small id="imageHelp" class="form-text text-muted">Included most of the dependencies you would need. For a custom base image, please email help@cs.queensu.ca</small>
-    </div>
-    <div class="form-group">
-                <label for="inputCPU">Guaranteed Number of CPU Cores [Intel Xeon Platinum 8268 CPU]</label>
-                <select name="cpu_limit" class="form-control" id="inputCPU" aria-describedby="emailHelp">
-                  <option value="8.0" selected="selected">8</option>
-                  <option value="16.0">16</option>
-                  <option value="32.0">32</option>
-                </select>
-                <small id="cpuLimitHelp" class="form-text text-muted">Reserved number of cores.  Choose minimum. Server will use more if needed and available automatically.</small>
-              </div>
-              <div class="form-group">
-                <label for="inputGPU">Number of GPU accelerators</label>
-                <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
-                  <option value="1">1x A16 (16G)</option>
-                  <option value="2">2x A16 (16G)</option>
-                  <option value="3">3x A16 (16G)</option>
-                  <option value="4">4x A16 (16G)</option>
-                  <option value="0" selected="selected">I don't need a GPU for now.</option>
-                </select>
-                <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
-              </div>
-              <div class="form-group">
-                <label for="inputRAM">RAM to be allocated</label>
-                <select name="mem_limit" class="form-control" id="inputRAM" aria-describedby="emailHelp">
-                  <option value="64G" selected="selected">64G RAM</option>
-                  <option value="128G">128G RAM</option>
-                  <option value="256G">256G RAM</option>
-                  <option value="384G">384G RAM</option>
-                  <option value="512G">512G RAM</option>
-                </select>
-                <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
               </div>
               <div class="form-group" style="display:none;">
                 <label for="inputPVC">Storage volume claim</label>
@@ -855,19 +780,19 @@ from_data_lobot_a5000: |2-
             <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
     </div>
 from_data_lobot_blackwell: |2-
-    <script>    
+    <script>
       var lab = 'lobot_blackwell';
       var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
       if(data){{
         $('#label-summary').text(data[lab].summary_title);
         $('#label-summary-details').text(data[lab].summary_details);
-        $.each(data[lab].usage, function(index, value){{        
+        $.each(data[lab].usage, function(index, value){{
           let entry = $('<small>');
           entry.text(value);
           entry.addClass('form-text text-muted');
           $('#label-usage').append(entry);
-          $('#label-usage').append($('<br>'));        
+          $('#label-usage').append($('<br>'));
         }})
       }}
       }})
@@ -984,7 +909,6 @@ from_data_lobot_blackwell: |2-
             <label class="form-check-label" for="exampleCheck1">Note: your server will be culled after 72 hours of activity, and all the files will be automatically saved. Only your home folder is persisted (your conda environments and vscode extensions are installed under your home folder and persisted by default).</label>
             <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
     </div>
-
 from_data_lobot_problackwell: |2-
     <script>
       var lab = 'lobot_problackwell';
