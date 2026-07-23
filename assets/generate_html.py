@@ -172,7 +172,7 @@ def render(lab_id, lab, global_images, registry):
         lines.append(
             '      if (opts.some(function(o) {{{{ return o.value === current; }}}})) {{{{ sel.value = current; }}}}\n'
         )
-        lines.append(f"    }}}}\n")
+        lines.append("    }}\n")
         lines.append(f"    var migSel_{lab_id} = document.getElementById('inputMIG');\n")
         lines.append(f"    var migWarn_{lab_id} = document.getElementById('migBusyWarning');\n")
         lines.append(f"    function migUpdateWarning_{lab_id}() {{{{\n")
@@ -183,17 +183,17 @@ def render(lab_id, lab, global_images, registry):
             f"        migWarn_{lab_id}.textContent = 'A session on this node is currently using a GPU — repartitioning is blocked until it ends. Spawning now will keep the current partitioning.';\n"
         )
         lines.append(f"        migWarn_{lab_id}.style.display = '';\n")
-        lines.append(f"      }}}} else {{{{\n")
+        lines.append("      }} else {{\n")
         lines.append(f"        migWarn_{lab_id}.style.display = 'none';\n")
-        lines.append(f"      }}}}\n")
-        lines.append(f"    }}}}\n")
+        lines.append("      }}\n")
+        lines.append("    }}\n")
         lines.append(
             f"    if (window.migCurrentProfile) {{{{ migSel_{lab_id}.value = window.migCurrentProfile; }}}}\n"
         )
         lines.append(f"    migSel_{lab_id}.addEventListener('change', function() {{{{\n")
         lines.append(f"      migRenderGpuOptions_{lab_id}(this.value);\n")
         lines.append(f"      migUpdateWarning_{lab_id}();\n")
-        lines.append(f"    }}}});\n")
+        lines.append("    }});\n")
         lines.append(f"    migRenderGpuOptions_{lab_id}(migSel_{lab_id}.value);\n")
         lines.append(f"    migUpdateWarning_{lab_id}();\n")
         lines.append('  </script>\n')
