@@ -899,7 +899,7 @@ hub:
           ('edemsmithbusiness',  'edemsmithbusiness-socsharedstorage',  'Smith School of Business Compute Resources'),
           ('miblab',             'miblab-socsharedstorage',             'MIB Lab Compute Resources'),
           ('winemocollab',       'winemocollab-socsharedstorage',       'WineMocol Lab Compute Resources'),
-          ('gandslab',           'gandslab-socsharedstorage',           'GAIN & SWIMS Labs Compute Resources'),
+          ('gandslab',           'gandslab-socsharedstorage',           'GOAL & SWIMS Labs Compute Resources'),
           ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
           ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
           ('lobot_cse2026',        'lobot_cse2026-socsharedstorage',    'Lobot Compute Resources for CSE2026'),

@@ -103,7 +103,7 @@ LAB_SUPERVISORS = {
         'supervisor_email': '',
     },
     'gandslab': {
-        'display': 'GAIN & SWIMS Labs Compute Resources',
+        'display': 'GOAL & SWIMS Labs Compute Resources',
         'supervisor_name': '',
         'supervisor_email': '',
     },
