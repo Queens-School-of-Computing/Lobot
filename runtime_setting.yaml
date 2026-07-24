@@ -230,7 +230,7 @@ limits:
     max_mem_gb: 96
   digilab:
     max_cpu: 8.0
-    max_gpu: 1
+    max_gpu: 2
     max_mem_gb: 128
   edemsmithbusiness:
     max_cpu: 32.0
@@ -472,6 +472,7 @@ from_data_digilab: |2-
                 <label for="inputGPU">Number of GPU accelerators</label>
                 <select name="gpu_limit" class="form-control" id="inputGPU" aria-describedby="emailHelp">
                   <option value="1" selected="selected">1x A16 (16G)</option>
+                  <option value="2" selected="selected">2x A16 (16G)</option>
                   <option value="0">I don't need a GPU for now.</option>
                 </select>
                 <small id="cpuHelp" class="form-text text-muted">The number of physical GPU devices to be allocated.</small>
