@@ -72,6 +72,11 @@ LAB_SUPERVISORS = {
         'supervisor_name': '',
         'supervisor_email': '',
     },
+    'digilab_individual': {
+        'display': 'Lobot Compute Resources',
+        'supervisor_name': '',
+        'supervisor_email': '',
+    },
     'mulab': {
         'display': 'MULab Compute Resources',
         'supervisor_name': 'Christian Muise',

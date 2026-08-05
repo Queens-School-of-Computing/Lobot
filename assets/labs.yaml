@@ -131,8 +131,17 @@ labs:
       - {value: "16G",  label: "16G RAM",  default: true}
       - {value: "32G",  label: "32G RAM"}
       - {value: "64G",  label: "64G RAM"}
-      - {value: "96G",  label: "96G RAM"}
-      - {value: "128G", label: "128G RAM"}
+    ram_help: "The amount of memory to be allocated. Choose minimum, only choose >32G if authorized."
+
+ digilab_individual:
+    cpu_label: DUAL AMD EPYC 7H12
+    cpu_help: "Reserved number of cores. Server will use more if needed and available automatically."
+    cpu_options:
+      - {value: "8.0", label: "8 cores", default: true}
+    gpu_options:
+      - {value: "0", label: "No GPUs for individual use. Use Group Access."}
+    ram_options:
+      - {value: "16G",  label: "16G RAM",  default: true}
     ram_help: "The amount of memory to be allocated. Choose minimum, only choose >32G if authorized."
 
   edemsmithbusiness:

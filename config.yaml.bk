@@ -892,6 +892,7 @@ hub:
           ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
           ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
           ('digilab',            'digilab-socsharedstorage',            'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
+          ('digilab_individual', 'digilab-socsharedstorage',            'Lobot Compute Resources'),
           ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
           ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
           ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
@@ -902,7 +903,7 @@ hub:
           ('gandslab',           'gandslab-socsharedstorage',           'GOAL & SWIMS Labs Compute Resources'),
           ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
           ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
-          ('lobot_cse2026',        'lobot_cse2026-socsharedstorage',    'Lobot Compute Resources for CSE2026'),
+          ('lobot_cse2026',      'lobot_cse2026-socsharedstorage',      'Lobot Compute Resources for CSE2026'),
         ]
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}
         lab_ds = {lab: ds for lab, _, ds in LAB_META}
