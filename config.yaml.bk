@@ -892,7 +892,7 @@ hub:
           ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
           ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
           ('digilab',            'digilab-socsharedstorage',            'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
-          ('digilab_individual', 'digilab-socsharedstorage',            'Lobot Compute Resources'),
+          ('digilab_individual', 'digilab_individual-socsharedstorage',            'Lobot Compute Resources'),
           ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
           ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
           ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
@@ -1251,6 +1251,8 @@ hub:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
         if req_gpu_slices == -1:
           spwnr.extra_resource_limits = {"nvidia.com/gpu": 0}
+        if lab == 'digilab_individual'
+          lab = 'digilab'
         spwnr.node_selector = {'lab': lab}
         spwnr.log.info('  spawner: ' + str(spwnr))
       c.Spawner.pre_spawn_hook = my_pre_spawn_hook
