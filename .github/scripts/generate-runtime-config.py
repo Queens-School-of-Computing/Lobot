@@ -68,12 +68,12 @@ LAB_SUPERVISORS = {
         'supervisor_email': '',
     },
     'digilab': {
-        'display': 'Lobot Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
+        'display': 'Digiliance Group Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
         'supervisor_name': '',
         'supervisor_email': '',
     },
     'digilab_individual': {
-        'display': 'Lobot Compute Resources',
+        'display': 'Digiliance Individual Compute Resources',
         'supervisor_name': '',
         'supervisor_email': '',
     },
