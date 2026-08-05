@@ -1251,7 +1251,7 @@ hub:
           spwnr.environment = {'NVIDIA_VISIBLE_DEVICES':'none'}
         if req_gpu_slices == -1:
           spwnr.extra_resource_limits = {"nvidia.com/gpu": 0}
-        if lab == 'digilab_individual'
+        if lab == 'digilab_individual':
           lab = 'digilab'
         spwnr.node_selector = {'lab': lab}
         spwnr.log.info('  spawner: ' + str(spwnr))
