@@ -13,25 +13,21 @@
 roles:
 - name: group-csai801g14-users
   user: group-csai801g14
-  members:
-  - mahmoudalyosify
-  - mirnaembaby
+  members: null
   scopes:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
 - name: group-csai801g24-users
   user: group-csai801g24
-  members:
-  - hanaessam
+  members: null
   scopes:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
 - name: group-csai801g37-users
   user: group-csai801g37
-  members:
-  - marwanahmedaly
+  members: null
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -113,6 +109,10 @@ roles:
   user: group-digi2026-g11
   members:
   - wiegerthefarmer
+  - mahmoudalyosify
+  - mirnaembaby
+  - emanram
+  - elsayedelmandoh
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -129,6 +129,10 @@ roles:
   user: group-digi2026-g2
   members:
   - wiegerthefarmer
+  - aia-abdallah
+  - m0hamedkhalidmg
+  - ahmedmohamed056
+  - ranamahmoud12
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -137,6 +141,9 @@ roles:
   user: group-digi2026-g20
   members:
   - wiegerthefarmer
+  - mariumtanious
+  - basantyahya-rgb
+  - mohamedsalah918101
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -145,6 +152,9 @@ roles:
   user: group-digi2026-g3
   members:
   - wiegerthefarmer
+  - marwanahmedaly
+  - mohreda2720
+  - abdelazezmohamedazez
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -153,6 +163,10 @@ roles:
   user: group-digi2026-g4
   members:
   - wiegerthefarmer
+  - afnandior
+  - alaamohamed123795
+  - manarelabsi10
+  - hindalaa26
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -161,6 +175,10 @@ roles:
   user: group-digi2026-g1
   members:
   - wiegerthefarmer
+  - hanaessam
+  - hassan-albattra
+  - mazen-bahgat
+  - mariamphilip66
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -169,6 +187,10 @@ roles:
   user: group-digi2026-g5
   members:
   - wiegerthefarmer
+  - sondosomarr
+  - alaa-elmassry
+  - esraamosaad
+  - nancyahmedmustafa
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -177,6 +199,10 @@ roles:
   user: group-digi2026-g12
   members:
   - wiegerthefarmer
+  - mhamoody
+  - arwa15320
+  - esraa-nemat-alla
+  - mohamedmahmoud07
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -185,6 +211,10 @@ roles:
   user: group-digi2026-g14
   members:
   - wiegerthefarmer
+  - osama-elkhuriby
+  - yaya0001
+  - mostafaelofy629
+  - mohamedzidan052
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -193,6 +223,10 @@ roles:
   user: group-digi2026-g15
   members:
   - wiegerthefarmer
+  - farida-gaber44
+  - rodina222
+  - ahmedsh711
+  - raneemhussien
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -201,6 +235,10 @@ roles:
   user: group-digi2026-g18
   members:
   - wiegerthefarmer
+  - nehal675
+  - norhankamal
+  - sheroukrashed
+  - salma-21
   scopes:
   - access:servers!user={user}
   - servers!user={user}
