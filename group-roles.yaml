@@ -109,3 +109,99 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-digi2026g11-users
+  user: group-digi2026-g11
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g16-users
+  user: group-digi2026-g16
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g2-users
+  user: group-digi2026-g2
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g20-users
+  user: group-digi2026-g20
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g3-users
+  user: group-digi2026-g3
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g4-users
+  user: group-digi2026-g4
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g1-users
+  user: group-digi2026-g1
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g5-users
+  user: group-digi2026-g5
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g12-users
+  user: group-digi2026-g12
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g14-users
+  user: group-digi2026-g14
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g15-users
+  user: group-digi2026-g15
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g18-users
+  user: group-digi2026-g18
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
