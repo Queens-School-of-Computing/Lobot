@@ -20,21 +20,6 @@ nodeaccess:
   - somiona
   - tahosinamoniranonna
   digilab:
-  - abdelazezmohamedazez
-  - afnandior
-  - ahmedmohamed056
-  - ahmedsh711
-  - aia-abdallah
-  - alaa-elmassry
-  - alaamohamed123795
-  - arwa15320
-  - basantyahya-rgb
-  - elsayedelmandoh
-  - emanram
-  - esraa-nemat-alla
-  - esraamosaad
-  - farida-gaber44
-  - fatma-yousuf
   - group-csai801g14
   - group-csai801g24
   - group-csai801g37
@@ -50,6 +35,22 @@ nodeaccess:
   - group-digi2026-g3
   - group-digi2026-g4
   - group-digi2026-g5
+  digilab_individual:
+  - abdelazezmohamedazez
+  - afnandior
+  - ahmedmohamed056
+  - ahmedsh711
+  - aia-abdallah
+  - alaa-elmassry
+  - alaamohamed123795
+  - arwa15320
+  - basantyahya-rgb
+  - elsayedelmandoh
+  - emanram
+  - esraa-nemat-alla
+  - esraamosaad
+  - farida-gaber44
+  - fatma-yousuf
   - hanaessam
   - hassan-albattra
   - hindalaa26
@@ -78,10 +79,9 @@ nodeaccess:
   - salma-21
   - sheroukrashed
   - sondosomarr
+  - wiegerthefarmer
   - yaya0001
   - zainbmaged
-  digilab_individual:
-  - wiegerthefarmer
   gandslab:
   - ameekbains
   - anas-s-m
