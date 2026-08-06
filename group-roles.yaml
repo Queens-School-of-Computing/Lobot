@@ -262,9 +262,10 @@ roles:
   user: group-digi2026-g13
   members:
   - wiegerthefarmer
-  - lobotnoop@cs.queensu.ca
+  - nourhansalem23xxx
   - emanmostafa2002723
   - lamyamamdouh
+  - nourhansalem23
   scopes:
   - access:servers!user={user}
   - servers!user={user}
