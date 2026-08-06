@@ -955,6 +955,7 @@ hub:
         first_lab = accessible_labs[0]
 
         return f'''      <script>
+      var LAB_STATUS_ALIAS = {{'digilab_individual': 'digilab'}};
       function switchLab(labName) {{
         document.querySelectorAll('.lab-form-section').forEach(function(el) {{
           el.style.display = 'none';
@@ -966,11 +967,12 @@ hub:
         $('#label-usage').find('.lab-usage-entry').remove();
         $('#label-summary').text('');
         $('#label-summary-details').text('');
+        var statusKey = LAB_STATUS_ALIAS[labName] || labName;
         $.getJSON('https://' + window.location.hostname + '/allocationstatus/current.json', function(d) {{
-          if (d && d[labName]) {{
-            $('#label-summary').text(d[labName].summary_title);
-            $('#label-summary-details').text(d[labName].summary_details);
-            $.each(d[labName].usage, function(i, v) {{
+          if (d && d[statusKey]) {{
+            $('#label-summary').text(d[statusKey].summary_title);
+            $('#label-summary-details').text(d[statusKey].summary_details);
+            $.each(d[statusKey].usage, function(i, v) {{
               $('#label-usage').append($('<small>').text(v).addClass('form-text text-muted lab-usage-entry')).append($('<br>').addClass('lab-usage-entry'));
             }});
           }}
