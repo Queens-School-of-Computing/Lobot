@@ -243,3 +243,43 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-digi2026g25-users
+  user: group-digi2026-g25
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g13-users
+  user: group-digi2026-g13
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g26-users
+  user: group-digi2026-g26
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g24-users
+  user: group-digi2026-g24
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
+- name: group-digi2026g10-users
+  user: group-digi2026-g10
+  members:
+  - wiegerthefarmer
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
