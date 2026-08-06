@@ -121,6 +121,10 @@ roles:
   user: group-digi2026-g16
   members:
   - wiegerthefarmer
+  - bssam99
+  - khaledashoush
+  - a7mednafea
+  - salmaabdelfattah73
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -247,6 +251,9 @@ roles:
   user: group-digi2026-g25
   members:
   - wiegerthefarmer
+  - sayed45122
+  - roqaiatamer
+  - ahmed-anwer-7
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -255,6 +262,9 @@ roles:
   user: group-digi2026-g13
   members:
   - wiegerthefarmer
+  - lobotnoop@cs.queensu.ca
+  - emanmostafa2002723
+  - lamyamamdouh
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -263,6 +273,10 @@ roles:
   user: group-digi2026-g26
   members:
   - wiegerthefarmer
+  - eselsayed
+  - hendmf
+  - hanaaamahmoud
+  - asmaahamdy3
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -271,6 +285,10 @@ roles:
   user: group-digi2026-g24
   members:
   - wiegerthefarmer
+  - mohamedyoussef-cloud
+  - sohilaashat
+  - mohandabdelsallam-jpg
+  - mar606yam
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -279,6 +297,10 @@ roles:
   user: group-digi2026-g10
   members:
   - wiegerthefarmer
+  - ahmedel-shamy
+  - basselessam
+  - nattie20
+  - mariamanwer820
   scopes:
   - access:servers!user={user}
   - servers!user={user}
