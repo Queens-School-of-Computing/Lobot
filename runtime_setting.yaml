@@ -25,7 +25,6 @@ nodeaccess:
   - group-csai801g37
   - group-digi2026-g1
   - group-digi2026-g10
-  - group-digi2026-g11
   - group-digi2026-g12
   - group-digi2026-g13
   - group-digi2026-g14
@@ -40,8 +39,11 @@ nodeaccess:
   - group-digi2026-g3
   - group-digi2026-g4
   - group-digi2026-g5
+  digilab_a5000a40:
+  - group-digi2026-g11
   digilab_individual:
   - a7mednafea
+  - aaronvisser
   - abdelazezmohamedazez
   - afnandior
   - ahmed-anwer-7
@@ -95,7 +97,6 @@ nodeaccess:
   - nehal675
   - norhankamal
   - nourhansalem23
-  - nourhansalem23xxx
   - osama-elkhuriby
   - ranamahmoud12
   - raneemhussien
@@ -210,7 +211,6 @@ nodeaccess:
   - nafiz95
   - schorm
   lobot_cse2026:
-  - aaronvisser
   - ahmedalyaisec
   - alvinc01
   - alysongauthier
@@ -367,6 +367,16 @@ lab_groups:
   - lobot_blackwell
   - bamlab
   lobot_cse2026:
+  - digilab
+  - lobot_a5000
+  - lobot_a40
+  digilab_a40:
+  - digilab
+  - lobot_a40
+  digilab_a5000:
+  - digilab
+  - lobot_a5000
+  digilab_a5000a40:
   - digilab
   - lobot_a5000
   - lobot_a40
@@ -572,7 +582,7 @@ from_data_digilab: |2-
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated. Choose minimum, only choose >32G if authorized.</small>
               </div>
-            <input type="hidden" name="lab" value="digilab">
+              <input type="hidden" name="lab" value="digilab">
               <div class="form-group" style="display:none;">
                 <label for="inputPVC">Storage volume claim</label>
                 <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
@@ -637,7 +647,7 @@ from_data_digilab_individual: |2-
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated. Choose minimum, only choose >32G if authorized.</small>
               </div>
-            <input type="hidden" name="lab" value="digilab_individual">
+              <input type="hidden" name="lab" value="digilab_individual">
               <div class="form-group" style="display:none;">
                 <label for="inputPVC">Storage volume claim</label>
                 <select name="storage_class" class="form-control" id="inputPVC" aria-describedby="emailHelp">
