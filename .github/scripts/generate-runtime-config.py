@@ -19,6 +19,9 @@ always_included_resources = json.loads(os.getenv('ALWAYS_INCLUDED_RESOURCES', '[
 LAB_GROUPS = {
     'lobot_blackwell': ['lobot_blackwell', 'bamlab'],
     'lobot_cse2026': ['digilab', 'lobot_a5000', 'lobot_a40'],
+    'digilab_a40': ['digilab', 'lobot_a40'],
+    'digilab_a5000': ['digilab', 'lobot_a5000'],
+    'digilab_a5000a40': ['digilab', 'lobot_a5000', 'lobot_a40'],
 }
 
 # Users who can spawn on any lab. Bypasses nodeaccess checks and sees all labs

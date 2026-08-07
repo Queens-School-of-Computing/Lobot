@@ -908,6 +908,9 @@ hub:
           ('gandslab',           'gandslab-socsharedstorage',           'GOAL & SWIMS Labs Compute Resources'),
           ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
           ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
+          ('digilab_a40',        'digilab_a40-socsharedstorage',        'Digiliance Group Compute Resources (A16 16G and A40 48G)'),
+          ('digilab_a5000',      'digilab_a5000-socsharedstorage',      'Digiliance Group Compute Resources (A16 16G and A5000 24G)'),
+          ('digilab_a5000a40',      'digilab_a5000a40-socsharedstorage',      'Digiliance Group Compute Resources (A16 16G, A5000 24G, A40 48G)'),
           ('lobot_cse2026',      'lobot_cse2026-socsharedstorage',      'Lobot Compute Resources for CSE2026'),
         ]
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}
