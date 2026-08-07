@@ -45,7 +45,6 @@ roles:
   members:
   - wiegerthefarmer
   - jm-janzen
-  - aaronvisser
   scopes:
   - access:servers!user={user}
   - servers!user={user}
@@ -111,6 +110,7 @@ roles:
   - wiegerthefarmer
   - mahmoudalyosify
   - mirnaembaby
+  - aaronvisser
   - emanram
   - elsayedelmandoh
   scopes:
@@ -262,7 +262,6 @@ roles:
   user: group-digi2026-g13
   members:
   - wiegerthefarmer
-  - nourhansalem23xxx
   - emanmostafa2002723
   - lamyamamdouh
   - nourhansalem23
