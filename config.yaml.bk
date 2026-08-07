@@ -675,6 +675,8 @@ hub:
         options['mem_limit'] = formdata['mem_limit']
         options['gpu_limit'] = formdata['gpu_limit']
         options['storage_class'] = formdata['storage_class']
+        if 'lab' in formdata:
+          options['lab'] = formdata['lab']
         if 'mig_profile' in formdata:
           mig_profile = formdata['mig_profile'][0]
           if mig_profile not in MIG_PROFILES:
@@ -683,7 +685,10 @@ hub:
 
         # All validation runs before spawn-pending so errors show on the spawn form.
         # If the YAML fetch fails, silently pass — pre_spawn_hook will re-validate.
-        lab = options['storage_class'][0].split('-')[0]
+        # Prefer the submitted lab field (needed when multiple labs share a
+        # storage class, e.g. digilab / digilab_individual); fall back to
+        # deriving it from storage_class for labs without that field.
+        lab = options['lab'][0] if 'lab' in options else options['storage_class'][0].split('-')[0]
         RUNTIME_URL = os.environ.get("LOBOT_RUNTIME_URL", "https://raw.githubusercontent.com/Queens-School-of-Computing/Lobot/main/runtime_setting.yaml")
         try:
           data = yaml.safe_load(urllib.request.urlopen(RUNTIME_URL, timeout=5).read().decode('utf-8')) or {}
@@ -941,8 +946,9 @@ hub:
           html = re.sub(r'\s*<script\b[^>]*>.*?</script>', '', html, flags=re.DOTALL)
           html = re.sub(r'\s*<div[^>]+id="label-usage"[^>]*>.*?</div>', '', html, flags=re.DOTALL)
           if not is_first:
-            # Disable selects in hidden sections so they are not submitted
-            html = re.sub(r'(<select\b)', r'\1 disabled', html)
+            # Disable selects/inputs in hidden sections so they are not submitted
+            # (e.g. the duplicate hidden name="lab" input in each section)
+            html = re.sub(r'(<select\b|<input\b)', r'\1 disabled', html)
           display = '' if is_first else ' style="display:none"'
           return f'<div id="lab-form-{lab}" class="lab-form-section"{display}>\n{html}\n</div>\n'
 
@@ -959,11 +965,11 @@ hub:
       function switchLab(labName) {{
         document.querySelectorAll('.lab-form-section').forEach(function(el) {{
           el.style.display = 'none';
-          el.querySelectorAll('select').forEach(function(s) {{ s.disabled = true; }});
+          el.querySelectorAll('select, input').forEach(function(s) {{ s.disabled = true; }});
         }});
         var section = document.getElementById('lab-form-' + labName);
         section.style.display = '';
-        section.querySelectorAll('select').forEach(function(s) {{ s.disabled = false; }});
+        section.querySelectorAll('select, input').forEach(function(s) {{ s.disabled = false; }});
         $('#label-usage').find('.lab-usage-entry').remove();
         $('#label-summary').text('');
         $('#label-summary-details').text('');
@@ -1106,7 +1112,10 @@ hub:
         spwnr.log.info('username:' + username)
         spwnr.log.info('  spwnr.user_options: ' + str(spwnr.user_options))
         options = spwnr.user_options
-        lab = options['storage_class'][0].split('-')[0]
+        # Prefer the submitted lab field (needed when multiple labs share a
+        # storage class, e.g. digilab / digilab_individual); fall back to
+        # deriving it from storage_class for labs without that field.
+        lab = options['lab'][0] if 'lab' in options else options['storage_class'][0].split('-')[0]
 
         # --- Server-side validation (all users) ---
         try:

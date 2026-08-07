@@ -280,6 +280,12 @@ def _parse_limits(html):
 
 
 def get_resource_pages(names):
+    # Each fragment is embedded verbatim as from_data_<name> and must include
+    # <input type="hidden" name="lab" value="<name>"> — pre_spawn_hook reads
+    # this as the authoritative lab identity. Required whenever a lab's
+    # storage_class isn't 1:1 with its lab name (e.g. digilab_individual
+    # shares digilab's storage_class), since storage_class alone can no
+    # longer be split to recover the lab in that case.
     pages = {}
     for name in names:
         path = f"./assets/html/{name}.html"
