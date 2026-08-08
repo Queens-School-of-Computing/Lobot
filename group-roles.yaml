@@ -265,6 +265,7 @@ roles:
   - emanmostafa2002723
   - lamyamamdouh
   - nourhansalem23
+  - raniamohsenattia
   scopes:
   - access:servers!user={user}
   - servers!user={user}
