@@ -26,7 +26,6 @@ nodeaccess:
   - group-digi2026-g1
   - group-digi2026-g10
   - group-digi2026-g12
-  - group-digi2026-g13
   - group-digi2026-g14
   - group-digi2026-g15
   - group-digi2026-g16
@@ -41,6 +40,7 @@ nodeaccess:
   - group-digi2026-g5
   digilab_a5000a40:
   - group-digi2026-g11
+  - group-digi2026-g13
   digilab_individual:
   - a7mednafea
   - aaronvisser
