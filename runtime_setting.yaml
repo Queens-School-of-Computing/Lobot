@@ -38,6 +38,7 @@ nodeaccess:
   - group-digi2026-g3
   - group-digi2026-g4
   - group-digi2026-g5
+  - group-digi2026-g8
   digilab_a5000a40:
   - group-digi2026-g11
   - group-digi2026-g13
