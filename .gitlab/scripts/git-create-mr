@@ -14,6 +14,10 @@ git add "$_CREATE_ADD_PATH"
 git status -bs
 
 # TODO Wrap this into a reusable script
+
+# TODO Replace with special bot user
+git config --global user.email "jmzen@cs.queensu.ca"
+git config --global user.name "jmbot"
 git commit -m "$_CREATE_COMMIT_TITLE"
 git push -u origin $_CREATE_BRANCH_NAME \
   -o merge_request.create \
