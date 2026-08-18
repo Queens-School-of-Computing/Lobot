@@ -6,8 +6,8 @@ set -xe
 # (newlines not allowed as push options)
 MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr -d '\n')
 
-# FIXME Check if exists first
-git switch --create $_CREATE_BRANCH_NAME
+# Create or use existing
+git switch --create $_CREATE_BRANCH_NAME || git switch $_CREATE_BRANCH_NAME
 
 git add "$_CREATE_ADD_PATH"
 
