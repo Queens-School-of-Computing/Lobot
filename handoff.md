@@ -4,6 +4,17 @@
 **Author:** Claude Code session with Aaron Visser
 **Scope:** Current goals, session outcomes, and a digest of persistent memory for whoever (or whatever) picks this up next.
 
+**Update (2026-08-19, later same day):** Investigated a reported lobot-tui
+color/brand issue — top/bottom bars rendering grey instead of Queen's Blue.
+Root cause was **not** a code bug: the terminal session was running inside
+GNU `screen` with `TERM=screen` and no `COLORTERM`, so Rich/Textual fell back
+to 16-color mode and downsampled `#002452` to grey. Fixed on the host via
+`~/.screenrc` (`term screen-256color`, `truecolor on`). An initial round of
+code edits (swapping hardcoded `cyan`/`yellow` Rich markup to Queen's Gold in
+`main_screen.py`, `status_bar.py`, `actions_panel.py`) targeted the wrong
+layer and was reverted — no lasting changes in Lobot-tools from this. See
+`project_lobot_tui_screen_color.md`.
+
 ---
 
 ## 1. Open Goals
@@ -80,6 +91,7 @@ Persistent memory lives at `~/.claude/projects/-Users-aaron-Documents-GitHub-Que
 
 ### lobot-tui
 - Code in Lobot-tools (`lobot_tui/`, `lobot_collector/`); Textual 8.1.1 in `/opt/Lobot/tools/lobot_tui/.venv` (Python 3.12); Textual is on the remote servers, not local. See `project_lobot_tui_state.md` for development state and safety flags.
+- If colors look wrong in a live session, check `TERM`/`COLORTERM` and Rich's `color_system` first — a `screen`/`tmux` session without truecolor advertised will downsample the Queen's Blue chrome to grey even though the theme code is correct. See `project_lobot_tui_screen_color.md`.
 
 ### URL hosting
 - Asset URLs are back on `raw.githubusercontent.com` (reverted 2026-04-13 after a block was lifted; jsDelivr was a temporary workaround). Self-hosting remains a future consideration. See `project_cdn_migration.md`.
