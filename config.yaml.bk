@@ -896,8 +896,8 @@ hub:
           ('bamlab',             'bamlab-socsharedstorage',             'BAMLab Compute Resources (A100 80G)'),
           ('riselab',            'riselab-socsharedstorage',            'RISE Lab Compute Resources'),
           ('lobot_a16',          'lobot_a16-socsharedstorage',          'Lobot Compute Resources (NVIDIA A16 GPU 16GB)'),
-          ('digilab',            'digilab-socsharedstorage',            'Digiliance Group Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
-          ('digilab_individual', 'digilab-socsharedstorage',            'Digiliance Individual Compute Resources'),
+          ('digilab',            'digilab-socsharedstorage',            'Digilians Group Compute Resources (NVIDIA A16 GPU 16GB x4TS)'),
+          ('digilab_individual', 'digilab-socsharedstorage',            'Digilians Individual Compute Resources'),
           ('lobot_blackwell',    'lobot_blackwell-socsharedstorage',    'Lobot Compute Resources (NVIDIA Blackwell 48G MIG)'),
           ('lobot_problackwell', 'lobot_problackwell-socsharedstorage', 'Lobot Compute Resources (NVIDIA Pro Blackwell GPU 96GB)'),
           ('quarrglab',          'quarrglab-socsharedstorage',          'QUARRG Lab Compute Resources'),
@@ -908,9 +908,9 @@ hub:
           ('gandslab',           'gandslab-socsharedstorage',           'GOAL & SWIMS Labs Compute Resources'),
           ('lobot_a40',          'lobot_a40-socsharedstorage',          'Lobot Compute Resources (NVIDIA A40 GPU 48G)'),
           ('lobot_a5000',        'lobot_a5000-socsharedstorage',        'Lobot Compute Resources (NVIDIA A5000 GPU 24G)'),
-          ('digilab_a40',        'digilab_a40-socsharedstorage',        'Digiliance Group Compute Resources (A16 16G and A40 48G)'),
-          ('digilab_a5000',      'digilab_a5000-socsharedstorage',      'Digiliance Group Compute Resources (A16 16G and A5000 24G)'),
-          ('digilab_a5000a40',      'digilab_a5000a40-socsharedstorage',      'Digiliance Group Compute Resources (A16 16G, A5000 24G, A40 48G)'),
+          ('digilab_a40',        'digilab_a40-socsharedstorage',        'Digilians Group Compute Resources (A16 16G and A40 48G)'),
+          ('digilab_a5000',      'digilab_a5000-socsharedstorage',      'Digilians Group Compute Resources (A16 16G and A5000 24G)'),
+          ('digilab_a5000a40',      'digilab_a5000a40-socsharedstorage',      'Digilians Group Compute Resources (A16 16G, A5000 24G, A40 48G)'),
           ('lobot_cse2026',      'lobot_cse2026-socsharedstorage',      'Lobot Compute Resources for CSE2026'),
         ]
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}

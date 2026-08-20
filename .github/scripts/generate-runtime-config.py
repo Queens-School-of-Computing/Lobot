@@ -71,12 +71,12 @@ LAB_SUPERVISORS = {
         'supervisor_email': '',
     },
     'digilab': {
-        'display': 'Digiliance Group Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
+        'display': 'Digilians Group Compute Resources (NVIDIA A16 GPU 16GB x4TS)',
         'supervisor_name': '',
         'supervisor_email': '',
     },
     'digilab_individual': {
-        'display': 'Digiliance Individual Compute Resources',
+        'display': 'Digilians Individual Compute Resources',
         'supervisor_name': '',
         'supervisor_email': '',
     },
