@@ -916,9 +916,12 @@ hub:
         lab_ss = {lab: ss for lab, ss, _ in LAB_META}
         lab_ds = {lab: ds for lab, _, ds in LAB_META}
 
-        # Superusers get all labs
+        # Superusers get all real labs (exclude virtual lab_groups keys, which
+        # have no from_data_* entry of their own and only exist to expand into
+        # their member labs for regular users below)
         if username in superusers:
-          accessible_labs = [lab for lab, _, _ in LAB_META]
+          virtual_group_keys = set(lab_groups.keys())
+          accessible_labs = [lab for lab, _, _ in LAB_META if lab not in virtual_group_keys]
         else:
           # Find primary lab (first nodeaccess match in priority order)
           primary_lab = None
