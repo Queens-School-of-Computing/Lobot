@@ -16,8 +16,8 @@ git status -bs
 # TODO Wrap this into a reusable script
 
 # TODO Replace with special bot user
-git config --global user.email "hello@jmjanzen.com"
-git config --global user.name "JM"
+git config --global user.email "whb1+gitlab@queensu.ca"
+git config --global user.name "qsc-bot"
 git commit -m "$_CREATE_COMMIT_TITLE"
 git push -u origin $_CREATE_BRANCH_NAME \
   -o merge_request.create \
