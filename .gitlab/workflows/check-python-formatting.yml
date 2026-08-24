@@ -6,9 +6,9 @@ stages:
 stage_files:
   stage: stage
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "trigger"
       when: never
-    - when: on_success
   script: |
     echo "Checking for python files changed from 'main'..."
     git fetch origin main dev --depth 1
@@ -26,9 +26,9 @@ stage_files:
 ruff_check:
   stage: check
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "trigger"
       when: never
-    - when: on_success
   image: python:3.12
 
   script:
