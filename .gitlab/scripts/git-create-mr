@@ -6,6 +6,8 @@ MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr -d '\n')
 
 git remote set-url origin "https://qsc-bot:${LOBOT_QSC_BOT_TOK}@gitlab.cs.queensu.ca/qsc-tech-staff/lobot.git"
 
+git fetch origin "${$_CREATE_BRANCH_NAME}:${$_CREATE_BRANCH_NAME}"
+
 # Create or use existing
 git switch --create $_CREATE_BRANCH_NAME || git switch $_CREATE_BRANCH_NAME
 
