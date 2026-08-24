@@ -1,7 +1,6 @@
 update_configs:
   variables:
-    _CREATE_BRANCH_NAME: update-jupyter-configs
-    _CREATE_COMMIT_TITLE: "chore: automated config update"
+    _CREATE_MR_BRANCH_NAME: update-jupyter-configs
     _CREATE_MR_TITLE: "chore: automated config update"
     _CREATE_MR_DESCRIPTION: >-
       This pull request was triggered by a change in the\n
@@ -10,7 +9,7 @@ update_configs:
     # TODO Assign to team
     _CREATE_MR_ASSIGNED: jm-zen
     # TODO Actual
-    _CREATE_ADD_PATH: bar.deleteme
+    _CREATE_MR_ADD_PATH: bar.deleteme
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger"
       when: always
@@ -20,7 +19,5 @@ update_configs:
     - |-
       # TODO Stage actual changes
       echo "$PAYLOAD" >> bar.deleteme
-
     - |-
-
       ./.gitlab/scripts/git-create-mr
