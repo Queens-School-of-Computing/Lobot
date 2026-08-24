@@ -1,0 +1,26 @@
+update_configs:
+  variables:
+    _CREATE_BRANCH_NAME: update-jupyter-configs
+    _CREATE_COMMIT_TITLE: "chore: automated config update"
+    _CREATE_MR_TITLE: "chore: automated config update"
+    _CREATE_MR_DESCRIPTION: >-
+      This pull request was triggered by a change in the\n
+      \"Cluster Users\" data source. Please cross-reference\n
+      that the change here matches the corresponding items there.
+    # TODO Assign to team
+    _CREATE_MR_ASSIGNED: jm-zen
+    # TODO Actual
+    _CREATE_ADD_PATH: bar.deleteme
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+  script:
+    - |-
+      echo "PAYLOAD: ${PAYLOAD}" # From request
+    - |-
+      # TODO Stage actual changes
+      echo "$PAYLOAD" >> bar.deleteme
+
+    - |-
+
+      ./.gitlab/scripts/git-create-mr
