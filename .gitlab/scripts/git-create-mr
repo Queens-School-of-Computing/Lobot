@@ -6,7 +6,6 @@ set -xe
 # (newlines not allowed as push options)
 MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr -d '\n')
 
-echo "Cats say: $CATS"
 git remote set-url origin "https://qsc-bot:${LOBOT_QSC_BOT_TOK}@gitlab.cs.queensu.ca/qsc-tech-staff/lobot.git"
 
 # Create or use existing
@@ -18,9 +17,6 @@ git status -bs
 
 # TODO Wrap this into a reusable script
 
-# TODO Replace with special bot user
-git config --global user.email "whb1+gitlab@queensu.ca"
-git config --global user.name "qsc-bot"
 git commit -m "$_CREATE_COMMIT_TITLE"
 git push -u origin $_CREATE_BRANCH_NAME \
   -o merge_request.create \
