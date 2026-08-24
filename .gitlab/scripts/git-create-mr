@@ -1,6 +1,4 @@
-#!/usr/bin/env sh
-
-set -xe
+#!/usr/bin/env -S sh -xe
 
 # FIXME Better way to remove or omit last newline
 # (newlines not allowed as push options)
