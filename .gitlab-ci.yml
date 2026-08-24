@@ -10,30 +10,4 @@ workflow:
 
 include:
   - local: '.gitlab/workflows/check-python-formatting.yml'
-
-stub:
-  variables:
-    CAT: "MEOW"
-    _CREATE_BRANCH_NAME: update-jupyter-configs
-    _CREATE_COMMIT_TITLE: "chore: automated config update"
-    _CREATE_MR_TITLE: "chore: automated config update"
-    _CREATE_MR_DESCRIPTION: >-
-      This pull request was triggered by a change in the\n
-      \"Cluster Users\" data source. Please cross-reference\n
-      that the change here matches the corresponding items there.
-    _CREATE_MR_ASSIGNED: jm-zen
-    _CREATE_ADD_PATH: bar.deleteme
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "trigger"
-      when: always
-  script:
-    - |-
-      echo "meow meow $CAT"
-      echo "PAYLOAD: ${PAYLOAD}" # From request
-    - |-
-      # TODO Stage actual changes
-      echo "$PAYLOAD" >> bar.deleteme
-
-    - |-
-
-      ./.gitlab/scripts/git-create-mr
+  - local: '.gitlab/workflows/update-configs.yml'
