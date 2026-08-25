@@ -20,10 +20,7 @@ git push -u origin $_CREATE_MR_BRANCH_NAME \
   -o merge_request.create \
   -o merge_request.label=bot \
   -o merge_request.label=infra \
-  -o merge_request.target=main \
+  -o merge_request.target="$_CREATE_MR_TARGET_BRANCH" \
   -o merge_request.title="$_CREATE_MR_TITLE" \
   -o merge_request.description="$_CREATE_MR_DESCRIPTION" \
   -o merge_request.assign="$_CREATE_MR_ASSIGNED"
-
-  # TODO Put both these fellas in a group, then assign to *it*
-  #-o merge_request.assign="av10"
