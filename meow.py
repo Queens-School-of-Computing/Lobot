@@ -1,2 +1,0 @@
-def cat():
-    print("meow!")
