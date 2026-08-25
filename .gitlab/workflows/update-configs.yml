@@ -7,8 +7,7 @@ update_configs:
       This pull request was triggered by a change in the\n
       \"Cluster Users\" data source. Please cross-reference\n
       that the change here matches the corresponding items there.
-    # TODO Assign to team
-    _CREATE_MR_ASSIGNED: jm-zen
+    _CREATE_MR_ASSIGNED: lobot-maintainers
     # TODO Actual
     _CREATE_MR_ADD_PATH: bar.deleteme
   rules:
