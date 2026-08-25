@@ -8,16 +8,27 @@ update_configs:
       \"Cluster Users\" data source. Please cross-reference\n
       that the change here matches the corresponding items there.
     _CREATE_MR_ASSIGNED: lobot-maintainers
-    # TODO Actual
-    _CREATE_MR_ADD_PATH: bar.deleteme
+    _CREATE_MR_ADD_PATH: ./runtime_setting.yaml ./group-roles.yaml
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger"
       when: always
   script:
     - |-
-      echo "PAYLOAD: ${PAYLOAD}" # From request
+      # Write out payload
+      echo "$PAYLOAD" > members-payload.json
+
+    - INPUT_FILE=./members-payload.json
+    - OUTPUT_FILE=./runtime_setting.yaml
     - |-
-      # TODO Stage actual changes
-      echo "$PAYLOAD" >> bar.deleteme
+      # Update runtime_setting.yaml
+      python3 ./.github/scripts/generate-runtime-config.py
+
+    - INPUT_FILE: ./members-payload.json
+    - OUTPUT_FILE: ./group-roles.yaml
     - |-
+      # Update group-roles.yaml
+      python3 ./.github/scripts/generate-group-roles.py
+
+    - |-
+      # Create Merge Request
       ./.gitlab/scripts/git-create-mr
