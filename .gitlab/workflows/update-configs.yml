@@ -1,6 +1,7 @@
 update_configs:
   variables:
     _CREATE_MR_BRANCH_NAME: update-jupyter-configs
+    _CREATE_MR_TARGET_BRANCH: dev
     _CREATE_MR_TITLE: "chore: automated config update"
     _CREATE_MR_DESCRIPTION: >-
       This pull request was triggered by a change in the\n
