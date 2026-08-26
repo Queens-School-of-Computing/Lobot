@@ -15,7 +15,7 @@ update_configs:
   script:
     - |-
       # Write out payload
-      echo "$PAYLOAD" > members-payload.json
+      echo "$PAYLOAD" | jq -c .data > members-payload.json
 
     - 'INPUT_FILE=./members-payload.json'
     - 'OUTPUT_FILE=./runtime_setting.yaml'
