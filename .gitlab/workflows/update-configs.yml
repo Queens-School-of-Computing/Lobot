@@ -23,8 +23,8 @@ update_configs:
       # Update runtime_setting.yaml
       python3 ./.github/scripts/generate-runtime-config.py
 
-    - 'INPUT_FILE: ./members-payload.json'
-    - 'OUTPUT_FILE: ./group-roles.yaml'
+    - 'INPUT_FILE=./members-payload.json'
+    - 'OUTPUT_FILE=./group-roles.yaml'
     - |-
       # Update group-roles.yaml
       python3 ./.github/scripts/generate-group-roles.py
