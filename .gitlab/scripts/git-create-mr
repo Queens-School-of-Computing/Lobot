@@ -17,7 +17,7 @@ git fetch origin "${_CREATE_MR_BRANCH_NAME}:${_CREATE_MR_BRANCH_NAME}"
 # Create or use existing
 git switch --create $_CREATE_MR_BRANCH_NAME || git switch $_CREATE_MR_BRANCH_NAME
 
-git add "$_CREATE_MR_ADD_PATH"
+git add -- $(echo "$_CREATE_MR_ADD_PATH")
 
 git commit -m "$_CREATE_MR_TITLE"
 git push -u origin $_CREATE_MR_BRANCH_NAME \
