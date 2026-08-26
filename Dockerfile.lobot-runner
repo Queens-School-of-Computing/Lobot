@@ -1,3 +1,5 @@
 FROM alpine:latest AS runner
 
-RUN apk add git
+
+RUN apk update
+RUN apk add git python3 py3-pip py3-yaml ruff jq
