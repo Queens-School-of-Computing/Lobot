@@ -10,11 +10,16 @@ stage_files:
     - if: $CI_PIPELINE_SOURCE == "trigger"
       when: never
   script: |
-    echo "Checking for python files changed from 'main'..."
-    git fetch origin main dev --depth 1
-    git switch dev
-    git fetch origin "${CI_COMMIT_REF_NAME}"
-    files=$(git diff --name-only --no-commit-id origin/main..origin/${CI_COMMIT_REF_NAME})
+    set -vex
+
+    TARGET_BRANCH=dev
+    SOURCE_BRANCH=$CI_COMMIT_REF_NAME
+
+    echo "Checking for python files changed from '${TARGET_BRANCH}'..."
+    git fetch origin $TARGET_BRANCH $SOURCE_BRANCH --depth 1
+    git switch $SOURCE_BRANCH
+
+    files=$(git diff --name-only --no-commit-id "${TARGET_BRANCH}..${SOURCE_BRANCH}")
     py_files=$(echo -n $files | xargs -n1 echo |grep \\.py\$)
     if [ -n "$py_files" ]
     then
