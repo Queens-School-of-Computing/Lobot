@@ -2,6 +2,10 @@
 
 set -vex
 
+# FIXME Update email to shared inbox type deal
+git config user.email "whb1+gitlab@queensu.ca"
+git config user.name "qsc-bot"
+
 # FIXME Better way to remove or omit last newline
 # (newlines not allowed as push options)
 MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr -d '\n')
