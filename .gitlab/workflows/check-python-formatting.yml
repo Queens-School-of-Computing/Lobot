@@ -31,6 +31,8 @@ get_changed_py_files:
     if [ -n "$py_files" ]
     then
       echo "$py_files" > changed-python-files.txt
+    else
+      echo "No python files changed"
     fi
   artifacts:
     paths:
