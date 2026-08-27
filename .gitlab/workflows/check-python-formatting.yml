@@ -25,7 +25,8 @@ get_changed_py_files:
     git fetch origin $TARGET_BRANCH $SOURCE_BRANCH --depth 1
     git switch $SOURCE_BRANCH
 
-    files=$(git diff --name-only --no-commit-id "${TARGET_BRANCH}..${SOURCE_BRANCH}")
+    revision_range="origin/${TARGET_BRANCH}..origin/${SOURCE_BRANCH}"
+    files=$(git diff --name-only --no-commit-id $revision_range)
     py_files=$(echo -n $files | xargs -n1 echo |grep \\.py\$)
     if [ -n "$py_files" ]
     then
