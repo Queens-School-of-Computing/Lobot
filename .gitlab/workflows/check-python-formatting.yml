@@ -3,7 +3,7 @@ stages:
   - check
   - test
 
-stage_files:
+get_changed_py_files:
   stage: stage
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -35,7 +35,7 @@ stage_files:
     paths:
       - ./changed-python-files.txt
 
-ruff_check:
+ruff_check_py_files:
   stage: check
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
