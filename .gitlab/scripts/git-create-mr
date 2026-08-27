@@ -2,6 +2,8 @@
 
 set -vex
 
+git status -bs
+
 # FIXME Update email to shared inbox type deal
 git config user.email "whb1+gitlab@queensu.ca"
 git config user.name "qsc-bot"
@@ -14,10 +16,14 @@ git remote set-url origin "https://qsc-bot:${LOBOT_QSC_BOT_TOK}@gitlab.cs.queens
 
 git fetch origin "${_CREATE_MR_BRANCH_NAME}:${_CREATE_MR_BRANCH_NAME}"
 
+git status -bs
+
 # Create or use existing
 git switch --create $_CREATE_MR_BRANCH_NAME || git switch $_CREATE_MR_BRANCH_NAME
 
 git add -- $(echo "$_CREATE_MR_ADD_PATH")
+
+git status -bs
 
 git commit -m "$_CREATE_MR_TITLE"
 git push -u origin $_CREATE_MR_BRANCH_NAME \
