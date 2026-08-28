@@ -15,7 +15,7 @@ update_configs:
   script:
     - |-
       # Create branch or use existing
-      git fetch origin "${_CREATE_MR_BRANCH_NAME}:${_CREATE_MR_BRANCH_NAME}"
+      git fetch origin "${_CREATE_MR_BRANCH_NAME}:${_CREATE_MR_BRANCH_NAME}" || true
       git switch $_CREATE_MR_BRANCH_NAME || git switch --create $_CREATE_MR_BRANCH_NAME
 
     - |-
