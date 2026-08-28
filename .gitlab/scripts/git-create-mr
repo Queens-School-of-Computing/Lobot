@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -vex
+set -vx
 
 git status -bs
 
