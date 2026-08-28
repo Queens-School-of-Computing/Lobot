@@ -14,7 +14,7 @@ roles:
 - name: group-devtesting-users
   user: group-devtesting
   members:
-  - jm-janzen
+  - wiegerthefarmer
   scopes:
   - access:servers!user={user}
   - servers!user={user}

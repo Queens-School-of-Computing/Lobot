@@ -8,7 +8,7 @@
 
 nodeaccess:
   lobot_blackwell:
-  - jm-janzen
+  - wiegerthefarmer
 limits:
   bamlab:
     max_cpu: 32.0
