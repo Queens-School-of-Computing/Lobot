@@ -5,7 +5,7 @@ set -vx
 # Check we're on the right branch or bail
 if [ $(git branch --show-current) = "$_CREATE_MR_BRANCH_NAME" ]
 then
-  echo -n "git-create-mr expects us to be on the branch '${_CREATE_MR_BRANCH_NAME}'"
+  echo "git-create-mr expects us to be on the branch '${_CREATE_MR_BRANCH_NAME}'"
   exit 1
 fi
 
