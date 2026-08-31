@@ -1,4 +1,4 @@
-  <script>    
+   <script>    
     var lab = 'lobot_blackwell';
     var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
     $.getJSON(url_status, function(data){{
@@ -116,7 +116,11 @@
                 <option value="192G">192G RAM</option>
                 <option value="208G">208G RAM</option>
                 <option value="224G">224G RAM</option>
-                <option value="240G">240G RAM</option>                
+                <option value="240G">240G RAM</option>   
+                <option value="256G">256G RAM</option>   
+                <option value="384G">384G RAM</option>   
+                <option value="448G">448G RAM</option>   
+                <option value="480G">480G RAM</option>   
               </select>
               <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
             </div>
