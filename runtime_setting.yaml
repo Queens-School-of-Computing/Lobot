@@ -293,7 +293,7 @@ limits:
   lobot_blackwell:
     max_cpu: 32.0
     max_gpu: 12
-    max_mem_gb: 128
+    max_mem_gb: 480
   lobot_problackwell:
     max_cpu: 64.0
     max_gpu: 2
@@ -973,7 +973,7 @@ from_data_lobot_a5000: |2-
             <a href="https://github.com/Queens-School-of-Computing/Lobot-Cluster-Information/blob/master/instruction_server.md" target="_blank" rel="noopener noreferrer">Click here to read all about using Lobot.</a>
     </div>
 from_data_lobot_blackwell: |2-
-    <script>
+     <script>
       var lab = 'lobot_blackwell';
       var url_status = 'https://' + window.location.hostname + '/allocationstatus/current.json';
       $.getJSON(url_status, function(data){{
@@ -1088,6 +1088,14 @@ from_data_lobot_blackwell: |2-
                   <option value="64G">64G RAM</option>
                   <option value="96G">96G RAM</option>
                   <option value="128G">128G RAM</option>
+                  <option value="192G">192G RAM</option>
+                  <option value="208G">208G RAM</option>
+                  <option value="224G">224G RAM</option>
+                  <option value="240G">240G RAM</option>
+                  <option value="256G">256G RAM</option>
+                  <option value="384G">384G RAM</option>
+                  <option value="448G">448G RAM</option>
+                  <option value="480G">480G RAM</option>
                 </select>
                 <small id="memHelp" class="form-text text-muted">The amount of memory to be allocated.</small>
               </div>
