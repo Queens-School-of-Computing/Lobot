@@ -21,6 +21,10 @@ update_configs:
       git switch $_CREATE_MR_BRANCH_NAME || git switch --create $_CREATE_MR_BRANCH_NAME
 
     - |-
+      # Print payload
+      echo "TRIGGER_PAYLOAD: $TRIGGER_PAYLOAD"
+
+    - |-
       # Write out payload
       echo "$TRIGGER_PAYLOAD" | jq -c .data > members-payload.json
 
