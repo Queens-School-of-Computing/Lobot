@@ -22,7 +22,7 @@ update_configs:
 
     - |-
       # Write out payload
-      echo "$PAYLOAD" | jq -c .data > members-payload.json
+      echo "$TRIGGER_PAYLOAD" | jq -c .data > members-payload.json
 
     - 'INPUT_FILE=./members-payload.json'
     - 'OUTPUT_FILE=./runtime_setting.yaml'
