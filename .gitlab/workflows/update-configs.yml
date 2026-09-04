@@ -12,6 +12,8 @@ update_configs:
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger"
       when: always
+    - if: $CI_PIPELINE_SOURCE == "api"
+      when: always
   script:
     - |-
       # Create branch or use existing
