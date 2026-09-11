@@ -2,6 +2,12 @@
 
 set -vx
 
+_CREATE_MR_GITLAB_URL="gitlab.cs.queensu.ca"
+_CREATE_MR_AUTHOR_NAME="qsc-bot"
+_CREATE_MR_AUTHOR_EMAIL="whb1+gitlab@queensu.ca"
+_CREATE_MR_REPO_PROJECT="qsc-tech-staff"
+_CREATE_MR_REPO_NAME="lobot"
+
 # Check we're on the right branch or bail
 if [ $(git branch --show-current) != "$_CREATE_MR_BRANCH_NAME" ]
 then
@@ -12,14 +18,16 @@ fi
 git status -bs
 
 # FIXME Update email to shared inbox type deal
-git config user.email "whb1+gitlab@queensu.ca"
-git config user.name "qsc-bot"
+git config user.email $_CREATE_MR_AUTHOR_EMAIL
+git config user.name $_CREATE_MR_AUTHOR_NAME
 
 # FIXME Better way to remove or omit last newline
 # (newlines not allowed as push options)
 MR_DESCRIPTION=$(echo $MR_DESCRIPTION|tr -d '\n')
 
-git remote set-url origin "https://qsc-bot:${LOBOT_QSC_BOT_TOK}@gitlab.cs.queensu.ca/qsc-tech-staff/lobot.git"
+uri_auth="https://${_CREATE_MR_AUTHOR_NAME}:${LOBOT_QSC_BOT_TOK}@${_CREATE_MR_GITLAB_URL}"
+uri_path="${_CREATE_MR_REPO_PROJECT}/${_CREATE_MR_REPO_NAME}.git"
+git remote set-url origin "${uri_auth}/${uri_path}"
 
 git status -bs
 
