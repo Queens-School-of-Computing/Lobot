@@ -2,11 +2,12 @@
 
 set -vx
 
-_CREATE_MR_GITLAB_URL="gitlab.cs.queensu.ca"
-_CREATE_MR_AUTHOR_NAME="qsc-bot"
-_CREATE_MR_AUTHOR_EMAIL="whb1+gitlab@queensu.ca"
-_CREATE_MR_REPO_PROJECT="qsc-tech-staff"
-_CREATE_MR_REPO_NAME="lobot"
+# Use env vars if exists, or these defaults
+_CREATE_MR_GITLAB_URL=${_CREATE_MR_GITLAB_URL:-"gitlab.cs.queensu.ca"}
+_CREATE_MR_AUTHOR_NAME=${_CREATE_MR_AUTHOR_NAME:-"qsc-bot"}
+_CREATE_MR_AUTHOR_EMAIL=${_CREATE_MR_AUTHOR_EMAIL:-"whb1+gitlab@queensu.ca"}
+_CREATE_MR_REPO_PROJECT=${_CREATE_MR_REPO_PROJECT:-"qsc-tech-staff"}
+_CREATE_MR_REPO_NAME=${_CREATE_MR_REPO_NAME:-"lobot"}
 
 # Check we're on the right branch or bail
 if [ $(git branch --show-current) != "$_CREATE_MR_BRANCH_NAME" ]
