@@ -38,6 +38,7 @@ nodeaccess:
   - group-digi2026-g3
   - group-digi2026-g4
   - group-digi2026-g5
+  - group-digi2026-g6
   - group-digi2026-g8
   digilab_a5000a40:
   - group-digi2026-g11
@@ -47,6 +48,7 @@ nodeaccess:
   - a7mednafea
   - aaronvisser
   - abdelazezmohamedazez
+  - abdelbasethayam
   - afnandior
   - ahmed-anwer-7
   - ahmedabdelhamed01
@@ -62,6 +64,7 @@ nodeaccess:
   - basantyahya-rgb
   - basselessam
   - bssam99
+  - dina1moh
   - eid-abdelrihem
   - elsayedelmandoh
   - emanmostafa2002723
@@ -70,6 +73,7 @@ nodeaccess:
   - esraa-nemat-alla
   - esraamosaad
   - farida-gaber44
+  - hagerhamed1420
   - hanaaamahmoud
   - hanaessam
   - hassan-albattra
@@ -92,6 +96,7 @@ nodeaccess:
   - mohamedsalah918101
   - mohamedyoussef-cloud
   - mohamedzidan052
+  - mohammedanber
   - mohandabdelsallam-jpg
   - mohreda2720
   - mostafaelofy629
