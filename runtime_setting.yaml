@@ -38,11 +38,12 @@ nodeaccess:
   - group-digi2026-g3
   - group-digi2026-g4
   - group-digi2026-g5
-  - group-digi2026-g8
+  - group-digi2026-g6
   digilab_a5000a40:
   - group-digi2026-g11
   - group-digi2026-g13
   - group-digi2026-g16
+  - group-digi2026-g8
   digilab_individual:
   - a7mednafea
   - aaronvisser
@@ -176,7 +177,6 @@ nodeaccess:
   - emeseelkind
   - emmawillis
   - filipe-cogo
-  - group-digi2026-g6
   - guozhuoxin
   - herniaheroes
   - ibrahimkettaneh
