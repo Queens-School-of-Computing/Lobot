@@ -47,7 +47,35 @@
       margin-bottom: 20px;
     }
 
+    .alert-info {
+      background: #cff4fc;
+      border: 1px solid #9eeaf9;
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: #055160;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .alert-info .copy-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .alert-info code {
+      word-break: break-all;
+    }
+
     /* Dark mode */
+    [data-bs-theme="dark"] .alert-info {
+      background: #032830;
+      border-color: #087990;
+      color: #6edff6;
+    }
+
     [data-bs-theme="dark"] .request-card {
       background: #2d2d2d;
       border-color: #404040;
@@ -86,6 +114,16 @@
         <strong>Request sent.</strong> We'll follow up at the email address you provided.
       </div>
     {% else %}
+      <div class="alert-info">
+        <strong>Note:</strong> This form should not be used to request resources for new users.
+        New users can visit <a href="https://lobot.cs.queensu.ca">https://lobot.cs.queensu.ca</a>
+        themselves and the request access form will be presented, or they can go directly to:
+        <div class="copy-row">
+          <code id="request-access-url">https://lobot.cs.queensu.ca/hub/request-access</code>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="copy-url-btn">Copy URL</button>
+        </div>
+      </div>
+
       {% if error %}
         <div class="alert-danger">{{ error }}</div>
       {% endif %}
@@ -122,3 +160,43 @@
   </div>
 </div>
 {% endblock main %}
+
+{% block script %}
+  {{ super() }}
+  <script type="text/javascript">
+    (function() {
+      var btn = document.getElementById("copy-url-btn");
+      if (!btn) return;
+      var url = document.getElementById("request-access-url").textContent.trim();
+
+      function fallbackCopy() {
+        var ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(ta);
+        return ok;
+      }
+
+      function flash(text) {
+        btn.textContent = text;
+        setTimeout(function() { btn.textContent = "Copy URL"; }, 2000);
+      }
+
+      btn.addEventListener("click", function() {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(url).then(
+            function() { flash("Copied!"); },
+            function() { flash(fallbackCopy() ? "Copied!" : "Copy failed"); }
+          );
+        } else {
+          flash(fallbackCopy() ? "Copied!" : "Copy failed");
+        }
+      });
+    })();
+  </script>
+{% endblock script %}
