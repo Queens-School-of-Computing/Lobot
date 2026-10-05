@@ -669,6 +669,11 @@ hub:
           except Exception:
             pass
 
+        # The pending-access notice in dynamic_form has no form fields; if it
+        # is submitted anyway, return a clear message instead of a KeyError.
+        if 'image' not in formdata or 'storage_class' not in formdata:
+          raise ValueError('Your account has not been assigned compute resources yet. Please wait a few minutes and refresh this page, or contact help@cs.queensu.ca if this persists.')
+
         options = {}
         options['image'] = formdata['image']
         options['cpu_limit'] = formdata['cpu_limit']
@@ -930,10 +935,31 @@ hub:
               primary_lab = lab
               break
 
-          # Default fallback
+          # No resource assignment yet — usually a brand-new user whose
+          # runtime_setting.yaml addition hasn't been approved, merged, or
+          # propagated through the GitHub CDN. Show a notice instead of a
+          # form (pre_spawn_hook would reject the spawn anyway) and hide the
+          # spawn page's Start button.
           if primary_lab is None:
-            return data['from_data_lobot_a16'].format(
-              'lobot_a16-socsharedstorage', 'Lobot Default Compute Resources (NVIDIA A16 GPU 16G)')
+            import html as _html
+            self.log.info(f'[dynamic_form] {username} has no resource assignment; showing pending-access notice')
+            return (
+              '<div class="alert alert-info" role="alert">'
+              '<h4 class="alert-heading">Your Lobot access is still being set up</h4>'
+              f'<p>You are signed in as <strong>{_html.escape(username)}</strong>, but your account '
+              'has not been assigned compute resources yet. This is normal for new users: '
+              'after your access request is approved, it can take a few minutes for the '
+              'change to reach Lobot.</p>'
+              '<p>Please wait a few minutes and refresh this page. If you still see this '
+              'message after an hour, contact '
+              '<a href="mailto:help@cs.queensu.ca">help@cs.queensu.ca</a> and include your '
+              'GitHub username.</p>'
+              '</div>'
+              '<script>document.addEventListener("DOMContentLoaded", function() {'
+              'var f = document.querySelector("#spawn_form .feedback-container");'
+              'if (f) f.style.display = "none";'
+              '});</script>'
+            )
 
           # Expand via lab_groups to get all accessible labs for this user
           accessible_labs = lab_groups.get(primary_lab, [primary_lab])
