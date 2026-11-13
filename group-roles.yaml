@@ -318,3 +318,12 @@ roles:
   - access:servers!user={user}
   - servers!user={user}
   - read:users!user={user}
+- name: group-cisc4732026-users
+  user: group-cisc4732026
+  members:
+  - spazaldinho
+  - marco7034
+  scopes:
+  - access:servers!user={user}
+  - servers!user={user}
+  - read:users!user={user}
